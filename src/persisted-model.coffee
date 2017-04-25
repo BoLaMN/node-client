@@ -1,0 +1,234 @@
+getArgs = require './utils/get-args'
+assert = require './utils/assert'
+
+Model = require './model'
+ObjectProxy = require './utils/proxy'
+
+class PersistedModel extends Model
+
+  @create: (data = {}, options = {}, fn = ->) ->
+    if typeof options is 'function'
+      return @create data, {}, options
+
+    @execute 'create', data, options, fn
+
+  @count: (where = {}, options = {}, fn = ->) ->
+    if typeof options is 'function'
+      return @count where, {}, options
+
+    query = where: where
+
+    @execute 'count', query, options, fn
+
+  @destroy: (where = {}, options = {}, fn = ->) ->
+    if typeof options is 'function'
+      return @destroy where, {}, options
+
+    query = where: where
+
+    @execute 'destroy', query, options, fn
+
+  @destroyById: (id, options = {}, fn = ->) ->
+    if typeof options is 'function'
+      return @destroyById id, {}, options
+
+    assert id, 'The id argument is required'
+
+    @execute 'destroyById', id, options, fn
+
+  @exists: (id, options = {}, fn = ->) ->
+    if typeof options is 'function'
+      return @exists id, {}, options
+
+    assert id, 'The id argument is required'
+
+    query = where:
+      id: id
+
+    finish = (err, data) ->
+      fn err, not not data
+
+    @count query, options, finish
+
+  @execute: (command, args...) ->
+    argNames = getArgs @dao[command]
+
+    ctx = {}
+
+    for arg, idx in argNames
+      ctx[arg] = args[idx]
+
+    fns = [
+      => @fire 'before ' + command, ctx
+      => @dao[command].apply @dao, args
+      (res) =>
+        ctx.result = res
+        @fire 'after ' + command, ctx
+    ]
+
+    current = Promise.resolve()
+
+    promises = fns.map (cb, i) ->
+      current = current.then (res) ->
+        cb res
+      current
+
+    callback = ctx.callback or ->
+
+    Promise.all promises
+      .then -> ctx.result
+      .asCallback callback
+
+  @find: (query = {}, options = {}, fn = ->) ->
+    if typeof options is 'function'
+      return @find query, {}, options
+
+    if typeof query is 'function'
+      return @find {}, {}, query
+
+    @execute 'find', query, options, fn
+
+  @findOne: (where = {}, options = {}, fn = ->) ->
+    if typeof options is 'function'
+      return @findOne where, {}, options
+
+    query = where: where
+
+    @execute 'findOne', query, options, fn
+
+  @findById: (id, options = {}, fn = ->) ->
+    if typeof options is 'function'
+      return @findById id, {}, options
+
+    assert id, 'The id argument is required'
+
+    query = where:
+      id: id
+
+    @execute 'findOne', query, options, fn
+
+  @findByIds: (ids = [], options = {}, fn = ->) ->
+    if typeof options is 'function'
+      return @findByIds ids, {}, options
+
+    assert ids.length, 'The ids argument is requires ids'
+
+    query = where:
+      id: inq: ids
+
+    @find query, options, fn
+
+  @update: (query = {}, data = {}, options = {}, fn = ->) ->
+    if typeof options is 'function'
+      return @updateAll query, data, {}, options
+
+    @execute 'update', query, data, options, fn
+
+  @updateById: (id, data = {}, options = {}, fn = ->) ->
+    if typeof options is 'function'
+      return @updateById id, data, {}, options
+
+    assert id, 'The id argument is required'
+
+    query = where:
+      id: id
+
+    @update query, data, options, fn
+
+  constructor: (data = {}, options = {}) ->
+    super
+
+    @on '*', (event, path, value, id) =>
+      @$events[event] ?= {}
+
+      if event is '$index'
+        @$events[event][path] ?= {}
+        @$events[event][path][value] ?= []
+        @$events[event][path][value].push id
+      else
+        @$events[event][path] = value
+
+    proxy = new ObjectProxy @, @$path, @$parent
+
+    @setAttributes data, proxy
+
+    return proxy
+
+  setAttributes: (data = {}, proxy = @) ->
+    if data.id and @constructor.primaryKey isnt 'id'
+      @setId data.id
+      delete data.id
+
+    if data._id
+      @setId data._id
+      delete data._id
+
+    for key, value of data
+      if typeof proxy[key] is 'function'
+        continue if typeof value is 'function'
+        proxy[key](value)
+      else
+        proxy[key] = value
+
+    if @$parent and @$path and not @$loaded
+      @$parent.emit '$loaded', @$path, @
+
+    @
+
+  execute: (command, args...) ->
+    argNames = getArgs @constructor[command]
+
+    options = argNames.indexOf 'options'
+
+    if options > -1
+      args[options - 1].instance = @
+
+    data = argNames.indexOf 'data'
+
+    if data > -1
+      args.splice data - 1, 0, @
+
+    if argNames[0] is 'id'
+      args.unshift @getId()
+
+    @constructor[command].apply @constructor, args
+
+  create: (options = {}, fn = ->) ->
+    @$isNew = false
+
+    @execute 'create', options, fn
+
+  destroy: (options = {}, fn = ->) ->
+    @off()
+    @execute 'destroyById', options, fn
+
+  exists: (options = {}, fn = ->) ->
+    @execute 'exists', options, fn
+
+  save: (options = {}, fn = ->) ->
+    if @$isNew
+      action = 'create'
+    else
+      action = 'update'
+
+    @[action] options, fn
+
+  update: (options = {}, fn = ->) ->
+    @execute 'updateById', options, fn
+
+  updateAttributes: (data = {}, options = {}, fn = ->) ->
+    @setAttributes data
+    @save options, fn
+
+  getId: ->
+    @[@constructor.primaryKey]
+
+  setId: (id) ->
+    if not id
+      delete @[@constructor.primaryKey]
+    else
+      @[@constructor.primaryKey] = id
+
+    @
+
+module.exports = PersistedModel
