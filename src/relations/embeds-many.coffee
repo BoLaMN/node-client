@@ -155,4 +155,4 @@ class EmbedsMany extends RelationArray
         items.forEach (item) =>
           @unset item
         @instance.save options
-      .asCallback
+      .asCallback cb

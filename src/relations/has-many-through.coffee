@@ -107,7 +107,7 @@ class HasManyThrough extends HasMany
     options.name = @as
 
     @through.findOrCreate query, data, options
-      .asCallback
+      .asCallback cb
 
   exists: (inst, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -130,7 +130,7 @@ class HasManyThrough extends HasMany
     options.name = @as
 
     @through.count query, options
-      .asCallback
+      .asCallback cb
 
   remove: (inst, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -150,6 +150,6 @@ class HasManyThrough extends HasMany
     options.name = @as
 
     @through.deleteAll query, options
-      .asCallback
+      .asCallback cb
 
   module.exports = HasManyThrough
