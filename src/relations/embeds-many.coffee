@@ -1,5 +1,7 @@
 RelationArray = require './relation-array'
 
+{ where, filter } = require '../filter'
+
 class EmbedsMany extends RelationArray
   @embedded: true
 
@@ -77,17 +79,17 @@ class EmbedsMany extends RelationArray
     @instance.updateAttribute @as, list
       .asCallback cb
 
-  destroyAll: (where, options = {}, cb = ->) ->
+  destroyAll: (conditions, options = {}, cb = ->) ->
     list = @instance[@as]
 
     if not list
       return cb()
 
-    if where and Object.keys(where).length > 0
-      filter = applyFilter where: where
+    if conditions and Object.keys(conditions).length > 0
+      query = new where conditions
 
       reject = (v) ->
-        not filter v
+        not filter v, query
 
       list = list.filter reject
 
@@ -139,9 +141,7 @@ class EmbedsMany extends RelationArray
     query = {}
     query[fk2] = if instance instanceof belongsTo then instance[pk2] else instance
 
-    filter = where: query
-
-    belongsTo.findOne filter, options
+    belongsTo.findOne { where: query }, options
       .then (ref) =>
         if ref instanceof belongsTo
           inst[options.belongsTo] ref
@@ -150,7 +150,7 @@ class EmbedsMany extends RelationArray
 
   remove: (instance, options = {}, cb = ->) ->
 
-    @instance[definition.name] filter, options
+    @instance[definition.name] query, options
       .then (items) =>
         items.forEach (item) =>
           @unset item
