@@ -73,7 +73,9 @@ class Model extends Entity
     super
 
     @$property '$events', value: {}
-    @$property '$isNew', value: true
+    @$property '$isNew',
+      value: true
+      writable: true
     @$property '$options', value: options
 
     @$property '$path', ->

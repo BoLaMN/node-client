@@ -6,37 +6,37 @@ ObjectProxy = require './utils/proxy'
 
 class PersistedModel extends Model
 
-  @create: (data = {}, options = {}, fn = ->) ->
+  @create: (data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @create data, {}, options
 
-    @execute 'create', data, options, fn
+    @execute 'create', data, options, cb
 
-  @count: (where = {}, options = {}, fn = ->) ->
+  @count: (where = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @count where, {}, options
 
     query = where: where
 
-    @execute 'count', query, options, fn
+    @execute 'count', query, options, cb
 
-  @destroy: (where = {}, options = {}, fn = ->) ->
+  @destroy: (where = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @destroy where, {}, options
 
     query = where: where
 
-    @execute 'destroy', query, options, fn
+    @execute 'destroy', query, options, cb
 
-  @destroyById: (id, options = {}, fn = ->) ->
+  @destroyById: (id, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @destroyById id, {}, options
 
     assert id, 'The id argument is required'
 
-    @execute 'destroyById', id, options, fn
+    @execute 'destroyById', id, options, cb
 
-  @exists: (id, options = {}, fn = ->) ->
+  @exists: (id, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @exists id, {}, options
 
@@ -46,7 +46,7 @@ class PersistedModel extends Model
       id: id
 
     finish = (err, data) ->
-      fn err, not not data
+      cb err, not not data
 
     @count query, options, finish
 
@@ -68,35 +68,35 @@ class PersistedModel extends Model
 
     current = Promise.resolve()
 
-    promises = fns.map (cb, i) ->
+    promises = fns.map (fn, i) ->
       current = current.then (res) ->
-        cb res
+        fn res
       current
 
-    callback = ctx.callback or ->
+    cb = ctx.cb or ->
 
     Promise.all promises
       .then -> ctx.result
-      .asCallback callback
+      .asCallback cb
 
-  @find: (query = {}, options = {}, fn = ->) ->
+  @find: (query = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @find query, {}, options
 
     if typeof query is 'function'
       return @find {}, {}, query
 
-    @execute 'find', query, options, fn
+    @execute 'find', query, options, cb
 
-  @findOne: (where = {}, options = {}, fn = ->) ->
+  @findOne: (where = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @findOne where, {}, options
 
     query = where: where
 
-    @execute 'findOne', query, options, fn
+    @execute 'findOne', query, options, cb
 
-  @findById: (id, options = {}, fn = ->) ->
+  @findById: (id, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @findById id, {}, options
 
@@ -105,9 +105,9 @@ class PersistedModel extends Model
     query = where:
       id: id
 
-    @execute 'findOne', query, options, fn
+    @execute 'findOne', query, options, cb
 
-  @findByIds: (ids = [], options = {}, fn = ->) ->
+  @findByIds: (ids = [], options = {}, cb = ->) ->
     if typeof options is 'function'
       return @findByIds ids, {}, options
 
@@ -116,15 +116,15 @@ class PersistedModel extends Model
     query = where:
       id: inq: ids
 
-    @find query, options, fn
+    @find query, options, cb
 
-  @update: (query = {}, data = {}, options = {}, fn = ->) ->
+  @update: (query = {}, data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @updateAll query, data, {}, options
 
-    @execute 'update', query, data, options, fn
+    @execute 'update', query, data, options, cb
 
-  @updateById: (id, data = {}, options = {}, fn = ->) ->
+  @updateById: (id, data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @updateById id, data, {}, options
 
@@ -133,7 +133,7 @@ class PersistedModel extends Model
     query = where:
       id: id
 
-    @update query, data, options, fn
+    @update query, data, options, cb
 
   constructor: (data = {}, options = {}) ->
     super
@@ -193,32 +193,32 @@ class PersistedModel extends Model
 
     @constructor[command].apply @constructor, args
 
-  create: (options = {}, fn = ->) ->
+  create: (options = {}, cb = ->) ->
     @$isNew = false
 
-    @execute 'create', options, fn
+    @execute 'create', options, cb
 
-  destroy: (options = {}, fn = ->) ->
+  destroy: (options = {}, cb = ->) ->
     @off()
-    @execute 'destroyById', options, fn
+    @execute 'destroyById', options, cb
 
-  exists: (options = {}, fn = ->) ->
-    @execute 'exists', options, fn
+  exists: (options = {}, cb = ->) ->
+    @execute 'exists', options, cb
 
-  save: (options = {}, fn = ->) ->
+  save: (options = {}, cb = ->) ->
     if @$isNew
       action = 'create'
     else
       action = 'update'
 
-    @[action] options, fn
+    @[action] options, cb
 
-  update: (options = {}, fn = ->) ->
-    @execute 'updateById', options, fn
+  update: (options = {}, cb = ->) ->
+    @execute 'updateById', options, cb
 
-  updateAttributes: (data = {}, options = {}, fn = ->) ->
-    @setAttributes data
-    @save options, fn
+  updateAttributes: (data = {}, options = {}, cb = ->) ->
+    @setAttributes data.toObject?() or data
+    @save options, cb
 
   getId: ->
     @[@constructor.primaryKey]

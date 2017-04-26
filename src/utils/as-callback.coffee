@@ -1,23 +1,8 @@
-isObject = (obj) ->
-  obj != null and Object::toString.call(obj) is '[object Object]'
+noop = ->
 
-noop = (v) -> v
-
-asCallback = (fn = noop, cb, options = {}) ->
-  if typeof fn is 'function' and not cb
-    return @asCallback noop, fn
-
-  if isObject fn
-    return @asCallback noop, noop, fn
-
-  if isObject cb
-    return @asCallback fn, noop, cb
-
-  fn = fn or noop
+asCallback = (cb = noop, options = {}) ->
 
   success = (data) ->
-    data = fn data
-
     if options.spread and Array.isArray data
       cb.apply null, [ null ].concat data
     else

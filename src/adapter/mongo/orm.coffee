@@ -82,8 +82,9 @@ class ORM extends Adapter
           options: options
           results: results
         , false, null)
-      .then ({ ops, insertedCount }) ->
-        intances = ops.map (doc, i) ->
+      .then ({ insertedIds, insertedCount }) ->
+        intances = data.map (doc, i) ->
+          doc.id = insertedIds[i]
           new model doc, buildOptions(options, i)
         if insertedCount is 1
           intances[0]
@@ -183,16 +184,16 @@ class ORM extends Adapter
     else
       promise = @execute 'find', where, fields, options
 
-    promise.then (cursor) =>
-
-      cursor.mapArray @model, buildOptions(options)
-        .tap (results) ->
-          debug 'find.cb', inspect(
-            filter: filter
-            options: options
-            results: results
-          , false, null)
-        .asCallback cb
+    promise
+      .then (cursor) =>
+        cursor.mapArray(@model, buildOptions(options))
+      .tap (results) ->
+        debug 'find.cb', inspect(
+          filter: filter
+          options: options
+          results: results
+        , false, null)
+      .asCallback cb
 
   ###*
   # Find a model instance by id
@@ -206,7 +207,7 @@ class ORM extends Adapter
     { filter } = new Query filter, @model
     { where, include, fields } = filter
 
-    @execute 'findOne', where, fields, options
+    @execute 'findOne', where, fields
       .then (results) =>
         new @model results, buildOptions(options)
       .tap (results) ->

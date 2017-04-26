@@ -23,7 +23,10 @@ class Relation extends Module
       @primaryKey = @from.primaryKey
       @foreignKey = camelize @from.modelName + '_id', true
 
-    @as = camelize @to.modelName, true
+    if @belongs
+      @as = camelize @from.modelName, true
+    else
+      @as = camelize @to.modelName, true
 
     if through
       @keyThrough = camelize @to.modelName + '_id', true
