@@ -135,7 +135,7 @@ class exports.Float extends Type
       pv
     else undefined
 
-class exports.Any
+class exports.Any extends Type
   @cast: (v) ->
     return if @absent v
 

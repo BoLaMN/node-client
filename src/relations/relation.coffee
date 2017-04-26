@@ -51,19 +51,23 @@ class Relation extends Module
       @from.attribute @from.primaryKey, id: true
 
     if not @to.attributes[@to.primaryKey]
-      @to.attribute @to.primaryKey, id: true
+      @to.attribute @to.primaryKey,
+        id: true
+        type: 'any'
 
     if not @through and @discriminator
-      @from.attribute @discriminator, foreignKey: true
+      @from.attribute @discriminator,
+        foreignKey: true
+        type: 'any'
 
-    options = foreignKey: true
     type = @idType or @from.attributes[@primaryKey].type
 
     if @multiple
       @as = pluralize @as
 
-    if type
-      options.type = type
+    options =
+      foreignKey: true
+      type: type or 'any'
 
     if @belongs
       @to.attribute @foreignKey, options
