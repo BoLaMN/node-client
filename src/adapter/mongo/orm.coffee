@@ -8,12 +8,14 @@ buildOptions = require '../../utils/build-options'
 
 { ObjectId } = require 'mongodb'
 { inspect } = require 'util'
-{ parseUpdateData } = require './utils'
+{ parseUpdateData, ObjectID } = require './utils'
 
 class ORM extends Adapter
 
   constructor: (model) ->
     super
+
+    model.defineType ObjectID
 
     @model = model
 

@@ -25,6 +25,9 @@ class Storage extends Entity
       @$each names, get, next
 
   $define: (name, obj) ->
+    if @[name]
+      return true
+
     @[name] = obj
 
     @emit name, obj

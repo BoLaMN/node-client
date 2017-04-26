@@ -5,7 +5,7 @@ Storage = require './storage'
 Module = require './module'
 Cast = require './cast'
 
-toString = Object::toString
+{ camelize } = require './utils/inflector'
 
 class Attribute extends Module
   @include Cast::
@@ -18,15 +18,15 @@ class Attribute extends Module
     if exists
       return @
 
-    switch toString.call type
-      when '[object String]', '[object Array]'
+    switch @type type
+      when 'string', 'array'
         options ?= {}
         options.type = type
-      when '[object Undefined]', '[object Null]'
+      when 'undefined', 'null'
         options = type: 'any'
-      when '[object Object]'
+      when 'object'
         options = type
-      when '[object Function]'
+      when 'function'
         options =
           fn: type
           type: type.name
@@ -45,6 +45,12 @@ class Attribute extends Module
 
     for own key, value of options
       @[key] = value
+
+    if Array.isArray @type
+      @type = @type.map (f) ->
+        camelize f if typeof f is 'string'
+    else if @type
+      @type = camelize @type
 
     @emit 'define', @, name, options
 

@@ -25,6 +25,23 @@ class Module extends Events
 
     property cls, key, accessor
 
+  @type: (val) ->
+    if val is null
+      return 'null'
+
+    s = Object::toString.call val
+
+    t = s.match(/\[object (.*?)\]/)[1].toLowerCase()
+
+    if t is 'number'
+      if isNaN val
+        return 'nan'
+
+      if not isFinite val
+        return 'infinity'
+
+    t
+
   constructor: ->
     super
 
