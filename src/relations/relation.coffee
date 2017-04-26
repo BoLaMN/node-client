@@ -69,10 +69,8 @@ class Relation extends Module
 
     @
 
-  constructor: (instance) ->
+  constructor: (@instance) ->
     super
-
-    @instance = instance
 
     for own key, value of @constructor
       @[key] = value

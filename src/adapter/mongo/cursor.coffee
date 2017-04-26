@@ -34,7 +34,7 @@ class Cursor extends Readable
 
       iterate()
 
-  mapArray: (mapfn) ->
+  mapArray: (mapfn, options) ->
     new Promise (resolve, reject) =>
       array = []
 
@@ -45,7 +45,7 @@ class Cursor extends Readable
           if not obj?
             return resolve array
           if mapfn.constructor
-            val = new mapfn obj
+            val = new mapfn obj, options
           else
             val = mapfn obj
           array.push val

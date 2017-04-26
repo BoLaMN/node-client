@@ -2,17 +2,13 @@ RelationArray = require './relation-array'
 
 class HasMany extends RelationArray
 
-  @initialize: (args...) ->
+  @initialize: (@from, @to, params) ->
     super
-
-    [ @from, @to, params ] = args
 
     @
 
-  constructor: (instance) ->
+  constructor: (@instance) ->
     super
-
-    @instance = instance
 
   build: (data = {}) ->
     data[@foreignKey] = @instance[@primaryKey]
@@ -36,6 +32,7 @@ class HasMany extends RelationArray
       Promise.resolve item
     else
       options.instance = @instance
+      options.name = @as
 
       query = @query()
       query.where[@to.primaryKey] = fkId
@@ -67,6 +64,7 @@ class HasMany extends RelationArray
       fkAndProps data
 
     options.instance = @instance
+    options.name = @as
 
     @to.create data, options, cb
       .then (res) =>
@@ -86,6 +84,7 @@ class HasMany extends RelationArray
       return @get {}, {}, query
 
     options.instance = @instance
+    options.name = @as
 
     @to.find @query(query), options, cb
       .then (res) =>

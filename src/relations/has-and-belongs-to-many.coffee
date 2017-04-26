@@ -2,10 +2,8 @@ HasMany = require './has-many'
 
 class HasAndBelongsToMany extends HasMany
 
-  @initialize: (args...) ->
+  @initialize: (@from, @to, params) ->
     super
-
-    [ @from, @to, params ] = args
 
     if not @through
       if @polymorphic
@@ -27,9 +25,7 @@ class HasAndBelongsToMany extends HasMany
 
     @
 
-  constructor: (instance) ->
+  constructor: (@instance) ->
     super
-
-    @instance = instance
 
 module.exports = HasAndBelongsToMany

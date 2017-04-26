@@ -3,23 +3,20 @@ RelationArray = require './relation-array'
 class ReferencesMany extends RelationArray
   @embedded: true
 
-  @initialize: (args...) ->
+  @initialize: (@from, @to, params) ->
     super
-
-    [ @from, @to, params ] = args
 
     @
 
-  constructor: (instance) ->
+  constructor: (@instance) ->
     super
-
-    @instance = instance
 
   get: (options = {}, cb = ->) ->
     if typeof options is 'function'
       return @get {}, options
 
     options.instance = @instance
+    options.name = @as
 
     @to.findByIds @, options, cb
 
@@ -30,6 +27,7 @@ class ReferencesMany extends RelationArray
     id = @instance[@foreignKey] or []
 
     options.instance = @instance
+    options.name = @as
 
     @to.findByIds [ fkId ], options, cb
 
@@ -91,6 +89,7 @@ class ReferencesMany extends RelationArray
     inst = @build data
 
     options.instance = @instance
+    options.name = @as
 
     inst.save options, (err, inst) =>
       @insert err, inst, cb
@@ -123,6 +122,7 @@ class ReferencesMany extends RelationArray
     filter.where[@primaryKey] = data
 
     options.instance = @instance
+    options.name = @as
 
     @to.findOne filter, options, (err, inst) =>
       @insert err, inst, cb
@@ -145,6 +145,7 @@ class ReferencesMany extends RelationArray
     ids.splice index, 1
 
     options.instance = @instance
+    options.name = @as
 
     @instance.updateAttribute @foreignKey, ids, options, cb
 

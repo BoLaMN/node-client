@@ -5,10 +5,8 @@ proto = Array.prototype
 class RelationArray extends Relation
   @multiple: true
 
-  constructor: (instance) ->
+  constructor: (@instance) ->
     super
-
-    @instance = instance
 
     return @injectMethods []
 

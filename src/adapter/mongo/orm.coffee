@@ -4,6 +4,8 @@ Query = require './query'
 Collection = require './collection'
 Adapter = require '../adapter'
 
+buildOptions = require '../../utils/build-options'
+
 { ObjectId } = require 'mongodb'
 { inspect } = require 'util'
 { parseUpdateData } = require './utils'
@@ -76,13 +78,13 @@ class ORM extends Adapter
 
     @execute 'insert', @normalizeIds(data), safe: true
       .tap (results) ->
-        debug 'create.cb',
+        debug 'create.cb', inspect(
           options: options
           results: results
-      .then ({ insertedIds, insertedCount }) ->
-        intances = data.map (doc, i) ->
-          doc._id = insertedIds[i]
-          new model doc
+        , false, null)
+      .then ({ ops, insertedCount }) ->
+        intances = ops.map (doc, i) ->
+          new model doc, buildOptions(options, i)
         if insertedCount is 1
           intances[0]
         else intances
@@ -120,7 +122,6 @@ class ORM extends Adapter
       delete filter.fields
 
     { filter } = new Query filter, @model
-
     { where, fields } = filter
 
     @execute 'remove', where, options
@@ -184,7 +185,7 @@ class ORM extends Adapter
 
     promise.then (cursor) =>
 
-      cursor.mapArray @model
+      cursor.mapArray @model, buildOptions(options)
         .tap (results) ->
           debug 'find.cb', inspect(
             filter: filter
@@ -207,7 +208,7 @@ class ORM extends Adapter
 
     @execute 'findOne', where, fields, options
       .then (results) =>
-        new @model results
+        new @model results, buildOptions(options)
       .tap (results) ->
         debug 'findOne.cb', inspect(
           filter: filter
@@ -239,6 +240,8 @@ class ORM extends Adapter
       upsert: true
 
     @execute 'findOneAndUpdate', where, { $setOnInsert: data }, query
+      .then (results) =>
+        new @model results, buildOptions(options)
       .tap (results) ->
         debug 'findOrCreate.cb', inspect(
           filter: filter
@@ -302,6 +305,8 @@ class ORM extends Adapter
     id = _id: id or data[ @model.primaryKey ]
 
     @execute 'update', id, @normalizeId(data), options
+      .then (results) =>
+        new @model results, buildOptions(options)
       .tap (results) ->
         debug 'updateWithOptions.cb', inspect(
           options: options
@@ -319,6 +324,8 @@ class ORM extends Adapter
     debug 'save', data
 
     @execute 'save', @normalizeId(data), options
+      .then (results) =>
+        new @model results, buildOptions(options)
       .tap (results) ->
         debug 'save.cb', inspect(
           options: options

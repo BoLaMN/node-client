@@ -3,17 +3,13 @@ Relation = require './relation'
 class EmbedsOne extends Relation
   @embedded: true
 
-  @initialize: (args...) ->
+  @initialize: (@to, @from, params) ->
     super
-
-    [ @to, @from, params ] = args
 
     @
 
-  constructor: (instance) ->
+  constructor: (@instance) ->
     super
-
-    @instance = instance
 
   get: (options = {}, cb = ->) ->
     if typeof options is 'function'

@@ -3,17 +3,13 @@ Relation = require './relation'
 class BelongsTo extends Relation
   @belongs: true
 
-  @initialize: (args...) ->
+  @initialize: (@to, @from, params) ->
     super
-
-    [ @to, @from, params ] = args
 
     @
 
-  constructor: (instance) ->
+  constructor: (@instance) ->
     super
-
-    @instance = instance
 
   build: (data = {}) ->
     new @to data, @buildOptions()
@@ -26,6 +22,7 @@ class BelongsTo extends Relation
       return @create {}, {}, data
 
     options.instance = @instance
+    options.name = @as
 
     @to.create data, options, (err, instance) =>
       if err
@@ -55,6 +52,7 @@ class BelongsTo extends Relation
     id = @instance[@foreignKey]
 
     options.instance = @instance
+    options.name = @as
 
     to.findById id, options, cb
 

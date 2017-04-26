@@ -1,10 +1,8 @@
 HasMany = require './has-many'
 
 class HasManyThrough extends HasMany
-  constructor: (instance) ->
+  constructor: (@instance) ->
     super
-
-    @instance = instance
 
   throughKeys: (definition) ->
     pk2 = @to.primaryKey
@@ -57,6 +55,7 @@ class HasManyThrough extends HasMany
       return @create {}, {}, data
 
     options.instance = @instance
+    options.name = @as
 
     @to.create data, options, (err, to) =>
       if err
@@ -107,6 +106,7 @@ class HasManyThrough extends HasMany
     query = where: where
 
     options.instance = @instance
+    options.name = @as
 
     @through.findOrCreate query, data, options, cb
 
@@ -128,6 +128,7 @@ class HasManyThrough extends HasMany
     query = where: where
 
     options.instance = @instance
+    options.name = @as
 
     @through.count query, options, cb
 
@@ -146,6 +147,7 @@ class HasManyThrough extends HasMany
     query = where: where
 
     options.instance = @instance
+    options.name = @as
 
     @through.deleteAll query, options, cb
 

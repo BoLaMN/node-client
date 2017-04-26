@@ -1,5 +1,5 @@
-Model = require './persisted-model'
-Mongo = require './adapter/mongo'
+Model = require '../src/persisted-model'
+Mongo = require '../src/adapter/mongo'
 
 Adapter = Mongo.define 'db'
 

@@ -1,5 +1,5 @@
-Model = require './persisted-model'
-Mongo = require './adapter/mongo'
+Model = require '../src/persisted-model'
+Mongo = require '../src/adapter/mongo'
 
 Adapter = Mongo.define 'db'
 
@@ -43,3 +43,15 @@ Reader.hasOne 'Picture', { as: 'imageable', polymorphic: foreignKey: 'imageableI
 
 Picture = Model.define 'Picture'
 Picture.adapter Adapter
+
+module.exports =
+  Customer: Customer
+  Order: Order
+  Physician: Physician
+  Patient: Patient
+  Appointment: Appointment
+  Assembly: Assembly
+  Part: Part
+  Author: Author
+  Reader: Reader
+  Picture: Picture

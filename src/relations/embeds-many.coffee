@@ -3,10 +3,8 @@ RelationArray = require './relation-array'
 class EmbedsMany extends RelationArray
   @embedded: true
 
-  @initialize: (args...) ->
+  @initialize: (@to, @from, params) ->
     super
-
-    [ @to, @from, params ] = args
 
     @
 

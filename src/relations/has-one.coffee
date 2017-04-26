@@ -2,17 +2,13 @@ Relation = require './relation'
 
 class HasOne extends Relation
 
-  @initialize: (args...) ->
+  @initialize: (@from, @to, params) ->
     super
-
-    [ @from, @to, params ] = args
 
     @
 
-  constructor: (instance) ->
+  constructor: (@instance) ->
     super
-
-    @instance = instance
 
   build: (data = {}) ->
     data[@foreignKey] = @instance[@primaryKey]
@@ -46,6 +42,8 @@ class HasOne extends Relation
     data[@foreignKey] = @instance[@primaryKey]
 
     options.instance = @instance
+    options.name = @as
+
     query = @query()
 
     if not query
@@ -81,6 +79,8 @@ class HasOne extends Relation
       return @get {}, options
 
     options.instance = @instance
+    options.name = @as
+
     query = @query query
 
     if not query
