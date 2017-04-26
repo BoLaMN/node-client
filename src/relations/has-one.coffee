@@ -50,33 +50,33 @@ class HasOne extends Relation
       cb()
       return Promise.reject()
 
-    @to.findOrCreate query, data, options, cb
+    @to.findOrCreate query, data, options
+      .asCallback cb
 
   update: (data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @update data, {}, options
 
-    @get options, (err, instance) ->
-      if err
-        return cb err
-
+    @get(options).then (instance) =>
       delete data[@foreignKey]
-
-      instance.updateAttributes data, options, cb
+      instance.updateAttributes data, options
+    .asCallback cb
 
   destroy: (options = {}, cb = ->) ->
     if typeof options is 'function'
       return @destroy {}, options
 
-    @get options, (err, instance) ->
-      if err
-        return cb err
+    @get(options).then (instance) ->
+      instance.destroy options
+    .asCallback cb
 
-      instance.destroy options, cb
-
-  get: (query, options = {}, cb = ->) ->
+  get: (options = {}, cb = ->) ->
     if typeof options is 'function'
       return @get {}, options
+
+    if @$loaded
+      cb null, @$loaded
+      return Promise.resolve @$loaded
 
     options.instance = @instance
     options.name = @as
@@ -87,6 +87,9 @@ class HasOne extends Relation
       cb()
       return Promise.reject()
 
-    @to.findOne query, options, cb
+    @to.findOne query, options
+      .tap (data) =>
+        @$property '$loaded', value: data
+      .asCallback cb
 
 module.exports = HasOne

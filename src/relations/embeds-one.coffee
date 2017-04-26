@@ -39,9 +39,10 @@ class EmbedsOne extends Relation
     if @instance.isNewRecord()
       @instance.setAttribute @foreignKey, instance
 
-      @instance.save cb
+      @instance.save().asCallback cb
     else
-      @instance.updateAttribute @foreignKey, instance, options, cb
+      @instance.updateAttribute @foreignKey, instance, options
+        .asCallback cb
 
   update: (data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -50,14 +51,15 @@ class EmbedsOne extends Relation
     instance = @instance[@foreignKey]
 
     if not instance
-      return @create data, options, cb
+      return @create data, options
+        .asCallback cb
 
     instance.setAttributes data
 
     if not instance.isValid()
       return cb new ValidationError(instance)
 
-    @instance.save cb
+    @instance.save().asCallback cb
 
   destroy: (options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -66,7 +68,8 @@ class EmbedsOne extends Relation
     instance = @instance[@foreignKey]
 
     if not instance
-      return cb()
+      cb()
+      return Promise.reject()
 
     @instance.unsetAttribute @foreignKey, true
-    @instance.save cb
+    @instance.save().asCallback cb

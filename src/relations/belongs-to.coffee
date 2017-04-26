@@ -24,21 +24,23 @@ class BelongsTo extends Relation
     options.instance = @instance
     options.name = @as
 
-    @to.create data, options, (err, instance) =>
-      if err
-        return cb err
+    @to.create data, options
+      .then (instance) =>
+        @instance[@foreignKey] = instance[@primaryKey]
 
-      @instance[@foreignKey] = instance[@primaryKey]
+        if @instance.$isNew
+          return instance
 
-      if @instance.$isNew
-        return cb err, instance
-
-      @instance.save options, (err, inst) ->
-        cb err, instance
+        @instance.save options
+          .then => @instance
+      .asCallback cb
 
   get: (options = {}, cb = ->) ->
     if typeof options is 'function'
       return @get {}, options
+
+    if not @primaryKey
+      return cb()
 
     to = @to
 
@@ -46,37 +48,29 @@ class BelongsTo extends Relation
       modelToName = @instance[@discriminator]
       to = @from.models[modelToName]
 
-    if not @primaryKey
-      return cb()
-
     id = @instance[@foreignKey]
 
     options.instance = @instance
     options.name = @as
 
-    to.findById id, options, cb
+    to.findById(id, options).asCallback cb
 
   update: (data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @update data, {}, options
 
-    @get options, (err, instance) =>
-      if err
-        return cb err
-
+    @get(options).then (instance) =>
       delete data[@primaryKey]
-
-      instance.updateAttributes data, options, cb
+      instance.updateAttributes data, options
+    .asCallback cb
 
   destroy: (options = {}, cb = ->) ->
     if typeof options is 'function'
       return @destroy {}, options
 
-    @get options, (err, targetModel) =>
-      if err
-        return cb err
-
-      @instance[@foreignKey] = null
-      @instance.save options, cb
+    @get(options).then (instance) =>
+      instance[@foreignKey] = null
+      instance.save options
+    .asCallback cb
 
 module.exports = BelongsTo

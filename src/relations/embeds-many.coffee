@@ -40,7 +40,10 @@ class EmbedsMany extends RelationArray
     if typeof options is 'function'
       return @exists {}, options
 
-    @findById fkId, options, cb
+    @findById fkId, options
+      .then (data) ->
+        not not data
+      .asCallback cb
 
   updateById: (fkId, data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -55,7 +58,7 @@ class EmbedsMany extends RelationArray
     if not instance.isValid()
       return cb new ValidationError(instance)
 
-    @instance.save cb
+    @instance.save().asCallback cb
 
   destroyById: (fkId, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -71,7 +74,8 @@ class EmbedsMany extends RelationArray
 
     list.splice index, 1
 
-    @instance.updateAttribute @as, list, cb
+    @instance.updateAttribute @as, list
+      .asCallback cb
 
   destroyAll: (where, options = {}, cb = ->) ->
     list = @instance[@as]
@@ -87,7 +91,8 @@ class EmbedsMany extends RelationArray
 
       list = list.filter reject
 
-    @instance.updateAttribute @as, list, cb
+    @instance.updateAttribute @as, list
+      .asCallback cb
 
   get: EmbedsMany::findById
   set: EmbedsMany::updateById
@@ -105,9 +110,10 @@ class EmbedsMany extends RelationArray
       return done new ValidationError instance
 
     if @instance.isNewRecord()
-      @instance.save cb
+      @instance.save().asCallback cb
     else
-      @instance.updateAttribute @foreignKey, instance, options, cb
+      @instance.updateAttribute @foreignKey, instance, options
+        .asCallback cb
 
   build: (data) ->
     inst = new @to data, @buildOptions()
@@ -135,20 +141,18 @@ class EmbedsMany extends RelationArray
 
     filter = where: query
 
-    belongsTo.findOne filter, options, (err, ref) =>
-      if ref instanceof belongsTo
-
-        inst[options.belongsTo] ref
-
-        @instance.save cb
+    belongsTo.findOne filter, options
+      .then (ref) =>
+        if ref instanceof belongsTo
+          inst[options.belongsTo] ref
+          @instance.save
+      .asCallback cb
 
   remove: (instance, options = {}, cb = ->) ->
 
-    @instance[definition.name] filter, options, (err, items) ->
-      if err
-        return cb err
-
-      items.forEach (item) =>
-        @unset item
-
-      @instance.save options, cb
+    @instance[definition.name] filter, options
+      .then (items) =>
+        items.forEach (item) =>
+          @unset item
+        @instance.save options
+      .asCallback

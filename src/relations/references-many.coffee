@@ -18,7 +18,8 @@ class ReferencesMany extends RelationArray
     options.instance = @instance
     options.name = @as
 
-    @to.findByIds @, options, cb
+    @to.findByIds @, options
+      .asCallback cb
 
   findById: (fkId, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -29,7 +30,8 @@ class ReferencesMany extends RelationArray
     options.instance = @instance
     options.name = @as
 
-    @to.findByIds [ fkId ], options, cb
+    @to.findById fkId, options
+      .asCallback cb
 
   exists: (fkId, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -51,25 +53,22 @@ class ReferencesMany extends RelationArray
     if typeof data is 'function'
       return @updateById {}, {}, data
 
-    @findById fkId, options, (err, inst) ->
-      if err
-        return cb err
-
-      inst.updateAttributes data, options, cb
+    @findById fkId, options
+      .then (instance) ->
+        instance.updateAttributes data, options
+      .asCallback cb
 
   destroyById: (fkId, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @destroyById fkId, {}, options
 
-    @findById fkId, options, (err, inst) =>
-      if err
-        return cb err
-
-      @remove inst, (err, ids) ->
-        if err
-          return cb err
-
-        inst.destroy cb
+    @findById fkId, options
+      .then (instance) =>
+        Promise.all [
+          @remove instance
+          instance.destroy
+        ]
+      .asCallback cb
 
   at: (index, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -77,7 +76,8 @@ class ReferencesMany extends RelationArray
 
     ids = @instance[@foreignKey] or []
 
-    @findById ids[index], options, cb
+    @findById ids[index], options
+      .asCallback cb
 
   create: (data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -91,16 +91,14 @@ class ReferencesMany extends RelationArray
     options.instance = @instance
     options.name = @as
 
-    inst.save options, (err, inst) =>
-      @insert err, inst, cb
+    inst.save options
+      .then => @insert inst
+      .asCallback cb
 
   build: (data = {}) ->
     new @to data, @buildOptions()
 
-  insert: (err, obj, cb) ->
-    if err or not obj
-      return cb err
-
+  insert: (obj, cb) ->
     id = obj[@primaryKey]
     ids = @instance[@foreignKey] or []
 
@@ -109,7 +107,8 @@ class ReferencesMany extends RelationArray
     else
       ids.push id
 
-    @instance.updateAttribute @foreignKey, ids, options, cb
+    @instance.updateAttribute @foreignKey, ids, options
+      .asCallback cb
 
   add: (data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -124,8 +123,10 @@ class ReferencesMany extends RelationArray
     options.instance = @instance
     options.name = @as
 
-    @to.findOne filter, options, (err, inst) =>
-      @insert err, inst, cb
+    @to.findOne filter, options
+      .then (instance) =>
+        @insert instance
+      .asCallback cb
 
   remove: (id, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -147,6 +148,7 @@ class ReferencesMany extends RelationArray
     options.instance = @instance
     options.name = @as
 
-    @instance.updateAttribute @foreignKey, ids, options, cb
+    @instance.updateAttribute @foreignKey, ids, options
+      .asCallback cb
 
 module.exports = ReferencesMany

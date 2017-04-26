@@ -37,16 +37,19 @@ class HasMany extends RelationArray
       query = @query()
       query.where[@to.primaryKey] = fkId
 
-      @to.findOne query, options, cb
-        .then (res) =>
+      @to.findOne query, options
+        .tap (res) =>
           @push res
-          res
+        .asCallback cb
 
   exists: (fkId, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @exists fkId, {}, options
 
-    @findById fkId, options, cb
+    @findById(fkId, options)
+      .then (data) ->
+        not not data
+      .asCallback cb
 
   create: (data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -66,10 +69,10 @@ class HasMany extends RelationArray
     options.instance = @instance
     options.name = @as
 
-    @to.create data, options, cb
-      .then (res) =>
+    @to.create data, options
+      .tap (res) =>
         @push res
-        res
+      .asCallback cb
 
   query: (query = {}) ->
     query.where ?= {}
@@ -86,10 +89,10 @@ class HasMany extends RelationArray
     options.instance = @instance
     options.name = @as
 
-    @to.find @query(query), options, cb
-      .then (res) =>
+    @to.find @query(query), options
+      .tap (res) =>
         @push res
-        res
+      .asCallback cb
 
   updateById: (fkId, data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -98,11 +101,10 @@ class HasMany extends RelationArray
     if typeof data is 'function'
       return @updateById {}, {}, data
 
-    @findById fkId, options, (err, inst) ->
-      if err
-        cb err
-
-      inst.updateAttributes data, options, cb
+    @findById fkId, options
+      .then (instance) ->
+        instance.updateAttributes data, options
+      .asCallback cb
 
   destroy: (fkId, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -116,5 +118,6 @@ class HasMany extends RelationArray
           @splice index, 1
 
         inst.destroy options
+      .asCallback cb
 
 module.exports = HasMany

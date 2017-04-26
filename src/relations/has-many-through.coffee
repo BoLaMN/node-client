@@ -27,25 +27,25 @@ class HasManyThrough extends HasMany
     if typeof options is 'function'
       return @findById fkId, {}, options
 
-    @exists fkId, options, (err, exists) ->
-      if err or not exists
-        return cb err
-
-      @to.findById fkId, options, cb
+    @exists fkId, options
+      .then (exists) =>
+        if not exists
+          return Promise.reject()
+        @to.findById fkId, options
+      .asCallback cb
 
   destroyById: (fkId, options = {}, cb = ->) ->
     if typeof options is 'function'
       return @destroyById fkId, {}, options
 
-    @exists fkId, options, (err, exists) =>
-      if err or not exists
-        return cb err
-
-      @remove fkId, options, (err) ->
-        if err
-          return cb err
-
-        @to.deleteById fkId, options, cb
+    @exists fkId, option
+      .then (exists) =>
+        if not exists
+          return Promise.reject()
+        @remove fkId, options
+      .then ->
+        @to.deleteById fkId, options
+      .asCallback cb
 
   create: (data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -57,36 +57,34 @@ class HasManyThrough extends HasMany
     options.instance = @instance
     options.name = @as
 
-    @to.create data, options, (err, to) =>
-      if err
-        return cb err
+  createRelation = (instance, [ fk1, fk2 ]) =>
+    object = {}
+    where  = {}
 
-      createRelation = (to, next) ->
-        object = {}
-        where  = {}
+    pk2 = @to.primaryKey
 
-        object[fk1] = where[fk1] = @instance[@primaryKey]
-        object[fk2] = where[fk2] = to[pk2]
+    object[fk1] = where[fk1] = @instance[@primaryKey]
+    object[fk2] = where[fk2] = instance[pk2]
 
-        query = where: where
+    query = where: where
 
-        @applyProperties @instance, object
-        @applyScope @instance, query
+    @through.findOrCreate query, object, options
 
-        @through.findOrCreate query, object, options, (err, through) ->
-          if err
-            return to.destroy options, (err) -> next err
+  parent = undefined
 
-          next err, to
-
-      pk2 = @to.primaryKey
-
-      [ fk1, fk2 ] = @throughKeys()
-
-      if not Array.isArray to
-        createRelation to, cb
+  @to.create data, options
+    .then (parent) =>
+      keys = @throughKeys()
+      if Array.isArray parent
+        Promise.all parent.map (value) ->
+          createRelation value, keys
       else
-        async.map to, createRelation, cb
+        createRelation parent, keys
+    .catch (err) ->
+      if parent
+        parent.destroy options
+      err
+    .asCallback cb
 
   add: (inst, data = {}, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -108,7 +106,8 @@ class HasManyThrough extends HasMany
     options.instance = @instance
     options.name = @as
 
-    @through.findOrCreate query, data, options, cb
+    @through.findOrCreate query, data, options
+      .asCallback
 
   exists: (inst, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -130,7 +129,8 @@ class HasManyThrough extends HasMany
     options.instance = @instance
     options.name = @as
 
-    @through.count query, options, cb
+    @through.count query, options
+      .asCallback
 
   remove: (inst, options = {}, cb = ->) ->
     if typeof options is 'function'
@@ -149,6 +149,7 @@ class HasManyThrough extends HasMany
     options.instance = @instance
     options.name = @as
 
-    @through.deleteAll query, options, cb
+    @through.deleteAll query, options
+      .asCallback
 
   module.exports = HasManyThrough
