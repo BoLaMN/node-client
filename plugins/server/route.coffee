@@ -49,7 +49,7 @@ module.exports = ->
       new RegExp '^' + path + '$'
 
     class Route
-      constructor: (route, options, handler, types) ->
+      constructor: (@route, options, handler, types) ->
         if typeof options == 'function' or Array.isArray(options)
           types = handler
           handler = options
@@ -74,7 +74,7 @@ module.exports = ->
         @keys = []
 
         @routeRe = normalizePath @route, @keys, @params
-        @params = normalizeParams @types, @params or {}
+        @params = @normalizeParams @types, @params or {}
 
       match: (req, path) ->
         m = path.match(@routeRe)
@@ -153,10 +153,10 @@ module.exports = ->
 
         EMPTY = {}
 
-        for key, param of params
+        for key, param of @params
           if !param.optional and (param.source == 'body' and !(key of body) or param.source == 'query' and !(key of query) or param.source == 'url' and !(key of urlParams))
             errors.push
-              resource: self.name or 'root'
+              resource: @name or 'root'
               field: key
               source: param.source
               code: 'missing_field'
@@ -194,7 +194,7 @@ module.exports = ->
 
             if !isValid
               errors.push
-                resource: self.name or 'root'
+                resource: @name or 'root'
                 field: key
                 type_expected: type.toString()
                 code: 'invalid'

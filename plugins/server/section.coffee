@@ -66,16 +66,16 @@ module.exports = ->
         @
 
       _route: (route, options, handler) ->
-        route = new Route(route, options, handler, types)
+        route = new Route(route, options, handler, @types)
         route.parent = this
         @routes[route.method].push route
         @
 
       section: (name, description) ->
-        section = new Section(name, description, types)
+        section = new Section(name, description, @types)
         section.parent = this
 
-        if !sections[name]
+        if !@sections[name]
           @sections[name] = []
 
         @sections[name].push section
@@ -83,7 +83,7 @@ module.exports = ->
         section
 
       mount: (name, section) ->
-        if !sections[name]
+        if !@sections[name]
           @sections[name] = []
 
         section.parent = this
