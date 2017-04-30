@@ -17,6 +17,8 @@ module.exports = (app) ->
 
     @include './storage'
     @include './models'
+    @include './shared-model'
+    @include './persisted-model'
     @include './model'
     @include './cast'
     @include './types'

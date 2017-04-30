@@ -1,234 +1,235 @@
 getArgs = require './utils/get-args'
 assert = require './utils/assert'
 
-Model = require './model'
 ObjectProxy = require './utils/proxy'
 
-class PersistedModel extends Model
+module.exports = ->
 
-  @create: (data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @create data, {}, options
+  @factory 'PersistedModel', (Model) ->
 
-    @execute 'create', data, options, cb
+    class PersistedModel extends Model
 
-  @count: (where = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @count where, {}, options
+      @create: (data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @create data, {}, options
 
-    query = where: where
+        @execute 'create', data, options, cb
 
-    @execute 'count', query, options, cb
+      @count: (where = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @count where, {}, options
 
-  @destroy: (where = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @destroy where, {}, options
+        query = where: where
 
-    query = where: where
+        @execute 'count', query, options, cb
 
-    @execute 'destroy', query, options, cb
+      @destroy: (where = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @destroy where, {}, options
 
-  @destroyById: (id, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @destroyById id, {}, options
+        query = where: where
 
-    assert id, 'The id argument is required'
+        @execute 'destroy', query, options, cb
 
-    @execute 'destroyById', id, options, cb
+      @destroyById: (id, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @destroyById id, {}, options
 
-  @exists: (id, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @exists id, {}, options
+        assert id, 'The id argument is required'
 
-    assert id, 'The id argument is required'
+        @execute 'destroyById', id, options, cb
 
-    query = where:
-      id: id
+      @exists: (id, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @exists id, {}, options
 
-    finish = (err, data) ->
-      cb err, not not data
+        assert id, 'The id argument is required'
 
-    @count query, options, finish
+        query = where:
+          id: id
 
-  @execute: (command, args...) ->
-    argNames = getArgs @dao[command]
+        finish = (err, data) ->
+          cb err, not not data
 
-    ctx = {}
+        @count query, options, finish
 
-    for arg, idx in argNames
-      ctx[arg] = args[idx]
+      @execute: (command, args...) ->
+        argNames = getArgs @dao[command]
 
-    fns = [
-      => @fire 'before ' + command, ctx
-      => @dao[command].apply @dao, args
-      (res) =>
-        ctx.result = res
-        @fire 'after ' + command, ctx
-    ]
+        ctx = {}
 
-    current = Promise.resolve()
+        for arg, idx in argNames
+          ctx[arg] = args[idx]
 
-    promises = fns.map (fn, i) ->
-      current = current.then (res) ->
-        fn res
-      current
+        fns = [
+          => @fire 'before ' + command, ctx
+          => @dao[command].apply @dao, args
+          (res) =>
+            ctx.result = res
+            @fire 'after ' + command, ctx
+        ]
 
-    cb = ctx.cb or ->
+        current = Promise.resolve()
 
-    Promise.all promises
-      .then -> ctx.result
-      .asCallback cb
+        promises = fns.map (fn, i) ->
+          current = current.then (res) ->
+            fn res
+          current
 
-  @find: (query = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @find query, {}, options
+        cb = ctx.cb or ->
 
-    if typeof query is 'function'
-      return @find {}, {}, query
+        Promise.all promises
+          .then -> ctx.result
+          .asCallback cb
 
-    @execute 'find', query, options, cb
+      @find: (query = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @find query, {}, options
 
-  @findOne: (where = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @findOne where, {}, options
+        if typeof query is 'function'
+          return @find {}, {}, query
 
-    query = where: where
+        @execute 'find', query, options, cb
 
-    @execute 'findOne', query, options, cb
+      @findOne: (where = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @findOne where, {}, options
 
-  @findById: (id, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @findById id, {}, options
+        query = where: where
 
-    assert id, 'The id argument is required'
+        @execute 'findOne', query, options, cb
 
-    query = where:
-      id: id
+      @findById: (id, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @findById id, {}, options
 
-    @execute 'findOne', query, options, cb
+        assert id, 'The id argument is required'
 
-  @findByIds: (ids = [], options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @findByIds ids, {}, options
+        query = where:
+          id: id
 
-    assert ids.length, 'The ids argument is requires ids'
+        @execute 'findOne', query, options, cb
 
-    query = where:
-      id: inq: ids
+      @findByIds: (ids = [], options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @findByIds ids, {}, options
 
-    @find query, options, cb
+        assert ids.length, 'The ids argument is requires ids'
 
-  @update: (query = {}, data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @updateAll query, data, {}, options
+        query = where:
+          id: inq: ids
 
-    @execute 'update', query, data, options, cb
+        @find query, options, cb
 
-  @updateById: (id, data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @updateById id, data, {}, options
+      @update: (query = {}, data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @updateAll query, data, {}, options
 
-    assert id, 'The id argument is required'
+        @execute 'update', query, data, options, cb
 
-    query = where:
-      id: id
+      @updateById: (id, data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @updateById id, data, {}, options
 
-    @update query, data, options, cb
+        assert id, 'The id argument is required'
 
-  constructor: (data = {}, options = {}) ->
-    super
+        query = where:
+          id: id
 
-    @on '*', (event, path, value, id) =>
-      @$events[event] ?= {}
+        @update query, data, options, cb
 
-      if event is '$index'
-        @$events[event][path] ?= {}
-        @$events[event][path][value] ?= []
-        @$events[event][path][value].push id
-      else
-        @$events[event][path] = value
+      constructor: (data = {}, options = {}) ->
+        super
 
-    proxy = new ObjectProxy @, @$path, @$parent
+        @on '*', (event, path, value, id) =>
+          @$events[event] ?= {}
 
-    @setAttributes data, proxy
+          if event is '$index'
+            @$events[event][path] ?= {}
+            @$events[event][path][value] ?= []
+            @$events[event][path][value].push id
+          else
+            @$events[event][path] = value
 
-    return proxy
+        proxy = new ObjectProxy @, @$path, @$parent
 
-  setAttributes: (data = {}, proxy = @) ->
-    if data.id and @constructor.primaryKey isnt 'id'
-      @setId data.id
-      delete data.id
+        @setAttributes data, proxy
 
-    if data._id
-      @setId data._id
-      delete data._id
+        return proxy
 
-    for key, value of data
-      if typeof proxy[key] is 'function'
-        continue if typeof value is 'function'
-        proxy[key](value)
-      else
-        proxy[key] = value
+      setAttributes: (data = {}, proxy = @) ->
+        if data.id and @constructor.primaryKey isnt 'id'
+          @setId data.id
+          delete data.id
 
-    if @$parent and @$path and not @$loaded
-      @$parent.emit '$loaded', @$path, @
+        if data._id
+          @setId data._id
+          delete data._id
 
-    @
+        for key, value of data
+          if typeof proxy[key] is 'function'
+            continue if typeof value is 'function'
+            proxy[key](value)
+          else
+            proxy[key] = value
 
-  execute: (command, args...) ->
-    argNames = getArgs @constructor[command]
+        if @$parent and @$path and not @$loaded
+          @$parent.emit '$loaded', @$path, @
 
-    options = argNames.indexOf 'options'
+        @
 
-    if options > -1
-      args[options - 1].instance = @
+      execute: (command, args...) ->
+        argNames = getArgs @constructor[command]
 
-    data = argNames.indexOf 'data'
+        options = argNames.indexOf 'options'
 
-    if data > -1
-      args.splice data - 1, 0, @
+        if options > -1
+          args[options - 1].instance = @
 
-    if argNames[0] is 'id'
-      args.unshift @getId()
+        data = argNames.indexOf 'data'
 
-    @constructor[command].apply @constructor, args
+        if data > -1
+          args.splice data - 1, 0, @
 
-  create: (options = {}, cb = ->) ->
-    @$isNew = false
+        if argNames[0] is 'id'
+          args.unshift @getId()
 
-    @execute 'create', options, cb
+        @constructor[command].apply @constructor, args
 
-  destroy: (options = {}, cb = ->) ->
-    @off()
-    @execute 'destroyById', options, cb
+      create: (options = {}, cb = ->) ->
+        @$isNew = false
 
-  exists: (options = {}, cb = ->) ->
-    @execute 'exists', options, cb
+        @execute 'create', options, cb
 
-  save: (options = {}, cb = ->) ->
-    if @$isNew
-      action = 'create'
-    else
-      action = 'update'
+      destroy: (options = {}, cb = ->) ->
+        @off()
+        @execute 'destroyById', options, cb
 
-    @[action] options, cb
+      exists: (options = {}, cb = ->) ->
+        @execute 'exists', options, cb
 
-  update: (options = {}, cb = ->) ->
-    @execute 'updateById', options, cb
+      save: (options = {}, cb = ->) ->
+        if @$isNew
+          action = 'create'
+        else
+          action = 'update'
 
-  updateAttributes: (data = {}, options = {}, cb = ->) ->
-    @setAttributes data.toObject?() or data
-    @save options, cb
+        @[action] options, cb
 
-  getId: ->
-    @[@constructor.primaryKey]
+      update: (options = {}, cb = ->) ->
+        @execute 'updateById', options, cb
 
-  setId: (id) ->
-    if not id
-      delete @[@constructor.primaryKey]
-    else
-      @[@constructor.primaryKey] = id
+      updateAttributes: (data = {}, options = {}, cb = ->) ->
+        @setAttributes data.toObject?() or data
+        @save options, cb
 
-    @
+      getId: ->
+        @[@constructor.primaryKey]
 
-module.exports = PersistedModel
+      setId: (id) ->
+        if not id
+          delete @[@constructor.primaryKey]
+        else
+          @[@constructor.primaryKey] = id
+
+        @

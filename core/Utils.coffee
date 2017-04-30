@@ -10,6 +10,27 @@ class Utils
       obj[key] = a2[idx]
     obj
 
+  @getDeepProperty: (obj, path) ->
+    if !obj or !path
+      return obj
+
+    current = obj
+    split = path.split '.'
+
+    if not split.length
+      return current
+
+    i = 0
+
+    while i < split.length
+      if current[split[i]] is undefined
+        current = ''
+        break
+      current = current[split[i]]
+      i++
+
+    current
+
   @setDeepProperty: (target, chain, value) ->
     key = chain.shift()
 
