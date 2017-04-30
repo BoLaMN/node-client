@@ -23,13 +23,24 @@ module.exports = (app) ->
     @include './cast'
     @include './types'
 
-    # add @model 'MyModel', (Adapter) -> for registering models
+    # @model 'MyModel',
+    #   items: [ 'string' ]
+    #   orderDate:
+    #     type: 'date'
+    #   qty:
+    #     type: 'number'
+    #
+    # @extension 'MyModelExtension', (MyModel) ->
+    #
+    #   MyModel::customMethod = (params, callback) ->
+    #     callback()
+    #
 
     @assembler 'model', (injector) ->
-      Model = injector.get 'Model'
+      (name, config) =>
+        Model = injector.get 'Model'
 
-      (name, factory) =>
-        model = Model.define name, factory
+        model = Model.define name, config
 
         injector.register
           name: name
