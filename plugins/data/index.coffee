@@ -40,22 +40,37 @@ module.exports = (app) ->
 
     @assembler 'model', (injector) ->
       (name, { base, properties, relations }) =>
-        base = base or 'Model'
-
-        model = injector.get base
-        factory = model.define name, properties
-
-        for as, config of relations
-          config.as = as
-          factory[config.type] config
-
         injector.register
           name: name
-          type: 'router'
+          type: 'model'
           plugin: @name
-          factory: factory
+          fn: ->
+            base = base or 'Model'
+
+            model = injector.get base
+            factory = model.define name, properties
+
+            for as, config of relations
+              config.as = as
+              factory[config.type] config
+
+            factory
 
         @
+
+    @model 'MyModel',
+      base: 'SharedModel'
+      properties:
+        items: [ 'string' ]
+        orderDate:
+          type: 'date'
+        qty:
+          type: 'number'
+
+    @extension 'MyModelExtension', (MyModel) ->
+
+      MyModel::customMethod = (params, callback) ->
+        callback()
 
     @include './adapter'
     @include './mongo/mongo'

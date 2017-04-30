@@ -1,5 +1,7 @@
 getArgs = require './utils/get-args'
 assert = require './utils/assert'
+routes = require './routes'
+{ inspect } = require 'util'
 
 ObjectProxy = require './utils/proxy'
 
@@ -7,22 +9,20 @@ module.exports = ->
 
   @factory 'SharedModel', (PersistedModel, api, Utils) ->
 
-    setupRemoteMethods = (model) ->
-      route = api.section model.modelName
-
-      console.log route
-
     class SharedModel extends PersistedModel
 
       @configure: (@modelName, attributes) ->
         super
 
-        setupRemoteMethods @
+        for name, config of routes
+          @remoteMethod name, config
+
+        console.log inspect(api.toObject(), false, null)
 
         @
 
-      @remoteMethod: (name, { method, path, params }) ->
+      @remoteMethod: (name, { method, path, params, description, accessType }) ->
         route = api.section @modelName
         fn = Utils.getDeepProperty @, name
 
-        route[method] path, { params }, fn
+        route[method] name, path, { params, description, accessType }, fn

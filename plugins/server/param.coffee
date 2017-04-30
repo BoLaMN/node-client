@@ -46,58 +46,45 @@ module.exports = ->
         source: @source
         code: 'missing_field'
 
+      check: (obj) ->
+        value = obj[@name]
+
+        try
+          value = @type.parse value
+        catch e
+          return
+
+        if not @type.check value
+          return
+
+        value
+
       invalid: ({ match, body, parsedUrl, params }) ->
         { query } = parsedUrl
 
-        invalid = false
+        value = switch @source
+          when 'body'  then @check body
+          when 'query' then @check query
+          when 'url'   then @check match
 
-        switch @source
-          when 'body'
-            if @optional and !(@name of body)
-              break
-
-            value = body[@name]
-
-            if @optional and value == null
-              break
-
-            invalid = not @type.check(value)
-          when 'query'
-            if @optional and query[@name] == null
-              break
-            try
-              value = @type.parse(query[@name])
-            catch e
-              invalid = true
-
-            invalid = if invalid then true else not @type.check(value)
-          when 'url'
-            if @optional and match[@name] is null
-              break
-
-            try
-              value = @type.parse(match[@name])
-            catch e
-              invalid = true
-
-            invalid = if invalid then true else not @type.check(value)
-
-        if not invalid
-
-          if value isnt {}
-            params[@name] = value
-          else if @default
-            params[@name] = @default
-
-          return false
-
-        field: @name
-        type_expected: @type.toString().toLowerCase()
-        code: 'invalid'
+        if value
+          params[@name] = value
+        else if @default
+          params[@name] = @default
+        else if @optional
+          return
+        else
+          field: @name
+          type_expected: @type.toString().toLowerCase()
+          code: 'invalid'
 
       toObject: ->
+
+        if not @type?.toString()?.toLowerCase()
+          console.log 'missing type', @
+
         param =
-          type: @type.toString().toLowerCase()
+          type: @type?.toString()?.toLowerCase()
           source: @source
           optional: @optional
 

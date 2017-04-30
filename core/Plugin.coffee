@@ -71,7 +71,7 @@ class Plugin
     @
 
   assembler: (name, factory) ->
-    @constructor[name] = factory.bind(@)(injector)
+    @constructor::[name] = factory.bind(@)(injector)
     @
 
   initializer: (callback) ->

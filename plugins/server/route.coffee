@@ -51,10 +51,12 @@ module.exports = ->
       new RegExp '^' + path + '$'
 
     class Route
-      constructor: (@route, options, handler) ->
+      constructor: (@name, @route, options, handler) ->
         if typeof options == 'function' or Array.isArray(options)
           handler = options
           options = {}
+
+        @name = @name or 'root'
 
         @params = {}
         @keys = []
@@ -131,6 +133,7 @@ module.exports = ->
             errors.push invalid
 
         if errors.length
+          console.log @name, errors
           err = new HttpError.UnprocessableEntity 'Validation failed'
           err.errors = errors
 
@@ -154,7 +157,7 @@ module.exports = ->
 
       toJSON: ->
         route =
-          route: @route
+          path: @route
           method: @method
 
         if @name

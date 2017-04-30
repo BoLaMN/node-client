@@ -257,10 +257,12 @@ module.exports = ->
         @$define 'boolean', exports.Boolean
         @$define 'integer', exports.Integer
         @$define 'json', exports.Json
+        @$define 'object', exports.Json
         @$define 'array', exports.Array
         @$define 'date', exports.Date
         @$define 'float', exports.Float
         @$define 'regexp', exports.RegExp
+        @$define 'any', exports.Any
         @$define 'array[string]', exports.Array.construct exports.String
 
     new Types

@@ -8,7 +8,7 @@ module.exports = ->
 
     class Section
       constructor: (@name = '', description) ->
-        @routes = []
+        @routes = {}
         @sections = {}
 
         @middlewares = []
@@ -29,13 +29,13 @@ module.exports = ->
         @methods.forEach (method) =>
           @routes[method] = []
 
-          @[method] = ((method, route, options, handler) =>
+          @[method] = ((method, name, route, options, handler) =>
             if typeof options == 'function' or Array.isArray(options)
               handler = options
               options = {}
             options.method = method
 
-            @_route route, options, handler
+            @_route name, route, options, handler
           ).bind @, method
 
         @del = @delete
@@ -60,29 +60,22 @@ module.exports = ->
         @errorHandlers.push.apply @errorHandlers, Utils.flatten(middleware)
         @
 
-      _route: (route, options, handler) ->
-        route = new Route route, options, handler
+      _route: (name, route, options, handler) ->
+        route = new Route name, route, options, handler
         route.parent = this
         @routes[route.method].push route
         @
 
       section: (name, description) ->
+        if @sections[name]
+          return @sections[name]
+
         section = new Section name, description
         section.parent = this
 
-        if !@sections[name]
-          @sections[name] = []
-
-        @sections[name].push section
+        @sections[name] = section
 
         section
-
-      mount: (name, section) ->
-        if !@sections[name]
-          @sections[name] = []
-
-        section.parent = this
-        @sections[name].push section
 
       _rootHandler: (req, res) ->
         @handle req, res, (err) ->
@@ -173,26 +166,20 @@ module.exports = ->
         return
 
       match: (req, path, method) ->
-        splitPath = path.split('/')
+        splitPath = path.split '/'
 
-        if !splitPath[0]
+        if not splitPath[0]
           splitPath.shift()
 
         if splitPath.length
           section = @sections[splitPath[0]]
 
-          if section and section.length
+          if section
             subPath = '/' + splitPath.slice(1).join('/')
+            handler = section.match req, subPath, method
 
-            i = 0
-
-            while i < section.length
-              handler = section[i].match(req, subPath, method)
-
-              if handler
-                return handler
-
-              i++
+            if handler
+              return handler
 
         methodRoutes = @routes[method]
         i = 0
@@ -200,7 +187,7 @@ module.exports = ->
         while i < methodRoutes.length
           route = methodRoutes[i]
 
-          if route.match(req, path)
+          if route.match req, path
             return route
 
           i++
@@ -211,46 +198,42 @@ module.exports = ->
         api = @toJSON()
 
         if api.routes
-          for route, idx in api.routes
-            api.routes[idx] = route.toObject()
+          for method, routes of api.routes
+            for route, idx in routes
+              api.routes[method][idx] = route.toObject()
 
         if api.sections
-          for section, idx in api.sections
-            api.sections[idx] = section.toObject()
+          for key, section of api.sections
+            api.sections[key] = section.toObject()
 
         api
 
       toJSON: ->
         api = {}
 
-        if @name
-          api.name = @name
-
         if @description
           api.description = @description
 
-        api.sections = []
+        api.sections = {}
 
-        for key of @sections
-          i = 0
+        for name, section of @sections
+          api.sections[name] = section
 
-          while i < @sections[key].length
-            api.sections.push @sections[key][i]
-            i++
-
-        if !api.sections.length
+        if not Object.keys(api.sections).length
           delete api.sections
 
-        api.routes = []
+        api.routes = {}
 
-        for method of @routes
-          i = 0
+        for method, routes of @routes
+          api.routes[method] = []
 
-          while i < @routes[method].length
-            api.routes.push @routes[method][i]
-            i++
+          for route in routes
+            api.routes[method].push route
 
-        if !api.routes.length
+          if not api.routes[method].length
+            delete api.routes[method]
+
+        if not Object.keys(api.routes).length
           delete api.routes
 
         api

@@ -30,47 +30,10 @@ module.exports = (app) ->
     @include './server'
     @include './settings'
 
-    @starter (server, api, settings) ->
+    @starter (server, api, settings, MyModel) ->
       port = settings.port
 
-      fn = (params, cb) ->
-        console.log params, cb
-        cb()
-
-      list = fn
-      add = fn
-      update = fn
-      remove = fn
-
-      api.section "test"
-        .get "/", list
-        .get "/:id",
-          params:
-            id: "integer"
-          , list
-        .put "/",
-          params:
-            description:
-              type: "string",
-              source: "body"
-          , add
-        .post "/:id",
-          params:
-            id: "integer"
-            done:
-              type: "boolean"
-              source: "body"
-              optional: true
-            description:
-              type: "string"
-              source: "body"
-              optional: true
-          , update
-        .delete "/:id",
-          params:
-            id: "integer"
-          , remove
-
+      console.log MyModel
       console.log inspect(api.toObject(), false, null)
 
       server.listen port, ->
