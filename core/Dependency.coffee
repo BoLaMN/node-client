@@ -11,7 +11,8 @@ class Dependency
     for own key, val of dependacy
       @[key] = val
 
-    @dependencies = @extractDependencies()
+    if @fn
+      @dependencies = @extractDependencies()
 
   extractDependencies: ->
     str = @fn.toString().replace STRIP_COMMENTS, ''

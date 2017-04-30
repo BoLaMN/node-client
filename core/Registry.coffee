@@ -8,31 +8,37 @@ glob = require 'glob'
 Plugin = require './Plugin'
 PluginCollection = require './PluginCollection'
 
-storage = Symbol()
+plugins = Symbol()
 
 class Registry
 
   constructor: ->
-    @[storage] = {}
+    @[plugins] = {}
 
     @directories = [
       path.join process.cwd(), 'plugins'
     ]
 
+  inspect: ->
+    @list()
+
+  list: ->
+    Object.keys @[plugins]
+
   get: (name) ->
-    @[storage][name]
+    @[plugins][name]
 
   set: (name, plugin) ->
     if not plugin instanceof Plugin
       json = JSON.stringify plugin
       throw new Error "#{json} is not a Plugin instance."
 
-    @[storage][name] = plugin
+    @[plugins][name] = plugin
 
     plugin
 
   del: (name) ->
-    delete @[storage][name]
+    delete @[plugins][name]
 
   glob: ->
     @files = @directories.reduce (results, directory) ->
@@ -48,15 +54,15 @@ class Registry
     @
 
   resolve: ->
-    Object.keys(@[storage]).forEach (key) =>
-      plugin = @[storage][key]
+    Object.keys(@[plugins]).forEach (key) =>
+      plugin = @[plugins][key]
 
       metadata = plugin.metadata
       dependencies = metadata.dependencies or {}
 
       Object.keys(dependencies).forEach (name) =>
         range = dependencies[name]
-        dependency = @[storage][name]
+        dependency = @[plugins][name]
 
         if not dependency
           throw new Error "Dependency #{name} missing."
@@ -87,7 +93,7 @@ class Registry
 
   prioritize: ->
     ordered = []
-    remaining = [].concat values @[storage]
+    remaining = [].concat values @[plugins]
 
     remaining.forEach (plugin, index) ->
       if not plugin.dependencies or Object.keys(plugin.dependencies).length is 0

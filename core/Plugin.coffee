@@ -6,7 +6,7 @@ path = require 'path'
 callsite = require "callsite"
 injector = require './injectorInstance'
 
-storage = Symbol()
+init = Symbol()
 
 class Plugin
 
@@ -75,11 +75,11 @@ class Plugin
     @
 
   initializer: (callback) ->
-    @[storage] = callback
+    @[init] = callback
     @
 
   initialize: ->
-    fn = @[storage]?.bind @
+    fn = @[init]?.bind @
     fn @ if fn
     @
 

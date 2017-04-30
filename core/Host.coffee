@@ -22,7 +22,10 @@ class Host
     host
 
   run: ->
-    injector.get 'main'
+    @injector = injector
+    @injector.get 'main'
+
     @registry.start()
+    @
 
 module.exports = Host

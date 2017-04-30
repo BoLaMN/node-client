@@ -2,44 +2,49 @@
 
 Dependency = require './Dependency'
 
-storage = Symbol()
+modules = Symbol()
 
 class Injector
 
   constructor: ->
-    @[storage] =
-      injector:
-        name: 'injector'
-        value: @
+    @[modules] = {}
+
+    @register
+      name: 'injector'
+      value: @
 
   register: (descriptor) ->
     dependency = new Dependency descriptor
-    @[storage][dependency.name] = dependency
+    @[modules][dependency.name] = dependency
+
+  inspect: ->
+    @list()
+
+  list: ->
+    Object.keys @[modules]
 
   get: (name) ->
-    descriptor = @[storage][name]
+    descriptor = @[modules][name]
 
     if !descriptor
       throw new Error "Unknown dependency '#{name}'"
 
     value = descriptor.value
 
-    if !value
+    if not value
       values = []
 
       fn = descriptor.fn
 
       descriptor.dependencies.forEach (dependency) =>
-        if dependency
-          values.push @get(dependency)
-        return
+        values.push @get dependency if dependency
 
       value = descriptor.value = fn.apply(null, values)
 
     value
 
   invoke: (name) ->
-    dependency = @[storage][name]
+    dependency = @[modules][name]
 
     if not dependency
       return
