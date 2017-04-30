@@ -35,9 +35,9 @@ module.exports = ->
           return false
 
         exists =
-          @source is 'body' and !(@name of body) or
-          @source is 'query' and !(@name of query) or
-          @source is 'url' and !(@name of match)
+          @source is 'body' and (@name of body) or
+          @source is 'query' and (@name of query) or
+          @source is 'url' and (@name of match)
 
         if exists
           return false
@@ -75,8 +75,12 @@ module.exports = ->
             if @optional and match[@name] is null
               break
 
-            value = match[@name]
-            invalid = false
+            try
+              value = @type.parse(match[@name])
+            catch e
+              invalid = true
+
+            invalid = if invalid then true else not @type.check(value)
 
         if not invalid
 

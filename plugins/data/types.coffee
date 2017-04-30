@@ -255,7 +255,7 @@ module.exports = ->
         @$define 'string', exports.String
         @$define 'number', exports.Number
         @$define 'boolean', exports.Boolean
-        @$define 'int', exports.Integer
+        @$define 'integer', exports.Integer
         @$define 'json', exports.Json
         @$define 'array', exports.Array
         @$define 'date', exports.Date

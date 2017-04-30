@@ -46,7 +46,7 @@ module.exports = (app) ->
         .get "/", list
         .get "/:id",
           params:
-            id: "int"
+            id: "integer"
           , list
         .put "/",
           params:
@@ -56,7 +56,7 @@ module.exports = (app) ->
           , add
         .post "/:id",
           params:
-            id: "int"
+            id: "integer"
             done:
               type: "boolean"
               source: "body"
@@ -68,7 +68,7 @@ module.exports = (app) ->
           , update
         .delete "/:id",
           params:
-            id: "int"
+            id: "integer"
           , remove
 
       console.log inspect(api.toObject(), false, null)
