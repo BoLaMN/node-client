@@ -1,5 +1,7 @@
 'use strict'
 
+{ inspect } = require 'util'
+
 module.exports = (app) ->
 
   app
@@ -69,5 +71,7 @@ module.exports = (app) ->
             id: "int"
           , remove
 
+      console.log inspect(api.describe(), false, null)
+
       server.listen port, ->
-        console.log "Listening on #{port}", api
+        console.log "Listening on #{port}"

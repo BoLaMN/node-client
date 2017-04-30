@@ -5,7 +5,9 @@ module.exports = ->
   @require
     HttpError: 'http-error'
 
-  @factory 'Route', (Types, Utils, url, HttpError) ->
+  @include './param'
+
+  @factory 'Route', (Types, Utils, url, HttpError, RouteParam) ->
 
     wrapHandler = (handler) ->
       (req, res, next) ->
@@ -54,6 +56,9 @@ module.exports = ->
           handler = options
           options = {}
 
+        @params = {}
+        @keys = []
+
         for own key, val of options
           @[key] = val
 
@@ -67,11 +72,10 @@ module.exports = ->
         @middlewares.unshift @decodeParams.bind @
 
         @method = (@method or 'GET').toLowerCase()
-
-        @keys = []
-
         @routeRe = normalizePath @route, @keys, @params
-        @params = @normalizeParams @params or {}
+
+        for name, param of @params
+          @params[name] = new RouteParam name, param
 
       match: (req, path) ->
         m = path.match(@routeRe)
@@ -110,104 +114,45 @@ module.exports = ->
 
         true
 
-      normalizeParams: (params) ->
-        for name of params
-          param = params[name]
-
-          if param.source == 'query'
-            param.type = param.type or 'string'
-          else if !param.source or param.source == 'body'
-            param.type = param.type or 'json'
-            param.source = 'body'
-          else if param.source == 'url'
-            param.type = param.type or 'string'
-          else
-            throw new Error('parameter source muste be \'url\', \'query\' or \'body\'')
-
-          param.optional = ! !param.optional
-
-          if param.type instanceof RegExp
-            RegExpType = Types.$get 'RegExp'
-
-            param.type = RegExpType.construct param.type
-
-          param.type = Types.$get param.type
-
-        params
-
       decodeParams: (req, res, next) ->
-        urlParams = req.match
-
-        if !urlParams
+        if not req.match
           return
-
-        body = req.body or {}
-        query = req.parsedUrl.query
 
         req.params = req.params or {}
 
         errors = []
 
-        EMPTY = {}
-
         for key, param of @params
-          if !param.optional and (param.source == 'body' and !(key of body) or param.source == 'query' and !(key of query) or param.source == 'url' and !(key of urlParams))
-            errors.push
-              resource: @name or 'root'
-              field: key
-              source: param.source
-              code: 'missing_field'
-          else
-            type = param.type
-            value = EMPTY
-            isValid = true
-
-            switch param.source
-              when 'body'
-                if param.optional and !(key of body)
-                  break
-
-                value = body[key]
-
-                if param.optional and value == null
-                  break
-
-                isValid = type.check(value)
-              when 'query'
-                if param.optional and query[key] == null
-                  break
-                try
-                  value = type.parse(query[key])
-                catch e
-                  isValid = false
-
-                isValid = if isValid == false then false else type.check(value)
-              when 'url'
-                if param.optional and urlParams[key] == null
-                  break
-
-                value = urlParams[key]
-                isValid = true
-
-            if !isValid
-              errors.push
-                resource: @name or 'root'
-                field: key
-                type_expected: type.toString()
-                code: 'invalid'
-            else
-              if value != EMPTY
-                req.params[key] = value
-              else if 'default' of param
-                req.params[key] = param.default
+          if missing = param.missing req
+            missing.resource = @name or 'root'
+            errors.push missing
+          else if invalid = param.invalid req
+            invalid.resource = @name or 'root'
+            errors.push invalid
 
         if errors.length
           err = new HttpError.UnprocessableEntity 'Validation failed'
           err.errors = errors
-          return next(err)
 
-        next()
-
+        next err
 
       describe: ->
-        @
+        route =
+          route: @route
+          method: @method
+
+        if @name
+          route.name = @name
+
+        if @description
+          route.description = @description
+
+        params = {}
+
+        for name, param of @params
+          params[name] = param.describe()
+
+        if Object.keys(params).length
+          route.params = params
+
+        route

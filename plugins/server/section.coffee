@@ -7,14 +7,13 @@ module.exports = ->
   @factory 'Section', (Route, Utils, url) ->
 
     class Section
-      constructor: (name, description) ->
+      constructor: (@name = '', description) ->
         @routes = []
         @sections = {}
 
         @middlewares = []
         @globals = []
         @errorHandlers = []
-        @name = name
 
         @methods = [
           'head'
@@ -211,11 +210,11 @@ module.exports = ->
       describe: ->
         api = {}
 
-        if name
-          api.name = name
+        if @name
+          api.name = @name
 
-        if description
-          api.description = description
+        if @description
+          api.description = @description
 
         api.sections = []
 
