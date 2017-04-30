@@ -207,6 +207,19 @@ module.exports = ->
 
         return
 
+      toObject: ->
+        api = @toJSON()
+
+        if api.routes
+          for route, idx in api.routes
+            api.routes[idx] = route.toObject()
+
+        if api.sections
+          for section, idx in api.sections
+            api.sections[idx] = section.toObject()
+
+        api
+
       toJSON: ->
         api = {}
 

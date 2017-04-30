@@ -136,6 +136,22 @@ module.exports = ->
 
         next err
 
+      toObject: ->
+        route = @toJSON()
+
+        if not route.params
+          return route
+
+        params = {}
+
+        for name, param of route.params
+          params[name] = param.toObject()
+
+        if Object.keys(params).length
+          route.params = params
+
+        route
+
       toJSON: ->
         route =
           route: @route

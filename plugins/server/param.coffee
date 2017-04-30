@@ -91,7 +91,7 @@ module.exports = ->
         type_expected: @type.toString()
         code: 'invalid'
 
-      toJSON: ->
+      toObject: ->
         param =
           name: @name
           type: @type.toString()
@@ -102,3 +102,6 @@ module.exports = ->
           param.description = @description
 
         param
+
+      toJSON: ->
+        @toObject()
