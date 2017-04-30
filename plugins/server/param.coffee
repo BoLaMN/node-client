@@ -88,13 +88,12 @@ module.exports = ->
           return false
 
         field: @name
-        type_expected: @type.toString()
+        type_expected: @type.toString().toLowerCase()
         code: 'invalid'
 
       toObject: ->
         param =
-          name: @name
-          type: @type.toString()
+          type: @type.toString().toLowerCase()
           source: @source
           optional: @optional
 
