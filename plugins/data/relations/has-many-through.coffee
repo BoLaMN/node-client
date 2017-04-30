@@ -1,155 +1,155 @@
-HasMany = require './has-many'
+module.exports = ->
 
-class HasManyThrough extends HasMany
-  constructor: (@instance) ->
-    super
+  @factory 'HasManyThrough', (HasMany) ->
 
-  throughKeys: (definition) ->
-    pk2 = @to.primaryKey
+    class HasManyThrough extends HasMany
+      constructor: (@instance) ->
+        super
 
-    if typeof @polymorphic == 'object'
-      fk1 = @foreignKey
+      throughKeys: (definition) ->
+        pk2 = @to.primaryKey
 
-      if @polymorphic.invert
-        fk2 = @polymorphic.foreignKey
-      else
-        fk2 = @keyThrough
-    else if @from is @to
-      return findBelongsTo(@through, @to, pk2).sort (fk1, fk2) ->
-        if @foreignKey == fk1 then -1 else 1
-    else
-      fk1 = findBelongsTo(@through, @from, @primaryKey)[0]
-      fk2 = findBelongsTo(@through, @to, pk2)[0]
+        if typeof @polymorphic == 'object'
+          fk1 = @foreignKey
 
-    [ fk1, fk2 ]
+          if @polymorphic.invert
+            fk2 = @polymorphic.foreignKey
+          else
+            fk2 = @keyThrough
+        else if @from is @to
+          return findBelongsTo(@through, @to, pk2).sort (fk1, fk2) ->
+            if @foreignKey == fk1 then -1 else 1
+        else
+          fk1 = findBelongsTo(@through, @from, @primaryKey)[0]
+          fk2 = findBelongsTo(@through, @to, pk2)[0]
 
-  findById: (fkId, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @findById fkId, {}, options
+        [ fk1, fk2 ]
 
-    @exists fkId, options
-      .then (exists) =>
-        if not exists
-          return Promise.reject()
-        @to.findById fkId, options
-      .asCallback cb
+      findById: (fkId, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @findById fkId, {}, options
 
-  destroyById: (fkId, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @destroyById fkId, {}, options
+        @exists fkId, options
+          .then (exists) =>
+            if not exists
+              return Promise.reject()
+            @to.findById fkId, options
+          .asCallback cb
 
-    @exists fkId, option
-      .then (exists) =>
-        if not exists
-          return Promise.reject()
-        @remove fkId, options
-      .then ->
-        @to.deleteById fkId, options
-      .asCallback cb
+      destroyById: (fkId, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @destroyById fkId, {}, options
 
-  create: (data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @create data, {}, options
+        @exists fkId, option
+          .then (exists) =>
+            if not exists
+              return Promise.reject()
+            @remove fkId, options
+          .then ->
+            @to.deleteById fkId, options
+          .asCallback cb
 
-    if typeof data is 'function'
-      return @create {}, {}, data
+      create: (data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @create data, {}, options
 
-    options.instance = @instance
-    options.name = @as
+        if typeof data is 'function'
+          return @create {}, {}, data
 
-  createRelation = (instance, [ fk1, fk2 ]) =>
-    object = {}
-    where  = {}
+        options.instance = @instance
+        options.name = @as
 
-    pk2 = @to.primaryKey
+      createRelation = (instance, [ fk1, fk2 ]) =>
+        object = {}
+        where  = {}
 
-    object[fk1] = where[fk1] = @instance[@primaryKey]
-    object[fk2] = where[fk2] = instance[pk2]
+        pk2 = @to.primaryKey
 
-    query = where: where
+        object[fk1] = where[fk1] = @instance[@primaryKey]
+        object[fk2] = where[fk2] = instance[pk2]
 
-    @through.findOrCreate query, object, options
+        query = where: where
 
-  parent = undefined
+        @through.findOrCreate query, object, options
 
-  @to.create data, options
-    .then (parent) =>
-      keys = @throughKeys()
-      if Array.isArray parent
-        Promise.all parent.map (value) ->
-          createRelation value, keys
-      else
-        createRelation parent, keys
-    .catch (err) ->
-      if parent
-        parent.destroy options
-      err
-    .asCallback cb
+      parent = undefined
 
-  add: (inst, data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @add data, {}, options
+      @to.create data, options
+        .then (parent) =>
+          keys = @throughKeys()
+          if Array.isArray parent
+            Promise.all parent.map (value) ->
+              createRelation value, keys
+          else
+            createRelation parent, keys
+        .catch (err) ->
+          if parent
+            parent.destroy options
+          err
+        .asCallback cb
 
-    if typeof data is 'function'
-      return @add {}, {}, data
+      add: (inst, data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @add data, {}, options
 
-    pk2 = @to.primaryKey
+        if typeof data is 'function'
+          return @add {}, {}, data
 
-    [ fk1, fk2 ] = @throughKeys()
+        pk2 = @to.primaryKey
 
-    where = {}
-    where[fk1] = data[fk1] = @instance[@primaryKey]
-    where[fk2] = data[fk2] = if inst instanceof @to then inst[pk2] else inst
+        [ fk1, fk2 ] = @throughKeys()
 
-    query = where: where
+        where = {}
+        where[fk1] = data[fk1] = @instance[@primaryKey]
+        where[fk2] = data[fk2] = if inst instanceof @to then inst[pk2] else inst
 
-    options.instance = @instance
-    options.name = @as
+        query = where: where
 
-    @through.findOrCreate query, data, options
-      .asCallback cb
+        options.instance = @instance
+        options.name = @as
 
-  exists: (inst, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @exists inst, {}, options
+        @through.findOrCreate query, data, options
+          .asCallback cb
 
-    if typeof inst is 'function'
-      return @exists {}, {}, inst
+      exists: (inst, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @exists inst, {}, options
 
-    pk2 = @to.primaryKey
+        if typeof inst is 'function'
+          return @exists {}, {}, inst
 
-    [ fk1, fk2 ] = @throughKeys()
+        pk2 = @to.primaryKey
 
-    where = {}
-    where[fk1] = @instance[@primaryKey]
-    where[fk2] = if inst instanceof @to then inst[pk2] else inst
+        [ fk1, fk2 ] = @throughKeys()
 
-    query = where: where
+        where = {}
+        where[fk1] = @instance[@primaryKey]
+        where[fk2] = if inst instanceof @to then inst[pk2] else inst
 
-    options.instance = @instance
-    options.name = @as
+        query = where: where
 
-    @through.count query, options
-      .asCallback cb
+        options.instance = @instance
+        options.name = @as
 
-  remove: (inst, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @remove {}, {}, inst
+        @through.count query, options
+          .asCallback cb
 
-    pk2 = @to.primaryKey
+      remove: (inst, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @remove {}, {}, inst
 
-    [ fk1, fk2 ] = @throughKeys()
+        pk2 = @to.primaryKey
 
-    where = {}
-    where[fk1] = @instance[@primaryKey]
-    where[fk2] = if inst instanceof @to then inst[pk2] else inst
+        [ fk1, fk2 ] = @throughKeys()
 
-    query = where: where
+        where = {}
+        where[fk1] = @instance[@primaryKey]
+        where[fk2] = if inst instanceof @to then inst[pk2] else inst
 
-    options.instance = @instance
-    options.name = @as
+        query = where: where
 
-    @through.deleteAll query, options
-      .asCallback cb
+        options.instance = @instance
+        options.name = @as
 
-  module.exports = HasManyThrough
+        @through.deleteAll query, options
+          .asCallback cb

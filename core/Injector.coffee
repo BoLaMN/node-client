@@ -20,7 +20,7 @@ class Injector
     descriptor = @[storage][name]
 
     if !descriptor
-      throw new Error('Unknown dependency \'#{name}\'')
+      throw new Error "Unknown dependency '#{name}'"
 
     value = descriptor.value
 

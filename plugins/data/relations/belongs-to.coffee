@@ -1,76 +1,76 @@
-Relation = require './relation'
+module.exports = ->
 
-class BelongsTo extends Relation
-  @belongs: true
+  @factory 'BelongsTo', (Relation) ->
 
-  @initialize: (@to, @from, params) ->
-    super
+    class BelongsTo extends Relation
+      @belongs: true
 
-    @
+      @initialize: (@to, @from, params) ->
+        super
 
-  constructor: (@instance) ->
-    super
+        @
 
-  build: (data = {}) ->
-    new @to data, @buildOptions()
+      constructor: (@instance) ->
+        super
 
-  create: (data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @create data, {}, options
+      build: (data = {}) ->
+        new @to data, @buildOptions()
 
-    if typeof data is 'function'
-      return @create {}, {}, data
+      create: (data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @create data, {}, options
 
-    options.instance = @instance
-    options.name = @as
+        if typeof data is 'function'
+          return @create {}, {}, data
 
-    @to.create data, options
-      .then (instance) =>
-        @instance[@foreignKey] = instance[@primaryKey]
+        options.instance = @instance
+        options.name = @as
 
-        if @instance.$isNew
-          return instance
+        @to.create data, options
+          .then (instance) =>
+            @instance[@foreignKey] = instance[@primaryKey]
 
-        @instance.save options
-          .then => @instance
-      .asCallback cb
+            if @instance.$isNew
+              return instance
 
-  get: (options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @get {}, options
+            @instance.save options
+              .then => @instance
+          .asCallback cb
 
-    if not @primaryKey
-      return cb()
+      get: (options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @get {}, options
 
-    to = @to
+        if not @primaryKey
+          return cb()
 
-    if @discriminator
-      modelToName = @instance[@discriminator]
-      to = @from.models[modelToName]
+        to = @to
 
-    id = @instance[@foreignKey]
+        if @discriminator
+          modelToName = @instance[@discriminator]
+          to = @from.models[modelToName]
 
-    options.instance = @instance
-    options.name = @as
+        id = @instance[@foreignKey]
 
-    to.findById(id, options).asCallback cb
+        options.instance = @instance
+        options.name = @as
 
-  update: (data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @update data, {}, options
+        to.findById(id, options).asCallback cb
 
-    @get(options).then (instance) =>
-      delete data[@primaryKey]
-      instance.updateAttributes data, options
-    .asCallback cb
+      update: (data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @update data, {}, options
 
-  destroy: (options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @destroy {}, options
+        @get(options).then (instance) =>
+          delete data[@primaryKey]
+          instance.updateAttributes data, options
+        .asCallback cb
 
-    @get(options).then (instance) =>
-      instance[@foreignKey] = null
-      instance.save options
-    .asCallback cb
+      destroy: (options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @destroy {}, options
 
-module.exports = BelongsTo
+        @get(options).then (instance) =>
+          instance[@foreignKey] = null
+          instance.save options
+        .asCallback cb

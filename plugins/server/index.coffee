@@ -22,7 +22,6 @@ module.exports = (app) ->
       HttpError: 'http-error'
       express: 'express'
 
-    @include './types'
     @include './section'
     @include './middleware'
     @include './api'

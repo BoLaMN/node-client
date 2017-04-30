@@ -1,45 +1,48 @@
 Entity = require './entity'
 
-class Storage extends Entity
-  constructor: (obj = {}) ->
-    super
+module.exports = ->
 
-    for key, value of obj
-      @$define key, value
+  @factory 'Storage', ->
 
-  $get: (names, next) ->
+    class Storage extends Entity
+      constructor: (obj = {}) ->
+        super
 
-    get = (name, cb) =>
-      if @[name]
-        return cb @[name]
+        for key, value of obj
+          @$define key, value
 
-      @once name, cb
+      $get: (names, next) ->
 
-    if typeof next isnt 'function'
-      if Array.isArray names
-        names.map (name) =>
-          @[name]
-      else
-        @[names]
-    else
-      @$each names, get, next
+        get = (name, cb) =>
+          if @[name]
+            return cb @[name]
 
-  $define: (name, obj) ->
-    if @[name]
-      return true
+          @once name, cb
 
-    @[name] = obj
+        if typeof next isnt 'function'
+          if Array.isArray names
+            names.map (name) =>
+              @[name]
+          else
+            @[names]
+        else
+          @$each names, get, next
 
-    @emit name, obj
+      $define: (name, obj) ->
+        if @[name]
+          return true
 
-    true
+        @[name] = obj
 
-  inspect: ->
-    vals = {}
+        @emit name, obj
 
-    for own key, value of @
-      vals[key] = value
+        true
 
-    vals
+      inspect: ->
+        vals = {}
 
-module.exports = Storage
+        for own key, value of @
+          vals[key] = value
+
+        vals
+

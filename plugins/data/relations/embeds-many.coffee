@@ -1,158 +1,158 @@
-RelationArray = require './relation-array'
+module.exports = ->
 
-{ where, filter } = require '../filter'
+  @factory 'EmbedsMany', (RelationArray, Where, Filter) ->
 
-class EmbedsMany extends RelationArray
-  @embedded: true
+    class EmbedsMany extends RelationArray
+      @embedded: true
 
-  @initialize: (@to, @from, params) ->
-    super
+      @initialize: (@to, @from, params) ->
+        super
 
-    @
+        @
 
-  constructor: (instance) ->
-    return super
+      constructor: (instance) ->
+        return super
 
-    @instance = instance
+        @instance = instance
 
-  get: (options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @get {}, options
+      get: (options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @get {}, options
 
-    instance = @instance[@foreignKey]
+        instance = @instance[@foreignKey]
 
-    cb null, instance
+        cb null, instance
 
-    instance
+        instance
 
-  findById: (fkId, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @findById {}, options
+      findById: (fkId, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @findById {}, options
 
-    exists = @indexOf fkId
+        exists = @indexOf fkId
 
-    if exists > -1
-      item = @[exists]
+        if exists > -1
+          item = @[exists]
 
-    cb null, item
+        cb null, item
 
-    item
+        item
 
-  exists: (fkId, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @exists {}, options
+      exists: (fkId, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @exists {}, options
 
-    @findById fkId, options
-      .then (data) ->
-        not not data
-      .asCallback cb
+        @findById fkId, options
+          .then (data) ->
+            not not data
+          .asCallback cb
 
-  updateById: (fkId, data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @updateById fkId, data, {}, options
+      updateById: (fkId, data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @updateById fkId, data, {}, options
 
-    if typeof data is 'function'
-      return @updateById fkId, {}, data
+        if typeof data is 'function'
+          return @updateById fkId, {}, data
 
-    instance = @findById fkId
-    instance.setAttributes data
+        instance = @findById fkId
+        instance.setAttributes data
 
-    if not instance.isValid()
-      return cb new ValidationError(instance)
+        if not instance.isValid()
+          return cb new ValidationError(instance)
 
-    @instance.save().asCallback cb
+        @instance.save().asCallback cb
 
-  destroyById: (fkId, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @destroyById fkId, {}, options
+      destroyById: (fkId, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @destroyById fkId, {}, options
 
-    instance = @findById fkId
-    list = @instance[@as]
+        instance = @findById fkId
+        list = @instance[@as]
 
-    index = list.indexOf instance
+        index = list.indexOf instance
 
-    if index is -1
-      return cb()
+        if index is -1
+          return cb()
 
-    list.splice index, 1
+        list.splice index, 1
 
-    @instance.updateAttribute @as, list
-      .asCallback cb
+        @instance.updateAttribute @as, list
+          .asCallback cb
 
-  destroyAll: (conditions, options = {}, cb = ->) ->
-    list = @instance[@as]
+      destroyAll: (conditions, options = {}, cb = ->) ->
+        list = @instance[@as]
 
-    if not list
-      return cb()
+        if not list
+          return cb()
 
-    if conditions and Object.keys(conditions).length > 0
-      query = new where conditions
+        if conditions and Object.keys(conditions).length > 0
+          query = new Where conditions
 
-      reject = (v) ->
-        not filter v, query
+          reject = (v) ->
+            not Filter v, query
 
-      list = list.filter reject
+          list = list.filter reject
 
-    @instance.updateAttribute @as, list
-      .asCallback cb
+        @instance.updateAttribute @as, list
+          .asCallback cb
 
-  get: EmbedsMany::findById
-  set: EmbedsMany::updateById
-  unset: EmbedsMany::destroyById
+      get: EmbedsMany::findById
+      set: EmbedsMany::updateById
+      unset: EmbedsMany::destroyById
 
-  at: (index, cb = ->) ->
-    cb null, @[index]
+      at: (index, cb = ->) ->
+        cb null, @[index]
 
-    @[index]
+        @[index]
 
-  create: (data = {}, options = {}, cb = ->) ->
-    instance = @build data
+      create: (data = {}, options = {}, cb = ->) ->
+        instance = @build data
 
-    if not instance.isValid()
-      return done new ValidationError instance
+        if not instance.isValid()
+          return done new ValidationError instance
 
-    if @instance.isNewRecord()
-      @instance.save().asCallback cb
-    else
-      @instance.updateAttribute @foreignKey, instance, options
-        .asCallback cb
+        if @instance.isNewRecord()
+          @instance.save().asCallback cb
+        else
+          @instance.updateAttribute @foreignKey, instance, options
+            .asCallback cb
 
-  build: (data) ->
-    inst = new @to data, @buildOptions()
+      build: (data) ->
+        inst = new @to data, @buildOptions()
 
-    if @options.prepend
-      @unshift inst
-    else
-      @push inst
+        if @options.prepend
+          @unshift inst
+        else
+          @push inst
 
-    inst
+        inst
 
-  add: (instance, data = {}, options = {}, cb = ->) ->
-    belongsTo = @to.relations[options.belongsTo]
+      add: (instance, data = {}, options = {}, cb = ->) ->
+        belongsTo = @to.relations[options.belongsTo]
 
-    if not belongsTo
-      throw new Error('Invalid reference: ' + options.belongsTo or '(none)')
+        if not belongsTo
+          throw new Error('Invalid reference: ' + options.belongsTo or '(none)')
 
-    fk2 = belongsTo.foreignKey
-    pk2 = belongsTo.primaryKey
+        fk2 = belongsTo.foreignKey
+        pk2 = belongsTo.primaryKey
 
-    inst = @build data
+        inst = @build data
 
-    query = {}
-    query[fk2] = if instance instanceof belongsTo then instance[pk2] else instance
+        query = {}
+        query[fk2] = if instance instanceof belongsTo then instance[pk2] else instance
 
-    belongsTo.findOne { where: query }, options
-      .then (ref) =>
-        if ref instanceof belongsTo
-          inst[options.belongsTo] ref
-          @instance.save
-      .asCallback cb
+        belongsTo.findOne { where: query }, options
+          .then (ref) =>
+            if ref instanceof belongsTo
+              inst[options.belongsTo] ref
+              @instance.save
+          .asCallback cb
 
-  remove: (instance, options = {}, cb = ->) ->
+      remove: (instance, options = {}, cb = ->) ->
 
-    @instance[definition.name] query, options
-      .then (items) =>
-        items.forEach (item) =>
-          @unset item
-        @instance.save options
-      .asCallback cb
+        @instance[definition.name] query, options
+          .then (items) =>
+            items.forEach (item) =>
+              @unset item
+            @instance.save options
+          .asCallback cb

@@ -1,154 +1,154 @@
-RelationArray = require './relation-array'
+module.exports = ->
 
-class ReferencesMany extends RelationArray
-  @embedded: true
+  @factory 'ReferencesMany', (RelationArray) ->
 
-  @initialize: (@from, @to, params) ->
-    super
+    class ReferencesMany extends RelationArray
+      @embedded: true
 
-    @
+      @initialize: (@from, @to, params) ->
+        super
 
-  constructor: (@instance) ->
-    super
+        @
 
-  get: (options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @get {}, options
+      constructor: (@instance) ->
+        super
 
-    options.instance = @instance
-    options.name = @as
+      get: (options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @get {}, options
 
-    @to.findByIds @, options
-      .asCallback cb
+        options.instance = @instance
+        options.name = @as
 
-  findById: (fkId, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @findById fkId, {}, cb
+        @to.findByIds @, options
+          .asCallback cb
 
-    id = @instance[@foreignKey] or []
+      findById: (fkId, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @findById fkId, {}, cb
 
-    options.instance = @instance
-    options.name = @as
+        id = @instance[@foreignKey] or []
 
-    @to.findById fkId, options
-      .asCallback cb
+        options.instance = @instance
+        options.name = @as
 
-  exists: (fkId, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @exists fkId, {}, options
+        @to.findById fkId, options
+          .asCallback cb
 
-    exists = @indexOf fkId
+      exists: (fkId, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @exists fkId, {}, options
 
-    if exists > -1
-      item = @[exists]
+        exists = @indexOf fkId
 
-    cb null, item
+        if exists > -1
+          item = @[exists]
 
-    item
+        cb null, item
 
-  updateById: (fkId, data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @updateById data, {}, options
+        item
 
-    if typeof data is 'function'
-      return @updateById {}, {}, data
+      updateById: (fkId, data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @updateById data, {}, options
 
-    @findById fkId, options
-      .then (instance) ->
-        instance.updateAttributes data, options
-      .asCallback cb
+        if typeof data is 'function'
+          return @updateById {}, {}, data
 
-  destroyById: (fkId, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @destroyById fkId, {}, options
+        @findById fkId, options
+          .then (instance) ->
+            instance.updateAttributes data, options
+          .asCallback cb
 
-    @findById fkId, options
-      .then (instance) =>
-        Promise.all [
-          @remove instance
-          instance.destroy
-        ]
-      .asCallback cb
+      destroyById: (fkId, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @destroyById fkId, {}, options
 
-  at: (index, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @at index, {}, options
+        @findById fkId, options
+          .then (instance) =>
+            Promise.all [
+              @remove instance
+              instance.destroy
+            ]
+          .asCallback cb
 
-    ids = @instance[@foreignKey] or []
+      at: (index, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @at index, {}, options
 
-    @findById ids[index], options
-      .asCallback cb
+        ids = @instance[@foreignKey] or []
 
-  create: (data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @create data, {}, options
+        @findById ids[index], options
+          .asCallback cb
 
-    if typeof data is 'function'
-      return @create {}, {}, data
+      create: (data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @create data, {}, options
 
-    inst = @build data
+        if typeof data is 'function'
+          return @create {}, {}, data
 
-    options.instance = @instance
-    options.name = @as
+        inst = @build data
 
-    inst.save options
-      .then => @insert inst
-      .asCallback cb
+        options.instance = @instance
+        options.name = @as
 
-  build: (data = {}) ->
-    new @to data, @buildOptions()
+        inst.save options
+          .then => @insert inst
+          .asCallback cb
 
-  insert: (obj, cb) ->
-    id = obj[@primaryKey]
-    ids = @instance[@foreignKey] or []
+      build: (data = {}) ->
+        new @to data, @buildOptions()
 
-    if @options.prepend
-      ids.unshift id
-    else
-      ids.push id
+      insert: (obj, cb) ->
+        id = obj[@primaryKey]
+        ids = @instance[@foreignKey] or []
 
-    @instance.updateAttribute @foreignKey, ids, options
-      .asCallback cb
+        if @options.prepend
+          ids.unshift id
+        else
+          ids.push id
 
-  add: (data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @add data, {}, options
+        @instance.updateAttribute @foreignKey, ids, options
+          .asCallback cb
 
-    if data instanceof @to
-      return @insert null, data, cb
+      add: (data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @add data, {}, options
 
-    filter = where: {}
-    filter.where[@primaryKey] = data
+        if data instanceof @to
+          return @insert null, data, cb
 
-    options.instance = @instance
-    options.name = @as
+        filter = where: {}
+        filter.where[@primaryKey] = data
 
-    @to.findOne filter, options
-      .then (instance) =>
-        @insert instance
-      .asCallback cb
+        options.instance = @instance
+        options.name = @as
 
-  remove: (id, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @remove data, {}, options
+        @to.findOne filter, options
+          .then (instance) =>
+            @insert instance
+          .asCallback cb
 
-    if id instanceof @to
-      return @remove id[@primaryKey], options, cb
+      remove: (id, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @remove data, {}, options
 
-    ids = @instance[@foreignKey] or []
+        if id instanceof @to
+          return @remove id[@primaryKey], options, cb
 
-    index = ids.findIndex (i) ->
-      i is id
+        ids = @instance[@foreignKey] or []
 
-    if index is -1
-      return cb()
+        index = ids.findIndex (i) ->
+          i is id
 
-    ids.splice index, 1
+        if index is -1
+          return cb()
 
-    options.instance = @instance
-    options.name = @as
+        ids.splice index, 1
 
-    @instance.updateAttribute @foreignKey, ids, options
-      .asCallback cb
+        options.instance = @instance
+        options.name = @as
 
-module.exports = ReferencesMany
+        @instance.updateAttribute @foreignKey, ids, options
+          .asCallback cb

@@ -1,75 +1,77 @@
-Relation = require './relation'
+module.exports = ->
 
-class EmbedsOne extends Relation
-  @embedded: true
+  @factory 'EmbedsOne', (Relation) ->
 
-  @initialize: (@to, @from, params) ->
-    super
+    class EmbedsOne extends Relation
+      @embedded: true
 
-    @
+      @initialize: (@to, @from, params) ->
+        super
 
-  constructor: (@instance) ->
-    super
+        @
 
-  get: (options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @get {}, options
+      constructor: (@instance) ->
+        super
 
-    instance = @instance[@foreignKey]
+      get: (options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @get {}, options
 
-    cb null, instance
+        instance = @instance[@foreignKey]
 
-    instance
+        cb null, instance
 
-  build: (data = {}) ->
-    new @to data, @buildOptions()
+        instance
 
-  create: (data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @create data, {}, options
+      build: (data = {}) ->
+        new @to data, @buildOptions()
 
-    if typeof data is 'function'
-      return @create {}, {}, data
+      create: (data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @create data, {}, options
 
-    instance = @build data
+        if typeof data is 'function'
+          return @create {}, {}, data
 
-    if not instance.isValid()
-      return cb new ValidationError instance
+        instance = @build data
 
-    if @instance.isNewRecord()
-      @instance.setAttribute @foreignKey, instance
+        if not instance.isValid()
+          return cb new ValidationError instance
 
-      @instance.save().asCallback cb
-    else
-      @instance.updateAttribute @foreignKey, instance, options
-        .asCallback cb
+        if @instance.isNewRecord()
+          @instance.setAttribute @foreignKey, instance
 
-  update: (data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @update data, {}, options
+          @instance.save().asCallback cb
+        else
+          @instance.updateAttribute @foreignKey, instance, options
+            .asCallback cb
 
-    instance = @instance[@foreignKey]
+      update: (data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @update data, {}, options
 
-    if not instance
-      return @create data, options
-        .asCallback cb
+        instance = @instance[@foreignKey]
 
-    instance.setAttributes data
+        if not instance
+          return @create data, options
+            .asCallback cb
 
-    if not instance.isValid()
-      return cb new ValidationError(instance)
+        instance.setAttributes data
 
-    @instance.save().asCallback cb
+        if not instance.isValid()
+          return cb new ValidationError(instance)
 
-  destroy: (options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @destroy {}, options
+        @instance.save().asCallback cb
 
-    instance = @instance[@foreignKey]
+      destroy: (options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @destroy {}, options
 
-    if not instance
-      cb()
-      return Promise.reject()
+        instance = @instance[@foreignKey]
 
-    @instance.unsetAttribute @foreignKey, true
-    @instance.save().asCallback cb
+        if not instance
+          cb()
+          return Promise.reject()
+
+        @instance.unsetAttribute @foreignKey, true
+        @instance.save().asCallback cb

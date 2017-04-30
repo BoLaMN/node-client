@@ -4,12 +4,10 @@ module.exports = ->
 
   @include './route'
 
-  @factory 'Section', (Route, Types, Utils, url) ->
+  @factory 'Section', (Route, Utils, url) ->
 
     class Section
-      constructor: (name, description, types) ->
-        @types = types or new Types
-
+      constructor: (name, description) ->
         @routes = []
         @sections = {}
 
@@ -45,8 +43,6 @@ module.exports = ->
 
         @handle = @_handle.bind @
 
-        @registerType = @types.register.bind @types
-
       all: (method, route, options, handler) ->
         args = arguments
         @methods.forEach (method) =>
@@ -66,13 +62,13 @@ module.exports = ->
         @
 
       _route: (route, options, handler) ->
-        route = new Route(route, options, handler, @types)
+        route = new Route route, options, handler
         route.parent = this
         @routes[route.method].push route
         @
 
       section: (name, description) ->
-        section = new Section(name, description, @types)
+        section = new Section name, description
         section.parent = this
 
         if !@sections[name]

@@ -1,95 +1,95 @@
-Relation = require './relation'
+module.exports = ->
 
-class HasOne extends Relation
+  @factory 'HasOne', (Relation) ->
 
-  @initialize: (@from, @to, params) ->
-    super
+    class HasOne extends Relation
 
-    @
+      @initialize: (@from, @to, params) ->
+        super
 
-  constructor: (@instance) ->
-    super
+        @
 
-  build: (data = {}) ->
-    data[@foreignKey] = @instance[@primaryKey]
+      constructor: (@instance) ->
+        super
 
-    new @to data, @buildOptions()
+      build: (data = {}) ->
+        data[@foreignKey] = @instance[@primaryKey]
 
-  query: (query) ->
-    query ?= where: {}
+        new @to data, @buildOptions()
 
-    where = @instance[@foreignKey]
+      query: (query) ->
+        query ?= where: {}
 
-    if not where
-      return false
+        where = @instance[@foreignKey]
 
-    query.where[@foreignKey] = where
+        if not where
+          return false
 
-    if @discriminator
-      discriminator = @instance[@discriminator]
+        query.where[@foreignKey] = where
 
-      query.where[@discriminator] = discriminator
+        if @discriminator
+          discriminator = @instance[@discriminator]
 
-    query
+          query.where[@discriminator] = discriminator
 
-  create: (data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @create data, {}, options
+        query
 
-    if typeof data is 'function'
-      return @create {}, {}, data
+      create: (data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @create data, {}, options
 
-    data[@foreignKey] = @instance[@primaryKey]
+        if typeof data is 'function'
+          return @create {}, {}, data
 
-    options.instance = @instance
-    options.name = @as
+        data[@foreignKey] = @instance[@primaryKey]
 
-    query = @query()
+        options.instance = @instance
+        options.name = @as
 
-    if not query
-      cb()
-      return Promise.reject()
+        query = @query()
 
-    @to.findOrCreate query, data, options
-      .asCallback cb
+        if not query
+          cb()
+          return Promise.reject()
 
-  update: (data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @update data, {}, options
+        @to.findOrCreate query, data, options
+          .asCallback cb
 
-    @get(options).then (instance) =>
-      delete data[@foreignKey]
-      instance.updateAttributes data, options
-    .asCallback cb
+      update: (data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @update data, {}, options
 
-  destroy: (options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @destroy {}, options
+        @get(options).then (instance) =>
+          delete data[@foreignKey]
+          instance.updateAttributes data, options
+        .asCallback cb
 
-    @get(options).then (instance) ->
-      instance.destroy options
-    .asCallback cb
+      destroy: (options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @destroy {}, options
 
-  get: (options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @get {}, options
+        @get(options).then (instance) ->
+          instance.destroy options
+        .asCallback cb
 
-    if @$loaded
-      cb null, @$loaded
-      return Promise.resolve @$loaded
+      get: (options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @get {}, options
 
-    options.instance = @instance
-    options.name = @as
+        if @$loaded
+          cb null, @$loaded
+          return Promise.resolve @$loaded
 
-    query = @query query
+        options.instance = @instance
+        options.name = @as
 
-    if not query
-      cb()
-      return Promise.reject()
+        query = @query query
 
-    @to.findOne query, options
-      .tap (data) =>
-        @$property '$loaded', value: data
-      .asCallback cb
+        if not query
+          cb()
+          return Promise.reject()
 
-module.exports = HasOne
+        @to.findOne query, options
+          .tap (data) =>
+            @$property '$loaded', value: data
+          .asCallback cb

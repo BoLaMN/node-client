@@ -4,6 +4,22 @@ module.exports = ->
 
   @include './orm'
 
+  @extension 'ObjectIdType', (Types, Type) ->
+    class exports.ObjectID extends Type
+      @check: (v) ->
+        return false if @absent v
+
+        v._bsontype is 'ObjectID' or v instanceof ObjectId
+
+      @parse: (v) ->
+        if v._bsontype is 'ObjectID' or v instanceof ObjectId
+          return v
+
+        if v.match /^[a-fA-F0-9]{24}$/
+          return new ObjectID v
+
+    Types.$define 'objectid', ObjectId
+
   @factory 'MongoDB', (MongoORM) ->
     class MongoDB extends MongoORM
 

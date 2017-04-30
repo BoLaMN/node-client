@@ -1,41 +1,29 @@
-Storage = require './storage'
-Type = require './type'
-
 buildOptions = require './utils/build-options'
 
-types = new Storage Type
+module.exports = ->
 
-class Cast
+  @factory 'Cast', (Types, Models) ->
 
-  @defineType: (type, names = []) ->
+    class Cast
 
-    define = (n, t) ->
-      types.$define n.toLowerCase(), t or type
+      apply: (name, value, instance, index) ->
+        if not value?
+          return null
 
-    names.forEach define
+        { models } = instance.constructor
 
-    define type.name, type
+        @fn ?= Models.$get @type
+        @fn ?= Types.$get @type
 
-  apply: (name, value, instance, index) ->
-    if not value?
-      return null
-
-    { models } = instance.constructor
-
-    @fn ?= models.$get @type
-    @fn ?= types.$get @type
-
-    if Array.isArray @type
-      return new Type.Array(value).map (val, i) =>
-        @apply name, val, instance, i
-    else if @fn?.modelName
-      options = buildOptions instance, name, index
-      return new @fn value, options
-    else if typeof @fn?.cast is 'function'
-      return @fn.cast value
-    else if @fn
-      return @fn value
-    else
-      return value
-
-module.exports = Cast
+        if Array.isArray @type
+          return new Type.Array(value).map (val, i) =>
+            @apply name, val, instance, i
+        else if @fn?.modelName
+          options = buildOptions instance, name, index
+          return new @fn value, options
+        else if typeof @fn?.parse is 'function'
+          return @fn.parse value
+        else if @fn
+          return @fn value
+        else
+          return value

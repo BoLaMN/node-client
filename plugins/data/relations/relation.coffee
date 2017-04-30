@@ -5,84 +5,86 @@ extend = require '../utils/extend'
 Module = require '../module'
 buildOptions = require '../utils/build-options'
 
-class Relation extends Module
+module.exports = ->
 
-  @define: (from, to, params = {}) ->
-    class Instance extends @
+  @factory 'Relation', ->
 
-    Instance.initialize from, to, params
-    Instance
+    class Relation extends Module
 
-  @initialize: (from, to, params) ->
-    { polymorphic, through } = params
+      @define: (from, to, params = {}) ->
+        class Instance extends @
 
-    if @invert
-      @primaryKey = @to.primaryKey
-      @foreignKey = camelize @to.modelName + '_id', true
-    else
-      @primaryKey = @from.primaryKey
-      @foreignKey = camelize @from.modelName + '_id', true
+        Instance.initialize from, to, params
+        Instance
 
-    if @belongs
-      @as = camelize @from.modelName, true
-    else
-      @as = camelize @to.modelName, true
+      @initialize: (from, to, params) ->
+        { polymorphic, through } = params
 
-    if through
-      @keyThrough = camelize @to.modelName + '_id', true
+        if @invert
+          @primaryKey = @to.primaryKey
+          @foreignKey = camelize @to.modelName + '_id', true
+        else
+          @primaryKey = @from.primaryKey
+          @foreignKey = camelize @from.modelName + '_id', true
 
-    if polymorphic?
-      @polymorphic = true
+        if @belongs
+          @as = camelize @from.modelName, true
+        else
+          @as = camelize @to.modelName, true
 
-      if typeof polymorphic is 'string'
-        polymorphic = as: camelize polymorphic, true
+        if through
+          @keyThrough = camelize @to.modelName + '_id', true
 
-      @foreignKey = camelize @as + '_id', true
-      @discriminator = camelize @as + '_type', true
+        if polymorphic?
+          @polymorphic = true
 
-      extend params, polymorphic
+          if typeof polymorphic is 'string'
+            polymorphic = as: camelize polymorphic, true
 
-      delete params.polymorphic
+          @foreignKey = camelize @as + '_id', true
+          @discriminator = camelize @as + '_type', true
 
-    for own key, val of params
-      @[key] = val
+          extend params, polymorphic
 
-    if not @from.attributes[@from.primaryKey]
-      @from.attribute @from.primaryKey, id: true
+          delete params.polymorphic
 
-    if not @to.attributes[@to.primaryKey]
-      @to.attribute @to.primaryKey,
-        id: true
-        type: 'any'
+        for own key, val of params
+          @[key] = val
 
-    if not @through and @discriminator
-      @from.attribute @discriminator,
-        foreignKey: true
-        type: 'any'
+        if not @from.attributes[@from.primaryKey]
+          @from.attribute @from.primaryKey, id: true
 
-    type = @idType or @from.attributes[@primaryKey].type
+        if not @to.attributes[@to.primaryKey]
+          @to.attribute @to.primaryKey,
+            id: true
+            type: 'any'
 
-    if @multiple
-      @as = pluralize @as
+        if not @through and @discriminator
+          @from.attribute @discriminator,
+            foreignKey: true
+            type: 'any'
 
-    options =
-      foreignKey: true
-      type: type or 'any'
+        type = @idType or @from.attributes[@primaryKey].type
 
-    if @belongs
-      @to.attribute @foreignKey, options
-    else if @polymorphic
-      @from.attribute @foreignKey, options
+        if @multiple
+          @as = pluralize @as
 
-    @
+        options =
+          foreignKey: true
+          type: type or 'any'
 
-  constructor: (@instance) ->
-    super
+        if @belongs
+          @to.attribute @foreignKey, options
+        else if @polymorphic
+          @from.attribute @foreignKey, options
 
-    for own key, value of @constructor
-      @[key] = value
+        @
 
-  buildOptions: ->
-    buildOptions @instance, @as, @length + 1
+      constructor: (@instance) ->
+        super
 
-module.exports = Relation
+        for own key, value of @constructor
+          @[key] = value
+
+      buildOptions: ->
+        buildOptions @instance, @as, @length + 1

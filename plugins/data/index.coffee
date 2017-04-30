@@ -15,7 +15,11 @@ module.exports = (app) ->
       'crypto'
     ]
 
+    @include './storage'
+    @include './models'
     @include './model'
+    @include './cast'
+    @include './types'
 
     # add @model 'MyModel', (Adapter) -> for registering models
 

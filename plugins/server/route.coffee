@@ -49,16 +49,13 @@ module.exports = ->
       new RegExp '^' + path + '$'
 
     class Route
-      constructor: (@route, options, handler, types) ->
+      constructor: (@route, options, handler) ->
         if typeof options == 'function' or Array.isArray(options)
-          types = handler
           handler = options
           options = {}
 
         for own key, val of options
           @[key] = val
-
-        @types = types or new Types
 
         @middlewares = Utils.flatten handler
 
@@ -74,7 +71,7 @@ module.exports = ->
         @keys = []
 
         @routeRe = normalizePath @route, @keys, @params
-        @params = @normalizeParams @types, @params or {}
+        @params = @normalizeParams @params or {}
 
       match: (req, path) ->
         m = path.match(@routeRe)
@@ -113,7 +110,7 @@ module.exports = ->
 
         true
 
-      normalizeParams: (types, params) ->
+      normalizeParams: (params) ->
         for name of params
           param = params[name]
 
@@ -130,11 +127,11 @@ module.exports = ->
           param.optional = ! !param.optional
 
           if param.type instanceof RegExp
-            RegExpType = @types.get 'RegExp'
+            RegExpType = Types.$get 'RegExp'
 
-            param.type = new RegExpType param.type
+            param.type = RegExpType.construct param.type
 
-          param.type = types.get(param.type)
+          param.type = Types.$get param.type
 
         params
 

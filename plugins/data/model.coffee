@@ -1,18 +1,14 @@
 Entity = require './entity'
 Relation = require './relations'
 Events = require './emitter'
-Storage = require './storage'
 Attribute = require "./attributes"
-Cast = require './cast'
 Hooks = require './hooks'
 
 module.exports = ->
 
-  @factory 'Model', ->
+  @factory 'Model', (Models, Storage, Cast) ->
 
     class Model extends Entity
-      @models: new Storage
-
       @extend Events::
       @extend Hooks::
 
@@ -38,7 +34,7 @@ module.exports = ->
         Object.keys(attributes).forEach (key) =>
           @attribute key, attributes[key]
 
-        @models.$define @modelName, @
+        Models.$define @modelName, @
 
         @
 

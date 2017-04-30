@@ -1,5 +1,3 @@
-{ ObjectId } = require 'mongodb'
-{ Type } = require '../type'
 
 exports.parseUpdateData = (data) ->
   parsedData = {}
@@ -36,13 +34,3 @@ exports.parseUpdateData = (data) ->
     parsedData.$set = data
 
   parsedData
-
-class exports.ObjectID extends Type
-  @cast: (v) ->
-    return if @absent v
-
-    if v._bsontype is 'ObjectID' or v instanceof ObjectId
-      return v
-
-    if v.match /^[a-fA-F0-9]{24}$/
-      return new ObjectId v

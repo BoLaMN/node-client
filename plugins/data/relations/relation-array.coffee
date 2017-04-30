@@ -1,229 +1,229 @@
-Relation = require './relation'
-
 proto = Array.prototype
 
-class RelationArray extends Relation
-  @multiple: true
+module.exports = ->
 
-  constructor: (@instance) ->
-    super
+  @factory 'RelationArray', (Relation) ->
 
-    return @injectMethods []
+    class RelationArray extends Relation
+      @multiple: true
 
-  injectMethods: (collection) ->
+      constructor: (@instance) ->
+        super
 
-    define = (prop, desc) ->
-      return if prop is 'constructor'
+        return @injectMethods []
 
-      Object.defineProperty collection, prop,
-        writable: false
-        enumerable: false
-        value: desc
+      injectMethods: (collection) ->
 
-    methods = @methods.concat Object.getOwnPropertyNames @
+        define = (prop, desc) ->
+          return if prop is 'constructor'
 
-    methods.forEach (method) =>
-      define method, (@[method] or @[method])
+          Object.defineProperty collection, prop,
+            writable: false
+            enumerable: false
+            value: desc
 
-    if not @__super__
-      return collection
+        methods = @methods.concat Object.getOwnPropertyNames @
 
-    for own key, value of @__super__
-      define key, value
+        methods.forEach (method) =>
+          define method, (@[method] or @[method])
 
-    path = [
-      @instance.$path
-      @as
-    ]
-      .filter (v) -> v
-      .join '.'
+        if not @__super__
+          return collection
 
-    define '$path', path
-    define '$indexes', []
+        for own key, value of @__super__
+          define key, value
 
-    collection
+        path = [
+          @instance.$path
+          @as
+        ]
+          .filter (v) -> v
+          .join '.'
 
-  methods: [
-    'instance', 'pop', 'push', 'shift', 'splice', 'index', 'deindex', 'indexOf'
-    'unshift', 'reverse', 'sort', 'toJSON', 'toArray', 'buildOptions', 'has', 'build'
-  ]
+        define '$path', path
+        define '$indexes', []
 
-  build: (data = {}) ->
-    if data instanceof @to
-      for key, value of @buildOptions()
-        data.$property '$' + key,
-          value: value or null
-      return data
-    else
-      new @to data, @buildOptions()
+        collection
 
-  deindex: (data) ->
-    id = data.getId()
+      methods: [
+        'instance', 'pop', 'push', 'shift', 'splice', 'index', 'deindex', 'indexOf'
+        'unshift', 'reverse', 'sort', 'toJSON', 'toArray', 'buildOptions', 'has', 'build'
+      ]
 
-    if not id
-      return
+      build: (data = {}) ->
+        if data instanceof @to
+          for key, value of @buildOptions()
+            data.$property '$' + key,
+              value: value or null
+          return data
+        else
+          new @to data, @buildOptions()
 
-    idx = @$indexes.indexOf id
+      deindex: (data) ->
+        id = data.getId()
 
-    if idx > -1
-      @$indexes.splice idx, 1
+        if not id
+          return
 
-    @$indexes
+        idx = @$indexes.indexOf id
 
-  has: (data) ->
-    if not data
-      return false
+        if idx > -1
+          @$indexes.splice idx, 1
 
-    exists = @indexOf data
+        @$indexes
 
-    if exists > -1
-      return true
+      has: (data) ->
+        if not data
+          return false
 
-    false
+        exists = @indexOf data
 
-  index: (data) ->
-    if not data instanceof @to
-      data = @build data
+        if exists > -1
+          return true
 
-    id = data.getId()
+        false
 
-    if not id
-      return
+      index: (data) ->
+        if not data instanceof @to
+          data = @build data
 
-    idx = @$indexes.indexOf id
+        id = data.getId()
 
-    if idx > -1
-      return
+        if not id
+          return
 
-    @$indexes.push id
+        idx = @$indexes.indexOf id
 
-    data
+        if idx > -1
+          return
 
-  indexOf: (a) ->
-    a = a?.getId?() or
-        a?[@to.primaryKey] or
-        a
+        @$indexes.push id
 
-    a = a?.toString?() or a
-    i = 0
+        data
 
-    while i < @length
-      b = @[i].getId?() or @[i]
-      if a is (b?.toString?() or b)
-        return i
-      ++i
+      indexOf: (a) ->
+        a = a?.getId?() or
+            a?[@to.primaryKey] or
+            a
 
-    -1
+        a = a?.toString?() or a
+        i = 0
 
-  pop: ->
-    removed = proto.pop.apply @, arguments
+        while i < @length
+          b = @[i].getId?() or @[i]
+          if a is (b?.toString?() or b)
+            return i
+          ++i
 
-    @deindex removed
-    @instance.emit '$pull', @$path + '.' + (@length + 1), removed
+        -1
 
-    removed
+      pop: ->
+        removed = proto.pop.apply @, arguments
 
-  push: (args) ->
+        @deindex removed
+        @instance.emit '$pull', @$path + '.' + (@length + 1), removed
 
-    if not Array.isArray args
-      args = [ args ]
+        removed
 
-    added = args
-      .filter (obj) =>
-        @indexOf(obj) is -1
-      .map @build.bind(@)
+      push: (args) ->
 
-    count = @length
+        if not Array.isArray args
+          args = [ args ]
 
-    added.forEach (add) =>
-      count = proto.push.apply @, [ add ]
+        added = args
+          .filter (obj) =>
+            @indexOf(obj) is -1
+          .map @build.bind(@)
 
-    i = 0
+        count = @length
 
-    while i < added.length
-      @index added[i]
-      @instance.emit '$push', @$path + '.' + (count + i), added[i], i
-      i++
+        added.forEach (add) =>
+          count = proto.push.apply @, [ add ]
 
-    count
+        i = 0
 
-  shift: ->
-    removed = proto.shift.apply @, arguments
+        while i < added.length
+          @index added[i]
+          @instance.emit '$push', @$path + '.' + (count + i), added[i], i
+          i++
 
-    @deindex removed
-    @instance.emit '$pull', @$path + '.0', removed, 0
+        count
 
-    removed
+      shift: ->
+        removed = proto.shift.apply @, arguments
 
-  splice: (index, count, elements) ->
-    args = [ index, count ]
+        @deindex removed
+        @instance.emit '$pull', @$path + '.0', removed, 0
 
-    added = []
+        removed
 
-    if elements
-      if not Array.isArray elements
-        elements = [ elements ]
+      splice: (index, count, elements) ->
+        args = [ index, count ]
 
-      added = elements
-        .filter (obj) =>
-          @indexOf(obj) > -1
-        .map @build.bind(@)
+        added = []
 
-      if added.length
-        args.push added
+        if elements
+          if not Array.isArray elements
+            elements = [ elements ]
 
-    removed = proto.splice.apply @, args
+          added = elements
+            .filter (obj) =>
+              @indexOf(obj) > -1
+            .map @build.bind(@)
 
-    i = 0
+          if added.length
+            args.push added
 
-    while i < removed.length
-      @deindex removed[i]
-      @instance.emit '$pull', removed[i], index
-      i++
+        removed = proto.splice.apply @, args
 
-    i = 0
+        i = 0
 
-    while i < added.length
-      @index added[i]
-      @instance.emit '$push', added[i], index + i
-      i++
+        while i < removed.length
+          @deindex removed[i]
+          @instance.emit '$pull', removed[i], index
+          i++
 
-    removed
+        i = 0
 
-  toObject: ->
-    @map (obj) ->
-      obj.toObject?() or obj
-    .toArray()
+        while i < added.length
+          @index added[i]
+          @instance.emit '$push', added[i], index + i
+          i++
 
-  toJSON: ->
-    @map (obj) ->
-      obj.toJSON?() or obj
-    .toArray()
+        removed
 
-  toArray: ->
-    proto.slice.call @
+      toObject: ->
+        @map (obj) ->
+          obj.toObject?() or obj
+        .toArray()
 
-  unshift: (args) ->
-    if not Array.isArray args
-      args = [ args ]
+      toJSON: ->
+        @map (obj) ->
+          obj.toJSON?() or obj
+        .toArray()
 
-    added = args
-      .filter (obj) =>
-        @indexOf(obj) is -1
-      .map @build.bind(@)
+      toArray: ->
+        proto.slice.call @
 
-    count = @length
+      unshift: (args) ->
+        if not Array.isArray args
+          args = [ args ]
 
-    added.forEach (add) =>
-      count = proto.unshift.apply @, [ add ]
+        added = args
+          .filter (obj) =>
+            @indexOf(obj) is -1
+          .map @build.bind(@)
 
-    i = 0
+        count = @length
 
-    while i < added.length
-      @index added[i]
-      @instance.emit '$push', @$path + '.' + (count + i), added[i], i
-      i++
+        added.forEach (add) =>
+          count = proto.unshift.apply @, [ add ]
 
-    count
+        i = 0
 
-module.exports = RelationArray
+        while i < added.length
+          @index added[i]
+          @instance.emit '$push', @$path + '.' + (count + i), added[i], i
+          i++
+
+        count

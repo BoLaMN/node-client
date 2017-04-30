@@ -1,31 +1,31 @@
-HasMany = require './has-many'
+module.exports = ->
 
-class HasAndBelongsToMany extends HasMany
+  @factory 'HasAndBelongsToMany', (HasMany) ->
 
-  @initialize: (@from, @to, params) ->
-    super
+    class HasAndBelongsToMany extends HasMany
 
-    if not @through
-      if @polymorphic
-        throw new Error "{{Polymorphic}} relations need a through model"
-
-      if @throughModel
-        @through = @throughModel
-      else
-        name1 = @from.modelName + @to.modelName
-        name2 = @to.modelName + @from.modelName
-
-        @through = @from.models.$get(name1) or @from.models.$get(name2)
+      @initialize: (@from, @to, params) ->
+        super
 
         if not @through
-          @through = @to.define name1
+          if @polymorphic
+            throw new Error "{{Polymorphic}} relations need a through model"
 
-    if @through
-      @through.belongsTo @to.modelName
+          if @throughModel
+            @through = @throughModel
+          else
+            name1 = @from.modelName + @to.modelName
+            name2 = @to.modelName + @from.modelName
 
-    @
+            @through = @from.models.$get(name1) or @from.models.$get(name2)
 
-  constructor: (@instance) ->
-    super
+            if not @through
+              @through = @to.define name1
 
-module.exports = HasAndBelongsToMany
+        if @through
+          @through.belongsTo @to.modelName
+
+        @
+
+      constructor: (@instance) ->
+        super

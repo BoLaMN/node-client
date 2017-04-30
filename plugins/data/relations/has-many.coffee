@@ -1,123 +1,124 @@
-RelationArray = require './relation-array'
+module.exports = ->
 
-class HasMany extends RelationArray
+  @factory 'HasMany', (RelationArray) ->
 
-  @initialize: (@from, @to, params) ->
-    super
+    class HasMany extends RelationArray
 
-    @
+      @initialize: (@from, @to, params) ->
+        super
 
-  constructor: (@instance) ->
-    super
+        @
 
-  build: (data = {}) ->
-    data[@foreignKey] = @instance[@primaryKey]
+      constructor: (@instance) ->
+        super
 
-    new @to data, @buildOptions()
+      build: (data = {}) ->
+        data[@foreignKey] = @instance[@primaryKey]
 
-  findById: (fkId, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @findById fkId, {}, options
+        new @to data, @buildOptions()
 
-    if not @foreignKey
-      return cb
+      findById: (fkId, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @findById fkId, {}, options
 
-    exists = @indexOf fkId
+        if not @foreignKey
+          return cb
 
-    if exists > -1
-      item = @[exists]
+        exists = @indexOf fkId
 
-      cb null, item
+        if exists > -1
+          item = @[exists]
 
-      Promise.resolve item
-    else
-      options.instance = @instance
-      options.name = @as
+          cb null, item
 
-      query = @query()
-      query.where[@to.primaryKey] = fkId
+          Promise.resolve item
+        else
+          options.instance = @instance
+          options.name = @as
 
-      @to.findOne query, options
-        .tap (res) =>
-          @push res
-        .asCallback cb
+          query = @query()
+          query.where[@to.primaryKey] = fkId
 
-  exists: (fkId, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @exists fkId, {}, options
+          @to.findOne query, options
+            .tap (res) =>
+              @push res
+            .asCallback cb
 
-    @findById(fkId, options)
-      .then (data) ->
-        not not data
-      .asCallback cb
+      exists: (fkId, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @exists fkId, {}, options
 
-  create: (data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @create data, {}, options
+        @findById(fkId, options)
+          .then (data) ->
+            not not data
+          .asCallback cb
 
-    if typeof data is 'function'
-      return @create {}, {}, data
+      create: (data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @create data, {}, options
 
-    fkAndProps = (item) =>
-      item[@foreignKey] = @instance[@primaryKey]
+        if typeof data is 'function'
+          return @create {}, {}, data
 
-    if Array.isArray data
-      data.forEach fkAndProps
-    else
-      fkAndProps data
+        fkAndProps = (item) =>
+          item[@foreignKey] = @instance[@primaryKey]
 
-    options.instance = @instance
-    options.name = @as
+        if Array.isArray data
+          data.forEach fkAndProps
+        else
+          fkAndProps data
 
-    @to.create data, options
-      .tap (res) =>
-        @push res
-      .asCallback cb
+        options.instance = @instance
+        options.name = @as
 
-  query: (query = {}) ->
-    query.where ?= {}
-    query.where[@foreignKey] = @instance[@primaryKey]
-    query
+        @to.create data, options
+          .tap (res) =>
+            @push res
+          .asCallback cb
 
-  get: (query, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @get query, {}, options
+      query: (query = {}) ->
+        query.where ?= {}
+        query.where[@foreignKey] = @instance[@primaryKey]
+        query
 
-    if typeof query is 'function'
-      return @get {}, {}, query
+      get: (query, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @get query, {}, options
 
-    options.instance = @instance
-    options.name = @as
+        if typeof query is 'function'
+          return @get {}, {}, query
 
-    @to.find @query(query), options
-      .tap (res) =>
-        @push res
-      .asCallback cb
+        options.instance = @instance
+        options.name = @as
 
-  updateById: (fkId, data = {}, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @updateById data, {}, options
+        @to.find @query(query), options
+          .tap (res) =>
+            @push res
+          .asCallback cb
 
-    if typeof data is 'function'
-      return @updateById {}, {}, data
+      updateById: (fkId, data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @updateById data, {}, options
 
-    @findById fkId, options
-      .then (instance) ->
-        instance.updateAttributes data, options
-      .asCallback cb
+        if typeof data is 'function'
+          return @updateById {}, {}, data
 
-  destroy: (fkId, options = {}, cb = ->) ->
-    if typeof options is 'function'
-      return @destroy fkId, {}, options
+        @findById fkId, options
+          .then (instance) ->
+            instance.updateAttributes data, options
+          .asCallback cb
 
-    @findById fkId, options
-      .then (inst) =>
-        index = @indexOf inst
+      destroy: (fkId, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @destroy fkId, {}, options
 
-        if index > -1
-          @splice index, 1
+        @findById fkId, options
+          .then (inst) =>
+            index = @indexOf inst
 
-        inst.destroy options
-      .asCallback cb
+            if index > -1
+              @splice index, 1
 
-module.exports = HasMany
+            inst.destroy options
+          .asCallback cb
+
