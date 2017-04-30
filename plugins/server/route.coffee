@@ -136,7 +136,7 @@ module.exports = ->
 
         next err
 
-      describe: ->
+      toJSON: ->
         route =
           route: @route
           method: @method
@@ -147,12 +147,7 @@ module.exports = ->
         if @description
           route.description = @description
 
-        params = {}
-
-        for name, param of @params
-          params[name] = param.describe()
-
-        if Object.keys(params).length
-          route.params = params
+        if Object.keys(@params).length
+          route.params = @params
 
         route

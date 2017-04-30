@@ -207,7 +207,7 @@ module.exports = ->
 
         return
 
-      describe: ->
+      toJSON: ->
         api = {}
 
         if @name
@@ -222,7 +222,7 @@ module.exports = ->
           i = 0
 
           while i < @sections[key].length
-            api.sections.push @sections[key][i].describe()
+            api.sections.push @sections[key][i]
             i++
 
         if !api.sections.length
@@ -234,7 +234,7 @@ module.exports = ->
           i = 0
 
           while i < @routes[method].length
-            api.routes.push @routes[method][i].describe()
+            api.routes.push @routes[method][i]
             i++
 
         if !api.routes.length

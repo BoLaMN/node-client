@@ -71,7 +71,7 @@ module.exports = (app) ->
             id: "int"
           , remove
 
-      console.log inspect(api.describe(), false, null)
+      console.log inspect(JSON.parse(JSON.stringify(api)), false, null)
 
       server.listen port, ->
         console.log "Listening on #{port}"
