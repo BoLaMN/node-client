@@ -1,24 +1,20 @@
 debug = require('debug')('loopback:connector:mongodb-advanced')
 
-Query = require './query'
 Collection = require './collection'
-Adapter = require '../adapter'
 
 buildOptions = require '../utils/build-options'
 
 { ObjectId } = require 'mongodb'
 { inspect } = require 'util'
-{ parseUpdateData, ObjectID } = require './utils'
+{ parseUpdateData } = require './utils'
 
 module.exports = ->
 
-  @factory 'MongoORM', (Adapter) ->
+  @factory 'MongoORM', (Adapter, MongoQuery) ->
     class MongoORM extends Adapter
 
       constructor: (model) ->
         super
-
-        model.defineType ObjectID
 
         @model = model
 
@@ -55,7 +51,7 @@ module.exports = ->
         if typeof filter is 'object'
           delete filter.fields
 
-        { filter } = new Query filter, @model
+        { filter } = new MongoQuery filter, @model
         { where } = filter
 
         @execute 'count', where
@@ -127,7 +123,7 @@ module.exports = ->
         if typeof filter is 'object'
           delete filter.fields
 
-        { filter } = new Query filter, @model
+        { filter } = new MongoQuery filter, @model
         { where, fields } = filter
 
         @execute 'remove', where, options
@@ -172,7 +168,7 @@ module.exports = ->
       find: (filter, options = {}, cb = ->) ->
         debug 'find', filter
 
-        { filter } = new Query filter, @model
+        { filter } = new MongoQuery filter, @model
         { where, include, aggregate, fields } = filter
 
         if aggregate.length
@@ -209,7 +205,7 @@ module.exports = ->
       findOne: (filter, options = {}, cb = ->) ->
         debug 'findOne', filter
 
-        { filter } = new Query filter, @model
+        { filter } = new MongoQuery filter, @model
         { where, include, fields } = filter
 
         @execute 'findOne', where, fields
@@ -237,7 +233,7 @@ module.exports = ->
       findOrCreate: (filter = {}, data, cb = ->) ->
         debug 'findOrCreate', filter, data
 
-        { filter } = new Query filter, @model
+        { filter } = new MongoQuery filter, @model
         { where, aggregate, fields } = filter
 
         query =
@@ -352,7 +348,7 @@ module.exports = ->
         if typeof filter is 'object'
           delete filter.fields
 
-        { filter } = new Query filter, @model
+        { filter } = new MongoQuery filter, @model
         { where, aggregate, fields } = filter
 
         @execute 'update', where, @normalizeId(data), options
@@ -364,7 +360,7 @@ module.exports = ->
             , false, null)
           .asCallback cb, spread: true
 
-      updateAll: ORM::update
+      updateAll: MongoORM::update
 
       ###*
       # Update properties for the model instance data
@@ -396,7 +392,7 @@ module.exports = ->
       # @param {Object} data The model instance data
       # @param {Function} [cb] The cb function
       ###
-      updateOrCreate: ORM::save
+      updateOrCreate: MongoORM::save
 
       normalizeId: (value) ->
         value = value.toObject?() or value

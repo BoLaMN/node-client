@@ -1,30 +1,17 @@
 module.exports =
 
-  count:
+  destroy:
     params:
       where:
-        description: "Criteria to match model instances"
+        description: "filter.where object"
         type: "object"
-        optional: true
         source: 'query'
-    accessType: "READ"
-    description: "Count instances of the model matched by where from the data source."
-    path: "/count"
-    method: "get"
-
-  create:
-    params:
-      data:
-        description: "Model instance data"
-        source: "body"
-        type: "object"
-        optional: true
     accessType: "WRITE"
-    description: "Create a new instance of the model and persist it into the data source."
+    description: "Delete all matching records."
     path: "/"
-    method: "post"
+    method: "delete"
 
-  deleteById:
+  destroyById:
     params:
       id:
         description: "Model id"
@@ -39,16 +26,29 @@ module.exports =
     path: "/:id"
     method: "del"
 
-  destroyAll:
+  create:
+    params:
+      data:
+        description: "Model instance data"
+        source: "body"
+        type: "object"
+        optional: true
+    accessType: "WRITE"
+    description: "Create a new instance of the model and persist it into the data source."
+    path: "/"
+    method: "post"
+
+  count:
     params:
       where:
-        description: "filter.where object"
+        description: "Criteria to match model instances"
         type: "object"
+        optional: true
         source: 'query'
-    accessType: "WRITE"
-    description: "Delete all matching records."
-    path: "/"
-    method: "delete"
+    accessType: "READ"
+    description: "Count instances of the model matched by where from the data source."
+    path: "/count"
+    method: "get"
 
   exists:
     params:
@@ -100,7 +100,7 @@ module.exports =
     path: "/findOne"
     method: "get"
 
-  'updateAttributes.prototype':
+  'prototype.updateAttributes':
     params:
       id:
         description: "Model id"
@@ -118,48 +118,7 @@ module.exports =
     path: "/"
     method: "patch"
 
-  patchOrCreate:
-    params:
-      data:
-        description: "Model instance data"
-        source: "body"
-        type: "object"
-    accessType: "WRITE"
-    aliases: [
-      "upsert"
-      "updateOrCreate"
-    ]
-    description: "Patch an existing model instance or insert a new one into the data source."
-    path: "/"
-    method: "patch"
-
-  replaceById:
-    params:
-      id:
-        description: "Model id"
-        source: "url"
-        type: "any"
-      data:
-        description: "Model instance data"
-        source: "body"
-        type: "object"
-    accessType: "WRITE"
-    description: "Replace attributes for a model instance and persist it into the data source."
-    path: "/:id/replace"
-    method: "post"
-
-  replaceOrCreate:
-    params:
-      data:
-        description: "Model instance data"
-        source: "body"
-        type: "object"
-    accessType: "WRITE"
-    description: "Replace an existing model instance or insert a new one into the data source."
-    path: "/replaceOrCreate"
-    method: "post"
-
-  updateAll:
+  update:
     params:
       where:
         description: "Criteria to match model instances"
@@ -177,11 +136,52 @@ module.exports =
     path: "/update"
     method: "post"
 
-  findOrCreate:
-    description: 'Find else create a new instance of the model and persist it into the data source'
+  updateById:
     params:
+      id:
+        description: "Model id"
+        source: "url"
+        type: "any"
       data:
-        type: 'object'
-        source: 'body'
-    method: 'post'
-    path: '/findOrCreate'
+        description: "Model instance data"
+        source: "body"
+        type: "object"
+    accessType: "WRITE"
+    description: "Replace attributes for a model instance and persist it into the data source."
+    path: "/:id/patch"
+    method: "post"
+
+  #patchOrCreate:
+  #  params:
+  #    data:
+  #      description: "Model instance data"
+  #      source: "body"
+  #      type: "object"
+  #  accessType: "WRITE"
+  #  aliases: [
+  #    "upsert"
+  #    "updateOrCreate"
+  #  ]
+  #  description: "Patch an existing model instance or insert a new one into the data source."
+  #  path: "/"
+  #  method: "patch"
+
+  #replaceOrCreate:
+  #  params:
+  #    data:
+  #      description: "Model instance data"
+  #      source: "body"
+  #      type: "object"
+  #  accessType: "WRITE"
+  #  description: "Replace an existing model instance or insert a new one into the data source."
+  #  path: "/replaceOrCreate"
+  #  method: "post"
+
+  #findOrCreate:
+  #  description: 'Find else create a new instance of the model and persist it into the data source'
+  #  params:
+  #    data:
+  #      type: 'object'
+  #      source: 'body'
+  #  method: 'post'
+  #  path: '/findOrCreate'

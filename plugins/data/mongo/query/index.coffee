@@ -16,7 +16,7 @@ module.exports = (app) ->
 
   .initializer ->
 
-    @factory 'MongoQuery', (MongoORM) ->
+    @factory 'MongoQuery', ->
 
       class MongoQuery
         constructor: (filter, @model, options = {}) ->

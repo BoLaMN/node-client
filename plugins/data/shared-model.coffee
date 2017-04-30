@@ -25,4 +25,8 @@ module.exports = ->
         route = api.section @modelName
         fn = Utils.getDeepProperty @, name
 
-        route[method] name, path, { params, description, accessType }, fn
+        if not fn
+          console.error "method #{name} not found"
+          return
+
+        route[method] name, path, { params, description, accessType }, fn.bind @

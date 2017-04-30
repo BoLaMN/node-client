@@ -39,16 +39,20 @@ module.exports = (app) ->
     #
 
     @assembler 'model', (injector) ->
-      (name, { base, properties, relations }) =>
+      (name, { base, adapter, properties, relations }) =>
         injector.register
           name: name
           type: 'model'
           plugin: @name
           fn: ->
             base = base or 'Model'
-
             model = injector.get base
+
+            adptr = injector.get adapter
+            connector = adptr.define 'db'
+
             factory = model.define name, properties
+            factory.adapter connector
 
             for as, config of relations
               config.as = as
@@ -60,6 +64,7 @@ module.exports = (app) ->
 
     @model 'MyModel',
       base: 'SharedModel'
+      adapter: 'MongoDB'
       properties:
         items: [ 'string' ]
         orderDate:

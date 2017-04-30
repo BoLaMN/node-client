@@ -1,11 +1,13 @@
-{ MongoClient, ObjectID } = require 'mongodb'
+mongodb = require 'mongodb'
+
+{ MongoClient } = mongodb
 
 module.exports = ->
 
   @include './orm'
 
   @extension 'ObjectIdType', (Types, Type) ->
-    class exports.ObjectID extends Type
+    class ObjectId extends Type
       @check: (v) ->
         return false if @absent v
 
@@ -16,7 +18,7 @@ module.exports = ->
           return v
 
         if v.match /^[a-fA-F0-9]{24}$/
-          return new ObjectID v
+          return new mongodb.ObjectID v
 
     Types.$define 'objectid', ObjectId
 

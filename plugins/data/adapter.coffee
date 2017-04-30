@@ -1,10 +1,9 @@
-Storage = require './storage'
 Entity = require './entity'
 Events = require './emitter'
 
 module.exports = ->
 
-  @factory 'Adapter', ->
+  @factory 'Adapter', (Storage) ->
 
     class Adapter extends Entity
       @extend Events::
