@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'HasAndBelongsToMany', (HasMany) ->
+  @factory 'HasAndBelongsToMany', (HasMany, Models, Model) ->
 
     class HasAndBelongsToMany extends HasMany
 
@@ -17,10 +17,10 @@ module.exports = ->
             name1 = @from.modelName + @to.modelName
             name2 = @to.modelName + @from.modelName
 
-            @through = @from.models.$get(name1) or @from.models.$get(name2)
+            @through = Models.$get(name1) or Models.$get(name2)
 
             if not @through
-              @through = @to.define name1
+              @through = Model.define name1
 
         if @through
           @through.belongsTo @to.modelName

@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'BelongsTo', (Relation) ->
+  @factory 'BelongsTo', (Relation, Models) ->
 
     class BelongsTo extends Relation
       @belongs: true
@@ -48,7 +48,7 @@ module.exports = ->
 
         if @discriminator
           modelToName = @instance[@discriminator]
-          to = @from.models[modelToName]
+          to = Models[modelToName]
 
         id = @instance[@foreignKey]
 
