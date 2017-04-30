@@ -24,11 +24,13 @@ module.exports = (app) ->
     @include './types'
 
     # @model 'MyModel',
-    #   items: [ 'string' ]
-    #   orderDate:
-    #     type: 'date'
-    #   qty:
-    #     type: 'number'
+    #   base: 'PersistedModel'
+    #   properties:
+    #     items: [ 'string' ]
+    #     orderDate:
+    #       type: 'date'
+    #     qty:
+    #       type: 'number'
     #
     # @extension 'MyModelExtension', (MyModel) ->
     #
@@ -37,16 +39,21 @@ module.exports = (app) ->
     #
 
     @assembler 'model', (injector) ->
-      (name, config) =>
-        Model = injector.get 'Model'
+      (name, { base, properties, relations }) =>
+        base = base or 'Model'
 
-        model = Model.define name, config
+        model = injector.get base
+        factory = model.define name, properties
+
+        for as, config of relations
+          config.as = as
+          factory[config.type] config
 
         injector.register
           name: name
           type: 'router'
           plugin: @name
-          factory: model
+          factory: factory
 
         @
 

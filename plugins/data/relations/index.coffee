@@ -24,6 +24,9 @@ module.exports = (app) ->
       class Relations
 
         @defineRelation: (type, model, params = {}) ->
+          if model.model or model.as
+            params = model
+            model = params.model
 
           attach = (modelTo = {}) =>
             relation = type.define @, modelTo, params
