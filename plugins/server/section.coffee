@@ -89,6 +89,9 @@ module.exports = ->
               if count is fns.length
                 callback()
 
+          if not fns.length
+            return callback()
+
           fns.forEach run
 
         process = (handle, cb) ->
@@ -110,19 +113,20 @@ module.exports = ->
         if not handler
           return next()
 
-        after = (err) ->
+        after = (err) =>
           if err
-            each @errorHandlers, process, next
+            @handleError err, req, res, next
           else next()
 
         main = (err) ->
           if err
             return after err
-          each handler.middlewares, process, after
+          each handler, process, after
 
         each @middlewares, process, main
 
-      handleError: (errorHandlers, err, req, res, next) ->
+      handleError: (err, req, res, next) ->
+        errorHandlers = @errorHandlers
         i = 0
 
         processNext = (err) ->
@@ -165,7 +169,7 @@ module.exports = ->
           route = methodRoutes[i]
 
           if route.match req, path
-            return route
+            return route.middlewares
 
           i++
 

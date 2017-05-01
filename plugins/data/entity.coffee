@@ -3,15 +3,15 @@ property = require './utils/property'
 
 class Entity extends Module
 
-  @defer: (fn, cb) ->
+  @defer: (cb) ->
     resolve = undefined
     reject = undefined
 
     promise = new Promise (args...) ->
       [ resolve, reject ] = args
 
-    if fn or cb
-      promise.asCallback fn, cb
+    if cb
+      promise.asCallback cb
 
     resolve: resolve
     reject: reject

@@ -31,9 +31,6 @@ class Injector
     dependency = new Dependency descriptor
     @[modules][dependency.name] = dependency
 
-  inspect: ->
-    @list()
-
   list: ->
     Object.keys @[modules]
 

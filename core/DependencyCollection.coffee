@@ -1,7 +1,5 @@
 'use strict'
 
-injector = require './injectorInstance'
-
 Collection = require './Collection'
 
 class DependecyCollection extends Collection
@@ -10,6 +8,7 @@ class DependecyCollection extends Collection
 
   start: ->
     @map (dependency) ->
+      injector = require './injectorInstance' # ??
       injector.get dependency.name
 
 module.exports = DependecyCollection

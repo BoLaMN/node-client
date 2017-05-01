@@ -30,6 +30,10 @@ class Host
       .start()
 
     @injector
+      .filter type: 'extension'
+      .start()
+
+    @injector
       .filter type: 'run'
       .start()
 
