@@ -22,7 +22,7 @@ module.exports = (app) ->
       cors: 'cors'
       url: 'url'
       HttpError: 'http-error'
-      express: 'express'
+      connect: 'connect'
 
     @include './section'
     @include './middleware'
@@ -31,10 +31,7 @@ module.exports = (app) ->
     @include './settings'
 
     @starter (server, api, settings, MyModel) ->
-      port = settings.port
 
-      console.log MyModel
-      console.log inspect(api.toObject(), false, null)
+      server.listen settings.port, settings.host, ->
+        console.log ' server listening at: %s', settings.host + ':' + settings.port
 
-      server.listen port, ->
-        console.log "Listening on #{port}"

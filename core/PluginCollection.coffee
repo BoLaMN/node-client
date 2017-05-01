@@ -3,6 +3,8 @@
 Collection = require './Collection'
 
 class PluginCollection extends Collection
+  constructor: ->
+    return super
 
   start: ->
     @forEach (plugin) ->

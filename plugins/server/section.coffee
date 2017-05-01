@@ -12,7 +12,6 @@ module.exports = ->
         @sections = {}
 
         @middlewares = []
-        @globals = []
         @errorHandlers = []
 
         @methods = [
@@ -48,10 +47,6 @@ module.exports = ->
           @[method].apply @, args
         @
 
-      global: (middleware) ->
-        @globals.push.apply @globals, Utils.flatten(middleware)
-        @
-
       use: (middleware) ->
         @middlewares.push.apply @middlewares, Utils.flatten(middleware)
         @
@@ -77,43 +72,32 @@ module.exports = ->
 
         section
 
-      _rootHandler: (req, res) ->
-        @handle req, res, (err) ->
-          if err
-            res.statusCode = err.code or err.statusCode or 500
-            res.end err.message or err.toString
-          else
-            res.statusCode = 404
-            res.end 'cannot ' + req.method
-
       _handle: (req, res, next) ->
-        that = this
 
-        processNext = ->
-          handler = middleware[i++]
+        each = (fns, iterate, callback) ->
+          count = 0
 
-          if !handler or i > middleware.length
-            return next()
+          run = (item, index) ->
+            iterate item, (err, obj) ->
+              if err
+                callback err
+                callback = ->
+                return
 
-          handler req, res, (err) ->
-            if err
-              return that.handleError(errorHandlers, err, req, res, next)
+              count += 1
 
-            processNext()
+              if count is fns.length
+                callback()
 
-        if arguments.length == 2
-          return @_rootHandler.apply(this, arguments)
+          fns.forEach run
 
-        if arguments.length == 3
-          req = arguments[0]
-          res = arguments[1]
+        process = (handle, cb) ->
+          handle req, res, cb
 
-          next = arguments[2]
+        if !req.parsedUrl
+          req.parsedUrl = url.parse(req.url, true)
 
-          if !req.parsedUrl
-            req.parsedUrl = url.parse(req.url, true)
-
-          path = req.parsedUrl.pathname
+        path = req.parsedUrl.pathname
 
         req.params = req.params or {}
         method = req.method.toLowerCase()
@@ -121,29 +105,22 @@ module.exports = ->
         if @methods.indexOf(method) == -1
           return next()
 
-        handler = @match(req, path, method)
+        handler = @match req, path, method
 
-        if !handler
+        if not handler
           return next()
 
-        middleware = []
-        errorHandlers = []
+        after = (err) ->
+          if err
+            each @errorHandlers, process, next
+          else next()
 
-        while handler
-          middleware.unshift.apply middleware, handler.middlewares or []
-          errorHandlers.unshift.apply errorHandlers, handler.errorHandlers or []
+        main = (err) ->
+          if err
+            return after err
+          each handler.middlewares, process, after
 
-          handler = handler.parent
-
-        if @globals.length
-          middleware.splice.apply middleware, [
-            1
-            0
-          ].concat(@globals)
-
-        i = 0
-
-        processNext()
+        each @middlewares, process, main
 
       handleError: (errorHandlers, err, req, res, next) ->
         i = 0

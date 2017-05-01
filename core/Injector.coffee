@@ -1,17 +1,31 @@
 'use strict'
 
 Dependency = require './Dependency'
+DependencyCollection = require './DependencyCollection'
 
 modules = Symbol()
+config = Symbol()
+run = Symbol()
 
 class Injector
 
   constructor: ->
     @[modules] = {}
 
+    @[config] = []
+    @[run] = []
+
     @register
       name: 'injector'
       value: @
+
+  config: (descriptor) ->
+    dependency = new Dependency descriptor
+    @[config].push dependency
+
+  run: (descriptor) ->
+    dependency = new Dependency descriptor
+    @[run].push dependency
 
   register: (descriptor) ->
     dependency = new Dependency descriptor
@@ -57,5 +71,10 @@ class Injector
       values.push @get item
 
     fn.apply null, values
+
+  filter: (predicate) ->
+    collection = new DependencyCollection @[modules]
+    collection = collection.concat @[config], @[run]
+    collection.filter predicate
 
 module.exports = Injector

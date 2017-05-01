@@ -12,16 +12,16 @@
   "author": "Nathan Bolam",
   "license": "MIT",
   "dependencies": {
-    "debug": "^2.6.4",
-    "mongodb": "^2.2.26",
     "body-parser": "^1.14.2",
     "callsite": "^1.0.0",
+    "connect": "^3.6.1",
     "consolidate": "^0.13.1",
     "cookie-parser": "^1.4.1",
     "cors": "^2.7.1",
-    "express": "^4.13.3",
+    "debug": "^2.6.4",
     "glob": "^6.0.4",
-    "http-error": "0.0.6"
+    "http-error": "0.0.6",
+    "mongodb": "^2.2.26"
   },
   "devDependencies": {
     "coffee-script": "^1.12.5"

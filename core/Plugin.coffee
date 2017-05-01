@@ -95,6 +95,20 @@ class Plugin
     injector.invoke "#{@name}:starter"
     @
 
+  config: (callback) ->
+    injector.config
+      type: 'config'
+      plugin: @name
+      fn: callback
+    @
+
+  run: (callback) ->
+    injector.run
+      type: 'run'
+      plugin: @name
+      fn: callback
+    @
+
   stopper: (callback) ->
     injector.register
       name: "#{@name}:stopper"

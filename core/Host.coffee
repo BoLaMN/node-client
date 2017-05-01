@@ -25,6 +25,14 @@ class Host
     @injector = injector
     @injector.get 'main'
 
+    @injector
+      .filter type: 'config'
+      .start()
+
+    @injector
+      .filter type: 'run'
+      .start()
+
     @registry.start()
     @
 

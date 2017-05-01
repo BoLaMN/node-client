@@ -31,7 +31,7 @@ module.exports = (app) ->
             if typeof @[key] is 'function'
               @[key] value
             else
-              console.warn 'query filter ' + key + ' not found, value: ', value
+              console.warn 'query filter ' + key + ' not found, value: '
         ###*
         # set where query
         #

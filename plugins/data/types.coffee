@@ -238,9 +238,22 @@ class exports.RegExp extends Type
     (if @name then @name + ' ' else '') + @re.toString()
 
 class exports.Json extends Type
+  @check: (value) ->
+    return false if not @string value
 
-  @parse: (string) ->
-    JSON.parse string
+    start = value[0]
+    end = value[value.length - 1]
+
+    array = start is '[' and end is ']'
+    object = start is '{' and end is '}'
+
+    array or object
+
+  @parse: (value) ->
+    if not @check value
+      return value
+
+    JSON.parse value
 
 module.exports = ->
 

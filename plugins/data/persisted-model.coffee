@@ -13,7 +13,8 @@ module.exports = ->
         if typeof options is 'function'
           return @create data, {}, options
 
-        @execute 'create', data, options, cb
+        @execute 'create', data, options
+          .asCallback cb
 
       @count: (where = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
@@ -21,7 +22,8 @@ module.exports = ->
 
         query = where: where
 
-        @execute 'count', query, options, cb
+        @execute 'count', query, options
+          .asCallback cb
 
       @destroy: (where = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
@@ -29,7 +31,8 @@ module.exports = ->
 
         query = where: where
 
-        @execute 'destroy', query, options, cb
+        @execute 'destroy', query, options
+          .asCallback cb
 
       @destroyById: (id, options = {}, cb = ->) ->
         if typeof options is 'function'
@@ -37,7 +40,8 @@ module.exports = ->
 
         assert id, 'The id argument is required'
 
-        @execute 'destroyById', id, options, cb
+        @execute 'destroyById', id, options
+          .asCallback cb
 
       @exists: (id, options = {}, cb = ->) ->
         if typeof options is 'function'
@@ -51,7 +55,9 @@ module.exports = ->
         finish = (err, data) ->
           cb err, not not data
 
-        @count query, options, finish
+        @count query, options
+          .then (data) -> not not data
+          .asCallback cb
 
       @execute: (command, args...) ->
         argNames = getArgs @dao[command]
@@ -89,7 +95,8 @@ module.exports = ->
         if typeof query is 'function'
           return @find {}, {}, query
 
-        @execute 'find', query, options, cb
+        @execute 'find', query, options
+          .asCallback cb
 
       @findOne: (where = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
@@ -97,7 +104,8 @@ module.exports = ->
 
         query = where: where
 
-        @execute 'findOne', query, options, cb
+        @execute 'findOne', query, options
+          .asCallback cb
 
       @findById: (id, options = {}, cb = ->) ->
         if typeof options is 'function'
@@ -108,7 +116,8 @@ module.exports = ->
         query = where:
           id: id
 
-        @execute 'findOne', query, options, cb
+        @execute 'findOne', query, options
+          .asCallback cb
 
       @findByIds: (ids = [], options = {}, cb = ->) ->
         if typeof options is 'function'
@@ -119,13 +128,15 @@ module.exports = ->
         query = where:
           id: inq: ids
 
-        @find query, options, cb
+        @find query, options
+          .asCallback cb
 
       @update: (query = {}, data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
           return @updateAll query, data, {}, options
 
-        @execute 'update', query, data, options, cb
+        @execute 'update', query, data, options
+          .asCallback cb
 
       @updateById: (id, data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
@@ -136,7 +147,8 @@ module.exports = ->
         query = where:
           id: id
 
-        @update query, data, options, cb
+        @update query, data, options
+          .asCallback cb
 
       constructor: (data = {}, options = {}) ->
         super
@@ -199,14 +211,18 @@ module.exports = ->
       create: (options = {}, cb = ->) ->
         @$isNew = false
 
-        @execute 'create', options, cb
+        @execute 'create', options
+          .asCallback cb
 
       destroy: (options = {}, cb = ->) ->
         @off()
-        @execute 'destroyById', options, cb
+
+        @execute 'destroyById', options
+          .asCallback cb
 
       exists: (options = {}, cb = ->) ->
-        @execute 'exists', options, cb
+        @execute 'exists', options
+          .asCallback cb
 
       save: (options = {}, cb = ->) ->
         if @$isNew
@@ -214,14 +230,18 @@ module.exports = ->
         else
           action = 'update'
 
-        @[action] options, cb
+        @[action] options
+          .asCallback cb
 
       update: (options = {}, cb = ->) ->
-        @execute 'updateById', options, cb
+        @execute 'updateById', options
+          .asCallback cb
 
       updateAttributes: (data = {}, options = {}, cb = ->) ->
         @setAttributes data.toObject?() or data
-        @save options, cb
+
+        @save options
+          .asCallback cb
 
       getId: ->
         @[@constructor.primaryKey]

@@ -9,14 +9,6 @@ module.exports = ->
 
   @factory 'Route', (Types, Utils, url, HttpError, RouteParam) ->
 
-    wrapHandler = (handler) ->
-      (req, res, next) ->
-        handler req.params or {}, (err, json, headers, code) ->
-          if err
-            return next(err)
-
-          res.json json, headers, code
-
     normalizePath = (path, keys, params) ->
       for name of params
         param = params[name]
@@ -64,14 +56,10 @@ module.exports = ->
         for own key, val of options
           @[key] = val
 
-        @middlewares = Utils.flatten handler
-
-        @middlewares = @middlewares.map (handler) ->
-          if handler.length == 2
-            handler = wrapHandler(handler)
-          handler
-
-        @middlewares.unshift @decodeParams.bind @
+        @middlewares = [
+          @decodeParams.bind(@)
+          @wrapHandler(handler).bind(@)
+        ]
 
         @method = (@method or 'GET').toLowerCase()
         @routeRe = normalizePath @route, @keys, @params
@@ -116,6 +104,16 @@ module.exports = ->
 
         true
 
+      wrapHandler: (handler) ->
+        (req, res, next) ->
+          handler req.params or {}, (err, json, headers, code) ->
+            if err
+              return next err
+
+            res.json json, headers, code
+
+          return
+
       decodeParams: (req, res, next) ->
         if not req.match
           return
@@ -133,7 +131,6 @@ module.exports = ->
             errors.push invalid
 
         if errors.length
-          console.log @name, errors
           err = new HttpError.UnprocessableEntity 'Validation failed'
           err.errors = errors
 

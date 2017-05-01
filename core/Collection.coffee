@@ -2,12 +2,41 @@
 
 { values } = require './Utils'
 
-class Collection extends Array
+toFunction = require './ToFunction'
 
-  constructor: (collection) ->
-    super
+proto = Array.prototype
 
-    values(collection).forEach (item) =>
-      @push item
+class Collection
+  constructor: (data) ->
+    collection = []
+
+    values(data).forEach (item) ->
+      collection.push item
+
+    @injectClassMethods collection
+
+    return collection
+
+  injectClassMethods: (collection) ->
+
+    define = (prop, desc) ->
+      Object.defineProperty collection, prop,
+        writable: false
+        enumerable: false
+        value: desc
+
+    for key, value of @
+      define key, value
+
+    collection
+
+  concat: ->
+    arr = proto.concat.apply @, arguments
+    new @constructor arr
+
+  filter: (predicate) ->
+    fn = toFunction predicate
+    arr = proto.filter.apply @, [ fn ]
+    new @constructor arr
 
 module.exports = Collection

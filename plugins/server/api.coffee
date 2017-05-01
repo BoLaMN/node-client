@@ -7,6 +7,6 @@ module.exports = ->
       constructor: ->
         super
 
-        @use Middleware.jsonWriter()
+        @use Middleware.defaults
 
     new Api
