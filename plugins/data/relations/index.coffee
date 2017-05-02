@@ -9,27 +9,31 @@ module.exports = (app) ->
 
   .initializer ->
 
+    @include './relation'
     @include './relation-array'
 
     @include './belongs-to'
+    @include './has-many'
+    @include './has-one'
     @include './embeds-many'
     @include './embeds-one'
     @include './has-and-belongs-to-many'
-    @include './has-many'
-    @include './has-one'
     @include './references-many'
 
-    @factory 'Relations', (Models, BelongsTo, EmbedMany, EmbedOne, HasAndBelongsToMany, HasMany, HasOne, ReferencesMany) ->
+    @factory 'Relations', (Models, injector) ->
 
       class Relations
 
         @defineRelation: (type, model, params = {}) ->
+          args = arguments
+
           if model.model or model.as
             params = model
             model = params.model
 
           attach = (modelTo = {}) =>
-            relation = type.define @, modelTo, params
+            relation = injector.get(type).define @, modelTo, params
+            relation.property '$args', value: args
 
             @relations.$define relation.as, relation
 
@@ -39,28 +43,28 @@ module.exports = (app) ->
             Models.$get model, attach
 
         @hasMany: (args...) ->
-          @defineRelation HasMany, args...
+          @defineRelation 'HasMany', args...
           @
 
         @belongsTo: (args...) ->
-          @defineRelation BelongsTo, args...
+          @defineRelation 'BelongsTo', args...
           @
 
         @hasAndBelongsToMany: (args...) ->
-          @defineRelation HasAndBelongsToMany, args...
+          @defineRelation 'HasAndBelongsToMany', args...
 
         @hasOne: (args...) ->
-          @defineRelation HasOne, args...
+          @defineRelation 'HasOne', args...
           @
 
         @referencesMany: (args...) ->
-          @defineRelation ReferencesMany, args...
+          @defineRelation 'ReferencesMany', args...
           @
 
         @embedMany: (args...) ->
-          @defineRelation EmbedMany, args...
+          @defineRelation 'EmbedMany', args...
           @
 
         @embedOne: (args...) ->
-          @defineRelation EmbedOne, args...
+          @defineRelation 'EmbedOne', args...
           @

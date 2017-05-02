@@ -17,9 +17,6 @@ module.exports = (app) ->
 
     @require
       bodyParser: 'body-parser'
-      consolidate: 'consolidate'
-      cookieParser: 'cookie-parser'
-      cors: 'cors'
       url: 'url'
       HttpError: 'http-error'
       connect: 'connect'

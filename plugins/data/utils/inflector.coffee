@@ -90,9 +90,11 @@ class Inflector
 
     word
 
-  @camelize: (string, firstLetterLower) ->
+  @camelize: (string, firstLetterLower, pluralize = false) ->
     string = string.replace camelize_rx, (str, p1) ->
       p1.toUpperCase()
+
+    Inflector.pluralize string if pluralize
 
     if firstLetterLower
       string.substr(0,1).toLowerCase() + string.substr(1)

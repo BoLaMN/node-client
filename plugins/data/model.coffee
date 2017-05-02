@@ -1,12 +1,13 @@
 Entity = require './entity'
-Relation = require './relations'
 Events = require './emitter'
 Attribute = require "./attributes"
 Hooks = require './hooks'
 
+extend = require './utils/extend'
+
 module.exports = ->
 
-  @factory 'Model', (Models, Storage, Cast) ->
+  @factory 'Model', (Models, Storage, Cast, Relations) ->
 
     class Model extends Entity
       @extend Events::
@@ -15,7 +16,7 @@ module.exports = ->
       @extend Attribute
       @extend Cast
 
-      @mixin Relation
+      @mixin Relations
 
       @adapter: (adapter) ->
         @property 'dao',
@@ -41,6 +42,18 @@ module.exports = ->
       @define: (name, attributes = {}) ->
         class Instance extends @
         Instance.configure name, attributes
+
+        if @primaryKey
+          Instance.primaryKey = @primaryKey
+
+        if @attributes
+          extend Instance.attributes, @attributes
+
+        if @relations
+          Object.keys(@relations).forEach (relation) =>
+            args = @relations[relation].$args
+            Instance.defineRelation.apply Instance, args
+
         Instance
 
       isValid: ->

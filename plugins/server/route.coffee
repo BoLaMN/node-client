@@ -105,14 +105,23 @@ module.exports = ->
         true
 
       wrapHandler: (handler) ->
+        args = Utils.getArgs handler
+
         (req, res, next) ->
-          handler req.params or {}, (err, json, headers, code) ->
+          arr = []
+
+          for arg, idx in args
+            arr[idx] = req.params[arg]
+
+          idx = args.indexOf 'cb'
+
+          arr[idx] = (err, json, headers, code) ->
             if err
               return next err
 
             res.json json, headers, code
 
-          return
+          handler.apply null, arr
 
       decodeParams: (req, res, next) ->
         if not req.match

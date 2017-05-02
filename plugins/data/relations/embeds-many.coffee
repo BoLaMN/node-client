@@ -1,8 +1,8 @@
 module.exports = ->
 
-  @factory 'EmbedsMany', (RelationArray, Where, Filter) ->
+  @factory 'EmbedMany', (RelationArray, Where, Filter) ->
 
-    class EmbedsMany extends RelationArray
+    class EmbedMany extends RelationArray
       @embedded: true
 
       @initialize: (@to, @from, params) ->
@@ -96,9 +96,9 @@ module.exports = ->
         @instance.updateAttribute @as, list
           .asCallback cb
 
-      get: EmbedsMany::findById
-      set: EmbedsMany::updateById
-      unset: EmbedsMany::destroyById
+      get: EmbedMany::findById
+      set: EmbedMany::updateById
+      unset: EmbedMany::destroyById
 
       at: (index, cb = ->) ->
         cb null, @[index]

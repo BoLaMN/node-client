@@ -62,6 +62,10 @@ module.exports = (app) ->
 
         @
 
+    @model 'Picture',
+      base: 'SharedModel'
+      adapter: 'MongoDB'
+
     @model 'MyModel',
       base: 'SharedModel'
       adapter: 'MongoDB'
@@ -72,7 +76,13 @@ module.exports = (app) ->
         qty:
           type: 'number'
 
+    @model 'MyModel2',
+      base: 'MyModel'
+      adapter: 'MongoDB'
+
     @extension 'MyModelExtension', (MyModel) ->
+
+      MyModel.hasMany 'Picture'
 
       MyModel::customMethod = (params, callback) ->
         callback()
