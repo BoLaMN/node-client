@@ -23,10 +23,12 @@ module.exports = ->
 
       @remoteMethod: (name, { method, path, params, description, accessType }) ->
         route = api.section @modelName
+
         fn = Utils.getDeepProperty @, name
+        args = Utils.getArgs fn
 
         if not fn
           console.error "method #{name} not found"
           return
 
-        route[method] name, path, { params, description, accessType }, fn.bind @
+        route[method] name, path, { params, description, accessType, args }, fn.bind @

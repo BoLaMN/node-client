@@ -105,10 +105,11 @@ module.exports = ->
         true
 
       wrapHandler: (handler) ->
-        args = Utils.getArgs handler
+        args = @args
 
         (req, res, next) ->
           arr = []
+
 
           for arg, idx in args
             arr[idx] = req.params[arg]
@@ -122,6 +123,8 @@ module.exports = ->
             res.json json, headers, code
 
           handler.apply null, arr
+
+          return
 
       decodeParams: (req, res, next) ->
         if not req.match

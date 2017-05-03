@@ -91,8 +91,8 @@ module.exports = ->
         if not handler
           return next()
 
-        new Request req, res, @middlewares, @errorHandlers, handler
-          .handle next
+        new Request @middlewares, @errorHandlers, handler
+          .handle req, res, next
 
       match: (req, path, method) ->
         splitPath = path.split '/'

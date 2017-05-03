@@ -3,38 +3,39 @@
 module.exports = ->
 
   @factory 'Request', (Utils) ->
+    { promisify } = Utils
 
     class Request
-      constructor: (@req, @res, @middlewares, @errorHandlers, @handlers) ->
+      constructor: (@middlewares, @errorHandlers, @handlers) ->
 
-      handle: (@done) ->
-        @middleware()
+      run: (fns, args...) ->
+        length = args.length
 
-      middleware: ->
-        @next = 'main'
+        isPromise = (o = {}) ->
+          typeof o.then is "function" or
+          typeof o.catch is "function"
 
-        process = (handle, cb) =>
-          handle @req, @res, cb
+        fns.map (fn, i) ->
+          new Promise (resolve, reject) ->
+            args[length] = (err, values...) ->
+              if err
+                return reject err
 
-        Utils.each @route.middlewares, process, @after
+              resolve values
 
-      main: ->
-        @next = 'done'
+            response = fn.apply null, args
 
-        process = (handle, cb) =>
-          handle @req, @res, cb
+            if isPromise response
+              resolve response
 
-        Utils.each @handlers, process, @after
+      handle: (@req, @res, done) ->
+        fns = @middlewares.concat @handlers
 
-      after: (err) ->
-        if err
-          return @error err
-
-        @[@next](err)
+        Promise.all @run(fns, @req, @res)
+          .catch @error.bind(@)
+          .asCallback done
 
       error: (err) ->
+        fns = @errorHandlers
 
-        process = (handle, cb) =>
-          handle err, @req, @res, cb
-
-        Utils.each @errorHandlers, process, @done
+        Promise.all @run(fns, err, @req, @res)
