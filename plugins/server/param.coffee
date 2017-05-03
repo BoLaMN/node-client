@@ -25,7 +25,7 @@ module.exports = ->
           RegExpType = Types.$get 'RegExp'
 
           @type = RegExpType.construct @type
-        else
+        else if @type is 'string'
           @type = Types.$get @type
 
       missing: ({ match, body, parsedUrl }) ->

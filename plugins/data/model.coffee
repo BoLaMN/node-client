@@ -56,8 +56,11 @@ module.exports = ->
 
         Instance
 
-      isValid: ->
+      @check: ->
         true
+
+      @parse: (data = {}) ->
+        new @constructor data
 
       fire: (event, options, fn = ->) ->
         options.instance = @
