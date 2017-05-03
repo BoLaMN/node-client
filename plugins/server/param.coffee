@@ -16,8 +16,10 @@ module.exports = ->
           when undefined, 'body'
             @type = @type or 'json'
             @source = 'body'
+          when 'context'
+            @type = @type or 'object'
           else
-            throw new Error "parameter source muste be 'url', 'query' or 'body'"
+            throw new Error "parameter source muste be 'context', url', 'query' or 'body'"
 
         @optional = not not @optional
 
