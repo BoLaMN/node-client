@@ -90,13 +90,14 @@ module.exports = ->
         buildOptions @instance, @as, @length + 1
 
       remotes: ->
+        primaryKeyType = @from.attributes[@primaryKey].type
 
         "prototype.#{ @as }.get":
           method: 'get'
           path: "/:#{ @primaryKey }/#{ @as }"
           params:
             "#{ @primaryKey }":
-              type: 'any'
+              type: primaryKeyType
               description: "Primary key for #{ @from.modelName }"
               optional: false
               source: 'url'
@@ -116,7 +117,7 @@ module.exports = ->
           path: "/:#{ @primaryKey }/#{ @as }"
           params:
             "#{ @primaryKey }":
-              type: 'any'
+              type: primaryKeyType
               description: "Primary key for #{ @from.modelName }"
               optional: false
               source: 'url'
@@ -136,7 +137,7 @@ module.exports = ->
           path: "/:#{ @primaryKey }/#{ @as }"
           params:
             "#{ @primaryKey }":
-              type: 'any'
+              type: primaryKeyType
               description: "Primary key for #{ @from.modelName }"
               optional: false
               source: 'url'
@@ -156,7 +157,7 @@ module.exports = ->
           path: "/:#{ @primaryKey }/#{ @as }/count"
           params:
             "#{ @primaryKey }":
-              type: 'any'
+              type: primaryKeyType
               description: "Primary key for #{ @from.modelName }"
               optional: false
               source: 'url'

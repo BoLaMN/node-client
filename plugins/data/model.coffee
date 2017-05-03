@@ -60,7 +60,7 @@ module.exports = ->
         true
 
       @parse: (data = {}) ->
-        new @constructor data
+        new @ data
 
       fire: (event, options, fn = ->) ->
         options.instance = @

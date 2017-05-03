@@ -123,18 +123,20 @@ module.exports = ->
           .asCallback cb
 
       remotes: ->
+        primaryKeyType = @from.attributes[@primaryKey].type
+        foreignKeyType = @to.attributes[@foreignKey].type
 
         "prototype.#{ @as }.findById":
           method: 'get'
           path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
           params:
             "#{ @primaryKey }":
-              type: 'any'
+              type: primaryKeyType
               description: "Primary key for #{ @from.modelName }"
               optional: false
               source: 'url'
             "#{ @foreignKey }":
-              type: 'any'
+              type: foreignKeyType
               description: "Foreign key for #{ @as }"
               optional: false
               source: 'url'
@@ -150,12 +152,12 @@ module.exports = ->
           path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
           params:
             "#{ @primaryKey }":
-              type: 'any'
+              type: primaryKeyType
               description: "Primary key for #{ @from.modelName }"
               optional: false
               source: 'url'
             "#{ @foreignKey }":
-              type: 'any'
+              type: foreignKeyType
               description: "Foreign key for #{ @as }"
               optional: false
               source: 'url'
@@ -171,12 +173,12 @@ module.exports = ->
           path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
           params:
             "#{ @primaryKey }":
-              type: 'any'
+              type: primaryKeyType
               description: "Primary key for #{ @from.modelName }"
               optional: false
               source: 'url'
             "#{ @foreignKey }":
-              type: 'any'
+              type: foreignKeyType
               description: "Foreign key for #{ @as }"
               optional: false
               source: 'url'
