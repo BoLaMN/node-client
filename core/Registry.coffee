@@ -58,9 +58,9 @@ class Registry
       plugin = @[plugins][key]
 
       metadata = plugin.metadata
-      dependencies = metadata.dependencies or {}
+      dependencies = metadata.dependencies or []
 
-      Object.keys(dependencies).forEach (name) =>
+      dependencies.forEach (name) =>
         range = dependencies[name]
         dependency = @[plugins][name]
 
@@ -96,7 +96,7 @@ class Registry
     remaining = [].concat values @[plugins]
 
     remaining.forEach (plugin, index) ->
-      if not plugin.dependencies or Object.keys(plugin.dependencies).length is 0
+      if not plugin.dependencies or plugin.dependencies.length is 0
         ordered.push plugin
         remaining.splice index, 1
 

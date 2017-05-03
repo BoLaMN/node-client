@@ -2,10 +2,33 @@
 
 module.exports = (app) ->
 
+  buildModel = (name, { base, adapter, properties, relations }, injector) ->
+    base = base or 'Model'
+    model = injector.get base
+
+    adptr = injector.get adapter
+    connector = adptr.define 'db'
+
+    factory = model.define name, properties
+    factory.adapter connector
+
+    for as, config of relations
+      config.as = as
+      factory[config.type] config
+
+    injector.register
+      name: name
+      type: 'model'
+      fn: -> factory
+
+    @
+
+
   app
 
   .plugin 'Data',
     version: '0.0.1'
+    dependencies: [ 'Relations', 'Server' ]
 
   .initializer ->
 
@@ -13,6 +36,7 @@ module.exports = (app) ->
       'fs'
       'path'
       'crypto'
+      'glob'
     ]
 
     @include './storage'
@@ -22,6 +46,8 @@ module.exports = (app) ->
     @include './model'
     @include './cast'
     @include './types'
+    @include './adapter'
+    @include './mongo/mongo'
 
     # @model 'MyModel',
     #   base: 'PersistedModel'
@@ -39,28 +65,22 @@ module.exports = (app) ->
     #
 
     @assembler 'model', (injector) ->
-      (name, { base, adapter, properties, relations }) =>
-        injector.register
-          name: name
-          type: 'model'
-          plugin: @name
-          fn: ->
-            base = base or 'Model'
-            model = injector.get base
+      (name, config) ->
+        buildModel name, config, injector
 
-            adptr = injector.get adapter
-            connector = adptr.define 'db'
+    @starter (settings, glob, path, injector) ->
+      directory = settings.directorys.models
+      pattern = path.join directory, '**/*.json'
 
-            factory = model.define name, properties
-            factory.adapter connector
+      files = glob.sync path.resolve pattern
 
-            for as, config of relations
-              config.as = as
-              factory[config.type] config
+      models = files.map (filename) ->
+        config = require filename
+        buildModel config.name, config, injector
 
-            factory
+      console.log files, models
 
-        @
+      models
 
     @model 'Picture',
       base: 'SharedModel'
@@ -86,6 +106,3 @@ module.exports = (app) ->
 
       MyModel::customMethod = (params, callback) ->
         callback()
-
-    @include './adapter'
-    @include './mongo/mongo'

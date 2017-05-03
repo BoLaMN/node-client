@@ -22,6 +22,20 @@ module.exports = ->
             if formatter then formatter(value) else value
 
       constructor: (data = {}) ->
+        @cwd = process.cwd()
+        @env = process.env['NODE_ENV'] or 'development'
+
+        @directorys =
+          configs: 'configs'
+          constants: 'constants'
+          values: 'values'
+          models: 'models'
+          providers: 'providers'
+          factories: 'factories'
+          services: 'services'
+          controllers: 'controllers'
+          routers: 'routers'
+
         for key, val of data
           @[key] = val
 

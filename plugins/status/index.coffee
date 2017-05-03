@@ -6,8 +6,7 @@ module.exports = (app) ->
 
   .plugin 'Status',
     version: '0.0.1'
-    dependencies:
-      Server: true
+    dependencies: [ 'Server' ]
 
   .initialize ->
 

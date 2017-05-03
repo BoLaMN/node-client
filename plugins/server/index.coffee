@@ -8,8 +8,7 @@ module.exports = (app) ->
 
   .plugin 'Server',
     version: '0.0.1'
-    dependencies:
-      Data: true
+    dependencies: [ ]
 
   .initializer ->
 
