@@ -2,28 +2,6 @@
 
 module.exports = (app) ->
 
-  buildModel = (name, { base, adapter, properties, relations }, injector) ->
-    base = base or 'Model'
-    model = injector.get base
-
-    adptr = injector.get adapter
-    connector = adptr.define 'db'
-
-    factory = model.define name, properties
-    factory.adapter connector
-
-    for as, config of relations
-      config.as = as
-      factory[config.type] config
-
-    injector.register
-      name: name
-      type: 'model'
-      fn: -> factory
-
-    @
-
-
   app
 
   .plugin 'Data',
@@ -31,6 +9,27 @@ module.exports = (app) ->
     dependencies: [ 'Relations', 'Server' ]
 
   .initializer ->
+
+    buildModel = (name, { base, adapter, properties, relations }, injector) ->
+      base = base or 'Model'
+      model = injector.get base
+
+      adptr = injector.get adapter
+      connector = adptr.define 'db'
+
+      factory = model.define name, properties
+      factory.adapter connector
+
+      for as, config of relations
+        config.as = as
+        factory[config.type] config
+
+      injector.register
+        name: name
+        type: 'model'
+        fn: -> factory
+
+      @
 
     @require [
       'fs'
@@ -48,21 +47,6 @@ module.exports = (app) ->
     @include './types'
     @include './adapter'
     @include './mongo/mongo'
-
-    # @model 'MyModel',
-    #   base: 'PersistedModel'
-    #   properties:
-    #     items: [ 'string' ]
-    #     orderDate:
-    #       type: 'date'
-    #     qty:
-    #       type: 'number'
-    #
-    # @extension 'MyModelExtension', (MyModel) ->
-    #
-    #   MyModel::customMethod = (params, callback) ->
-    #     callback()
-    #
 
     @assembler 'model', (injector) ->
       (name, config) ->
