@@ -7,7 +7,7 @@ module.exports = ->
     class Request
       constructor: (@req, @res, @middlewares, @errorHandlers, @handlers) ->
 
-      handle: (@next) ->
+      handle: (@done) ->
         @middleware()
 
       middleware: ->
@@ -19,7 +19,7 @@ module.exports = ->
         Utils.each @route.middlewares, process, @after
 
       main: ->
-        @next = 'next'
+        @next = 'done'
 
         process = (handle, cb) =>
           handle @req, @res, cb
@@ -37,4 +37,4 @@ module.exports = ->
         process = (handle, cb) =>
           handle err, @req, @res, cb
 
-        Utils.each @errorHandlers, process, @next
+        Utils.each @errorHandlers, process, @done
