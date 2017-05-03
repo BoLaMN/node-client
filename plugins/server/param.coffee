@@ -37,6 +37,7 @@ module.exports = ->
           return false
 
         exists =
+          @source is 'context' or
           @source is 'body' and (@name of body) or
           @source is 'query' and (@name of query) or
           @source is 'url' and (@name of match)
@@ -61,13 +62,14 @@ module.exports = ->
 
         value
 
-      invalid: ({ match, body, parsedUrl, params }) ->
+      invalid: ({ match, body, parsedUrl, params, locals }) ->
         { query } = parsedUrl
 
         value = switch @source
-          when 'body'  then @check body
-          when 'query' then @check query
-          when 'url'   then @check match
+          when 'context' then locals
+          when 'body'    then @check body
+          when 'query'   then @check query
+          when 'url'     then @check match
 
         if value
           params[@name] = value

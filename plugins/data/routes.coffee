@@ -6,6 +6,10 @@ module.exports =
         description: "filter.where object"
         type: "object"
         source: 'query'
+      options:
+        type: 'object'
+        source: 'context'
+        optional: true
     accessType: "WRITE"
     description: "Delete all matching records."
     path: "/"
@@ -17,6 +21,10 @@ module.exports =
         description: "Model id"
         source: "url"
         type: "any"
+      options:
+        type: 'object'
+        source: 'context'
+        optional: true
     accessType: "WRITE"
     aliases: [
       "destroyById"
@@ -33,6 +41,10 @@ module.exports =
         source: "body"
         type: "object"
         optional: true
+      options:
+        type: 'object'
+        source: 'context'
+        optional: true
     accessType: "WRITE"
     description: "Create a new instance of the model and persist it into the data source."
     path: "/"
@@ -45,6 +57,10 @@ module.exports =
         type: "object"
         optional: true
         source: 'query'
+      options:
+        type: 'object'
+        source: 'context'
+        optional: true
     accessType: "READ"
     description: "Count instances of the model matched by where from the data source."
     path: "/count"
@@ -56,6 +72,10 @@ module.exports =
         description: "Model id"
         type: "any"
         source: 'url'
+      options:
+        type: 'object'
+        source: 'context'
+        optional: true
     accessType: "READ"
     description: "Check whether a model instance exists in the data source."
     path: "/:id"
@@ -67,6 +87,10 @@ module.exports =
         description: "Filter defining fields, where, include, order, offset, and limit"
         type: "object"
         source: 'query'
+        optional: true
+      options:
+        type: 'object'
+        source: 'context'
         optional: true
     accessType: "READ"
     description: "Find all instances of the model matched by filter from the data source."
@@ -84,6 +108,10 @@ module.exports =
         type: "object"
         source: 'query'
         optional: true
+      options:
+        type: 'object'
+        source: 'context'
+        optional: true
     accessType: "READ"
     description: "Find a model instance by id from the data source."
     path: "/:id"
@@ -95,6 +123,10 @@ module.exports =
         description: "Filter defining fields, where, include, order, offset, and limit"
         type: "object"
         source: 'query'
+      options:
+        type: 'object'
+        source: 'context'
+        optional: true
     accessType: "READ"
     description: "Find first instance of the model matched by filter from the data source."
     path: "/findOne"
@@ -110,6 +142,10 @@ module.exports =
         description: "An object of model property name/value pairs"
         source: "body"
         type: "object"
+      options:
+        type: 'object'
+        source: 'context'
+        optional: true
     accessType: "WRITE"
     aliases: [
       "patchAttributes"
@@ -128,6 +164,10 @@ module.exports =
         description: "An object of model property name/value pairs"
         source: "body"
         type: "object"
+      options:
+        type: 'object'
+        source: 'context'
+        optional: true
     accessType: "WRITE"
     aliases: [
       "update"
@@ -146,6 +186,10 @@ module.exports =
         description: "Model instance data"
         source: "body"
         type: "object"
+      options:
+        type: 'object'
+        source: 'context'
+        optional: true
     accessType: "WRITE"
     description: "Replace attributes for a model instance and persist it into the data source."
     path: "/:id/patch"
