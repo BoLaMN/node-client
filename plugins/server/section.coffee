@@ -3,8 +3,9 @@
 module.exports = ->
 
   @include './route'
+  @include './request'
 
-  @factory 'Section', (Route, Utils, url) ->
+  @factory 'Section', (Request, Route, Utils, url) ->
 
     class Section
       constructor: (@name = '', description) ->
@@ -74,29 +75,6 @@ module.exports = ->
 
       _handle: (req, res, next) ->
 
-        each = (fns, iterate, callback) ->
-          count = 0
-
-          run = (item, index) ->
-            iterate item, (err, obj) ->
-              if err
-                callback err
-                callback = ->
-                return
-
-              count += 1
-
-              if count is fns.length
-                callback()
-
-          if not fns.length
-            return callback()
-
-          fns.forEach run
-
-        process = (handle, cb) ->
-          handle req, res, cb
-
         if !req.parsedUrl
           req.parsedUrl = url.parse(req.url, true)
 
@@ -113,38 +91,8 @@ module.exports = ->
         if not handler
           return next()
 
-        after = (err) =>
-          if err
-            @handleError err, req, res, next
-          else next()
-
-        main = (err) ->
-          if err
-            return after err
-          each handler, process, after
-
-        each @middlewares, process, main
-
-      handleError: (err, req, res, next) ->
-        errorHandlers = @errorHandlers
-        i = 0
-
-        processNext = (err) ->
-          if !err
-            return next()
-
-          handler = errorHandlers[i++]
-
-          if !handler or i > errorHandlers.length
-            return next(err)
-
-          handler err, req, res, processNext
-
-          return
-
-        processNext err
-
-        return
+        new Request req, res, @middlewares, @errorHandlers, handler
+          .handle next
 
       match: (req, path, method) ->
         splitPath = path.split '/'

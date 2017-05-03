@@ -18,6 +18,26 @@ class Utils
     .map (arg) -> arg.replace(/\/\*.*\*\//, '').trim()
     .filter (arg) -> arg
 
+  @each: (fns, iterate, callback) ->
+    count = 0
+
+    run = (item, index) ->
+      iterate item, (err, obj) ->
+        if err
+          callback err
+          callback = ->
+          return
+
+        count += 1
+
+        if count is fns.length
+          callback()
+
+    if not fns.length
+      return callback()
+
+    fns.forEach run
+
   @getDeepProperty: (obj, path) ->
     if !obj or !path
       return obj
