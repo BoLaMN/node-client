@@ -24,7 +24,6 @@ class Host
 
   run: ->
     @injector = injector
-    #@injector.get 'main'
     @registry.start()
     @
 

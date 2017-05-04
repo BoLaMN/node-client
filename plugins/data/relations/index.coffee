@@ -4,8 +4,7 @@ module.exports = (app) ->
 
   app
 
-  .plugin 'Relations',
-    version: '0.0.1'
+  .module 'Relations', []
 
   .initializer ->
 

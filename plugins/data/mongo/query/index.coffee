@@ -11,8 +11,7 @@ module.exports = (app) ->
 
   app
 
-  .plugin 'MongoQuery',
-    version: '0.0.1'
+  .module 'MongoQuery', []
 
   .initializer ->
 

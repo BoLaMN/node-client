@@ -10,8 +10,7 @@ module.exports = (app) ->
 
   app
 
-  .plugin 'Filter',
-    version: '0.0.1'
+  .module 'Filter', []
 
   .initializer ->
 

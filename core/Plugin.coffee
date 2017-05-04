@@ -13,7 +13,7 @@ init = Symbol()
 
 class Plugin extends Emitter
 
-  constructor: (@name, @metadata) ->
+  constructor: (@name, @dependencies) ->
     @injector = injector
 
     super

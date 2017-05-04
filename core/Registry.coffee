@@ -57,8 +57,7 @@ class Registry
     Object.keys(@[plugins]).forEach (key) =>
       plugin = @[plugins][key]
 
-      metadata = plugin.metadata
-      dependencies = metadata.dependencies or []
+      dependencies = plugin.dependencies or []
 
       dependencies.forEach (name) =>
         range = dependencies[name]
@@ -70,8 +69,8 @@ class Registry
         dependency.dependents = dependency.dependents or {}
         dependency.dependents[plugin.name] = plugin
 
-        plugin.dependencies = plugin.dependencies or {}
-        plugin.dependencies[name] = dependency
+        plugin.metadata = plugin.metadata or {}
+        plugin.metadata[name] = dependency
 
     @
 
@@ -80,7 +79,7 @@ class Registry
     target = [].concat ordered
 
     source.forEach (plugin, index) ->
-      dependencies = values plugin.dependencies
+      dependencies = values plugin.metadata
 
       isSatisfied = dependencies.every (dependency) ->
         target.indexOf(dependency) isnt -1
@@ -112,8 +111,7 @@ class Registry
 
   core: ->
 
-    @plugin 'Core',
-      version: '0.0.1'
+    @module 'Core', []
 
     .initializer ->
 
@@ -122,9 +120,9 @@ class Registry
 
     @
 
-  plugin: (name, metadata) ->
-    if metadata
-      @set name, new Plugin name, metadata
+  module: (name, dependencies) ->
+    if dependencies
+      @set name, new Plugin name, dependencies
     else
       @get name
 

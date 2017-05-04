@@ -1,18 +1,12 @@
 'use strict'
 
-{ inspect } = require 'util'
-
 module.exports = (app) ->
 
   app
 
-  .plugin 'Server',
-    version: '0.0.1'
-    dependencies: [ ]
+  .module 'Server', []
 
   .initializer ->
-
-    #@alias 'main', 'server'
 
     @require
       bodyParser: 'body-parser'

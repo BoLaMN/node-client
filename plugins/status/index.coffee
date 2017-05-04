@@ -4,9 +4,7 @@ module.exports = (app) ->
 
   app
 
-  .plugin 'Status',
-    version: '0.0.1'
-    dependencies: [ 'Server' ]
+  .module 'Status', [ 'Server' ]
 
   .initialize ->
 
