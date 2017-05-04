@@ -13,6 +13,7 @@ class Host
     host = new Host
 
     host.registry
+      .core()
       .glob()
       .require()
       .resolve()

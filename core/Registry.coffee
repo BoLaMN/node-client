@@ -110,6 +110,18 @@ class Registry
   start: ->
     @prioritized.start()
 
+  core: ->
+
+    @plugin 'Core',
+      version: '0.0.1'
+
+    .initializer ->
+
+      @require
+        Utils: './Utils'
+
+    @
+
   plugin: (name, metadata) ->
     if metadata
       @set name, new Plugin name, metadata

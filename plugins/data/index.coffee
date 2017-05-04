@@ -10,11 +10,11 @@ module.exports = (app) ->
 
   .initializer ->
 
-    buildModel = (name, { base, adapter, properties, relations }, injector) =>
+    buildModel = (name, { base, adapter, properties, relations }) =>
       base = base or 'Model'
 
-      model = injector.get base
-      adptr = injector.get adapter
+      model = @injector.get base
+      adptr = @injector.get adapter
 
       connector = adptr.define 'db'
 
@@ -36,9 +36,6 @@ module.exports = (app) ->
       'glob'
     ]
 
-    @require
-      Utils: '../core/Utils'
-
     @include './storage'
     @include './models'
     @include './shared-model'
@@ -49,11 +46,11 @@ module.exports = (app) ->
     @include './adapter'
     @include './mongo/mongo'
 
-    @assembler 'model', (injector) ->
+    @assembler 'model', ->
       (name, config) ->
-        buildModel name, config, injector
+        buildModel name, config
 
-    @run (settings, glob, path, injector) ->
+    @run (settings, glob, path) ->
       directory = settings.directorys.models
       pattern = path.join directory, '**/*.json'
 
@@ -61,7 +58,7 @@ module.exports = (app) ->
 
       models = files.map (filename) ->
         config = require filename
-        buildModel config.name, config, injector
+        buildModel config.name, config
 
       models
 

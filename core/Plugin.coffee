@@ -14,6 +14,8 @@ init = Symbol()
 class Plugin extends Emitter
 
   constructor: (@name, @metadata) ->
+    @injector = injector
+
     super
 
   require: (modules) ->
@@ -104,7 +106,7 @@ class Plugin extends Emitter
     @
 
   assembler: (name, factory) ->
-    @constructor::[name] = factory.bind(@)(injector)
+    @constructor::[name] = factory.bind(@)()
     @
 
   initializer: (callback) ->

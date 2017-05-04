@@ -2,9 +2,6 @@
 
 module.exports = ->
 
-  @require
-    Utils: '../core/Utils'
-
   @factory 'Settings', (Utils, fs, path, crypto) ->
 
     class Settings
