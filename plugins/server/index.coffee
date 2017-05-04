@@ -12,7 +12,7 @@ module.exports = (app) ->
 
   .initializer ->
 
-    @alias 'main', 'server'
+    #@alias 'main', 'server'
 
     @require
       bodyParser: 'body-parser'
@@ -26,7 +26,7 @@ module.exports = (app) ->
     @include './server'
     @include './settings'
 
-    @starter (server, api, settings, MyModel) ->
+    @run (server, api, settings, MyModel) ->
 
       server.listen settings.port, settings.host, ->
         console.log ' server listening at: %s', settings.host + ':' + settings.port

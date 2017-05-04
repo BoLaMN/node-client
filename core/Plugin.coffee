@@ -1,5 +1,8 @@
 'use strict'
 
+Provider = require './Provider'
+Emitter = require './Emitter'
+
 { zipObject } = require './Utils'
 
 path = require 'path'
@@ -8,9 +11,10 @@ injector = require './injectorInstance'
 
 init = Symbol()
 
-class Plugin
+class Plugin extends Emitter
 
   constructor: (@name, @metadata) ->
+    super
 
   require: (modules) ->
     if typeof modules is 'string'
@@ -20,7 +24,7 @@ class Plugin
       modules = zipObject modules, modules
 
     Object.keys(modules).forEach (key) =>
-      @module key, -> require modules[key]
+      @factory key, -> require modules[key]
     @
 
   include: (filename) ->
@@ -30,44 +34,73 @@ class Plugin
     require(filepath).bind(@)()
     @
 
-  module: (name, factory) ->
-    injector.register
-      name: name
-      type: 'module'
-      plugin: @name
-      fn: factory
+  config: (configurator) ->
+    @on 'config', =>
+      injector.exec configurator, @
+    @
+
+  run: (configurator) ->
+    @on 'run', =>
+      injector.exec configurator, @
+    @
+
+  provider: (name, factory) ->
+    provider = new Provider
+
+    injector.exec factory, provider
+
+    injector.register name,
+      factory: provider
+      type: 'provider'
+
+    @
+
+  constant: (name, factory) ->
+    @factory name, factory
+
+  value: (name, factory) ->
+    @provider name, ->
+      value = undefined
+
+      @$get = ->
+        if value
+          return value
+        value = injector.exec factory, @
+        value
+
+  service: (name, factory) ->
+    @provider name, ->
+      instance = undefined
+
+      @$get = ->
+        if instance
+          return instance
+        instance = injector.exec factory
+        instance
+
+  controller: (name, factory) ->
+    @factory name, ->
+      instance = new EventEmitter()
+      injector.exec factory, instance
+      instance
 
   factory: (name, factory) ->
-    injector.register
-      name: name
-      type: 'factory'
-      plugin: @name
-      fn: factory
+    @provider name, ->
+      @$get = factory
+
+  decorator: (name, factory) ->
+    injector.register name,
+      factory: factory
+      type: 'decorator'
     @
 
-  adapter: (name, factory) ->
-    injector.register
-      name: name
-      type: 'adapter'
-      plugin: @name
-      fn: factory
-    @
-
-  alias: (alias, name) ->
-    injector.register
-      name: alias
-      type: 'alias'
-      plugin: @name
-      fn: ->
-        injector.get name
+  start: ->
+    @emit 'config'
+    @emit 'run'
     @
 
   extension: (name, mutator) ->
-    injector.register
-      name: name
-      type: 'extension'
-      plugin: @name
-      fn: mutator
+    @factory name, mutator
     @
 
   assembler: (name, factory) ->
@@ -81,44 +114,6 @@ class Plugin
   initialize: ->
     fn = @[init]?.bind @
     fn @ if fn
-    @
-
-  starter: (callback) ->
-    injector.register
-      name: "#{@name}:starter"
-      type: 'starter'
-      plugin: @name
-      fn: callback
-    @
-
-  start: ->
-    injector.invoke "#{@name}:starter"
-    @
-
-  config: (callback) ->
-    injector.config
-      type: 'config'
-      plugin: @name
-      fn: callback
-    @
-
-  run: (callback) ->
-    injector.run
-      type: 'run'
-      plugin: @name
-      fn: callback
-    @
-
-  stopper: (callback) ->
-    injector.register
-      name: "#{@name}:stopper"
-      type: 'stopper'
-      plugin: @name
-      fn: callback
-    @
-
-  stop: ->
-    injector.invoke "#{@name}:stopper"
     @
 
 module.exports = Plugin

@@ -23,20 +23,7 @@ class Host
 
   run: ->
     @injector = injector
-    @injector.get 'main'
-
-    @injector
-      .filter type: 'config'
-      .start()
-
-    @injector
-      .filter type: 'extension'
-      .start()
-
-    @injector
-      .filter type: 'run'
-      .start()
-
+    #@injector.get 'main'
     @registry.start()
     @
 

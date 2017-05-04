@@ -145,5 +145,5 @@ module.exports = ->
           cb null, res.err
 
       @toString: ->
-        @db.s.databaseName
+        @name
 

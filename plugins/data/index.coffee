@@ -10,11 +10,12 @@ module.exports = (app) ->
 
   .initializer ->
 
-    buildModel = (name, { base, adapter, properties, relations }, injector) ->
+    buildModel = (name, { base, adapter, properties, relations }, injector) =>
       base = base or 'Model'
-      model = injector.get base
 
+      model = injector.get base
       adptr = injector.get adapter
+
       connector = adptr.define 'db'
 
       factory = model.define name, properties
@@ -24,10 +25,7 @@ module.exports = (app) ->
         config.as = as
         factory[config.type] config
 
-      injector.register
-        name: name
-        type: 'model'
-        fn: -> factory
+      @factory name, -> factory
 
       @
 
@@ -37,6 +35,9 @@ module.exports = (app) ->
       'crypto'
       'glob'
     ]
+
+    @require
+      Utils: '../core/Utils'
 
     @include './storage'
     @include './models'
@@ -52,7 +53,7 @@ module.exports = (app) ->
       (name, config) ->
         buildModel name, config, injector
 
-    @starter (settings, glob, path, injector) ->
+    @run (settings, glob, path, injector) ->
       directory = settings.directorys.models
       pattern = path.join directory, '**/*.json'
 
@@ -61,8 +62,6 @@ module.exports = (app) ->
       models = files.map (filename) ->
         config = require filename
         buildModel config.name, config, injector
-
-      console.log files, models
 
       models
 

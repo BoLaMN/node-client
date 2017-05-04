@@ -1,77 +1,62 @@
 'use strict'
 
-Dependency = require './Dependency'
-DependencyCollection = require './DependencyCollection'
-
-modules = Symbol()
-config = Symbol()
-run = Symbol()
+dependencies = Symbol()
+decorators = Symbol()
 
 class Injector
 
   constructor: ->
-    @[modules] = {}
+    @[dependencies] = {}
+    @[decorators] = {}
 
-    @[config] = []
-    @[run] = []
+    @register 'injector',
+      factory:
+        $get: -> @
+      type: 'injector'
 
-    @register
-      name: 'injector'
-      value: @
+  register: (name, { type, factory }) ->
+    if type is 'decorator'
+      @[decorators][name] ?= []
+      @[decorators][name].push factory
+    else
+      @[dependencies][name] = factory.$get
+      @[dependencies][name + 'Provider'] = ->
+        factory
+    @
 
-  config: (descriptor) ->
-    dependency = new Dependency descriptor
-    @[config].push dependency
+  get: (name, context) ->
+    @exec @[dependencies][name], context
 
-  run: (descriptor) ->
-    dependency = new Dependency descriptor
-    @[run].push dependency
+  parse: (factory) ->
+    s = factory + ''
+    match = s.match /^function\s*[a-z0-9$_]*\s*\((.*)\)/i
 
-  register: (descriptor) ->
-    dependency = new Dependency descriptor
-    @[modules][dependency.name] = dependency
+    if not match
+      return []
 
-  list: ->
-    Object.keys @[modules]
+    match[1]
+      .trim()
+      .split /\s*,\s*/g
+      .filter (item) ->
+        item.length > 0
 
-  get: (name) ->
-    descriptor = @[modules][name]
+  inject: (deps) ->
+    deps.map (dependency) =>
+      factory = @[dependencies][dependency]
 
-    if !descriptor
-      throw new Error "Unknown dependency '#{name}'"
+      if not factory
+        throw new ReferenceError "Dependency '#{dependency}' not defined in module '#{ @name }' of #{ deps }"
 
-    value = descriptor.value
+      args = @inject @parse factory
+      service = factory args...
 
-    if not value
-      values = []
+      (@[decorators][dependency] or []).forEach (decorate) ->
+        service = decorate service
 
-      fn = descriptor.fn
+      service
 
-      descriptor.dependencies.forEach (dependency) =>
-        values.push @get dependency if dependency
-
-      value = descriptor.value = fn.apply(null, values)
-
-    value
-
-  invoke: (name) ->
-    dependency = @[modules][name]
-
-    if not dependency
-      return
-
-    { dependencies, fn } = dependency
-
-    values = []
-
-    dependencies.forEach (item) =>
-      values.push @get item
-
-    fn.apply null, values
-
-  filter: (predicate) ->
-    collection = new DependencyCollection @[modules]
-    collection = collection.concat @[config], @[run]
-    collection.filter predicate
+  exec: (factory, context) ->
+    args = @inject @parse factory
+    factory.apply context, args
 
 module.exports = Injector

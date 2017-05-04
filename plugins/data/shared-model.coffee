@@ -17,14 +17,14 @@ module.exports = ->
         for name, config of routes
           @remoteMethod name, config
 
-        console.log inspect(api.toObject(), false, null)
+        #console.log inspect(api.toObject(), false, null)
 
         @
 
       @remoteMethod: (name, { method, path, params, description, accessType }) ->
         route = api.section @modelName
 
-        fn = Utils.getDeepProperty @, name
+        fn = Utils.get @, name
         args = Utils.getArgs fn
 
         if not fn

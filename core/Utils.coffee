@@ -38,7 +38,7 @@ class Utils
 
     fns.forEach run
 
-  @getDeepProperty: (obj, path) ->
+  @get: (obj, path) ->
     if !obj or !path
       return obj
 
@@ -59,7 +59,7 @@ class Utils
 
     current
 
-  @setDeepProperty: (target, chain, value) ->
+  @set: (target, chain, value) ->
     key = chain.shift()
 
     if chain.length is 0 and value isnt undefined
@@ -68,7 +68,7 @@ class Utils
       if !target[key]
         target[key] = {}
 
-      Utils.setDeepProperty target[key], chain, value
+      Utils.set target[key], chain, value
 
     return
 
