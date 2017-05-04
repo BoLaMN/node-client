@@ -82,7 +82,7 @@ class Plugin extends Emitter
 
   controller: (name, factory) ->
     @factory name, ->
-      instance = new EventEmitter()
+      instance = new Emitter
       injector.exec factory, instance
       instance
 
