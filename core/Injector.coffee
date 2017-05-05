@@ -25,15 +25,26 @@ class Injector
     @
 
   get: (name, context) ->
-    factory = @[dependencies][name]
-
+    factory = @require name
     args = @inject @parse factory
-    service = factory args...
+    service = @decorate name, factory args...
+    factory.apply context, args
 
+  decorate: (name, service) ->
     (@[decorators][name] or []).forEach (decorate) ->
       service = decorate service
+    service
 
-    factory.apply context, args
+  require: (name) ->
+    factory = @[dependencies][name]
+
+    if not factory
+      try
+        factory = @[dependencies][name] = require name
+      catch e
+        throw new ReferenceError "Dependency '#{name}' not defined"
+
+    factory
 
   parse: (factory) ->
     s = factory + ''
@@ -49,22 +60,10 @@ class Injector
         item.length > 0
 
   inject: (deps) ->
-    deps.map (dependency) =>
-      factory = @[dependencies][dependency]
-
-      if not factory
-        try
-          factory = @[dependencies][dependency] = require dependency
-        catch e
-          throw new ReferenceError "Dependency '#{dependency}' not defined of #{ deps }"
-
+    deps.map (name) =>
+      factory = @require name
       args = @inject @parse factory
-      service = factory args...
-
-      (@[decorators][dependency] or []).forEach (decorate) ->
-        service = decorate service
-
-      service
+      @decorate name, factory args...
 
   exec: (factory, context) ->
     args = @inject @parse factory
