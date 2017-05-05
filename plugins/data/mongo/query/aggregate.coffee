@@ -1,135 +1,138 @@
+module.exports = ->
 
-class Aggregate
-  constructor: (@collection) ->
-    @pipeline = []
-    @options = {}
+  @factory 'MongoQueryAggregate', ->
 
-  isOperator = (obj) ->
-    if typeof obj  isnt 'object'
-      return false
+    class MongoQueryAggregate
+      constructor: (@collection) ->
+        @pipeline = []
+        @options = {}
 
-    keys = Object.keys obj
+      isOperator = (obj) ->
+        if typeof obj  isnt 'object'
+          return false
 
-    keys.length and keys.some (key) ->
-      key[0] is '$'
+        keys = Object.keys obj
 
-  append: (args...) ->
-    if not args.every isOperator
-      throw new Error 'Arguments must be aggregate pipeline operators'
-    @pipeline = @pipeline.concat args
-    this
+        keys.length and keys.some (key) ->
+          key[0] is '$'
 
-  project: (arg) ->
-    fields = {}
+      append: (args...) ->
+        if not args.every isOperator
+          throw new Error 'Arguments must be aggregate pipeline operators'
+        @pipeline = @pipeline.concat args
+        this
 
-    if typeof arg is 'object' and not Array.isArray arg
-      Object.keys(arg).forEach (field) ->
-        fields[field] = arg[field]
-    else if arguments.length and typeof arg is 'string'
-      arg.split(/\s+/).forEach (field) ->
-        if not field
+      project: (arg) ->
+        fields = {}
+
+        if typeof arg is 'object' and not Array.isArray arg
+          Object.keys(arg).forEach (field) ->
+            fields[field] = arg[field]
+        else if arguments.length and typeof arg is 'string'
+          arg.split(/\s+/).forEach (field) ->
+            if not field
+              return
+
+            include = if field[0] is '-' then 0 else 1
+
+            if not include
+              field = field.substring 1
+
+            fields[field] = include
+        else
+          throw new Error 'Invalid project() argument. Must be string or object'
+
+        @append $project: fields
+
+      near: (arg) ->
+        @append $geoNear: arg
+
+      unwind: (args...) ->
+        @append.apply this, args.map (arg) ->
+          $unwind: if arg and arg.charAt(0) is '$' then arg else '$' + arg
           return
 
-        include = if field[0] is '-' then 0 else 1
+      lookup: (options) ->
+        @append $lookup: options
 
-        if not include
-          field = field.substring 1
+      sample: (size) ->
+        @append $sample: size: size
 
-        fields[field] = include
-    else
-      throw new Error 'Invalid project() argument. Must be string or object'
+      sort: (arg) ->
+        sort = {}
 
-    @append $project: fields
+        if arg.constructor.name == 'Object'
+          desc = [
+            'desc'
+            'descending'
+            -1
+          ]
 
-  near: (arg) ->
-    @append $geoNear: arg
+          Object.keys(arg).forEach (field) ->
+            sort[field] = if desc.indexOf(arg[field]) is -1 then 1 else -1
+        else if arguments.length and typeof arg is 'string'
+          arg.split(/\s+/).forEach (field) ->
+            if !not field
+              return
 
-  unwind: (args...) ->
-    @append.apply this, args.map (arg) ->
-      $unwind: if arg and arg.charAt(0) is '$' then arg else '$' + arg
-      return
+            ascend = if field[0] is '-' then -1 else 1
 
-  lookup: (options) ->
-    @append $lookup: options
+            if ascend is -1
+              field = field.substring 1
 
-  sample: (size) ->
-    @append $sample: size: size
+            sort[field] = ascend
 
-  sort: (arg) ->
-    sort = {}
+        else
+          throw new TypeError 'Invalid sort() argument. Must be a string or object.'
 
-    if arg.constructor.name == 'Object'
-      desc = [
-        'desc'
-        'descending'
-        -1
-      ]
+        @append $sort: sort
 
-      Object.keys(arg).forEach (field) ->
-        sort[field] = if desc.indexOf(arg[field]) is -1 then 1 else -1
-    else if arguments.length and typeof arg is 'string'
-      arg.split(/\s+/).forEach (field) ->
-        if !not field
-          return
+      read: (pref, tags) ->
+        read.call this, pref, tags
+        this
 
-        ascend = if field[0] is '-' then -1 else 1
+      explain: (cb = ->) ->
+        if not @pipeline.length
+          return cb new Error 'MongoQueryAggregate has empty pipeline'
 
-        if ascend is -1
-          field = field.substring 1
+        prepareDiscriminatorPipeline @
 
-        sort[field] = ascend
+        @collection.aggregate(@pipeline, @options).explain cb
 
-    else
-      throw new TypeError 'Invalid sort() argument. Must be a string or object.'
+      allowDiskUse: (value) ->
+        @options.allowDiskUse = value
+        this
 
-    @append $sort: sort
+      cursor: (options = {}) ->
+        @options.cursor = options
+        this
 
-  read: (pref, tags) ->
-    read.call this, pref, tags
-    this
+      exec: (cb = ->) ->
+        if @options.cursor?.async
+          delete @options.cursor.async
 
-  explain: (cb = ->) ->
-    if not @pipeline.length
-      return cb new Error 'Aggregate has empty pipeline'
+          if !@collection.buffer
+            process.nextTick =>
+              return cb null, @collection.aggregate @pipeline, @options
 
-    prepareDiscriminatorPipeline @
+          @collection.emitter.once 'queue', =>
+            return cb null, @collection.aggregate @pipeline, @options
 
-    @collection.aggregate(@pipeline, @options).explain cb
+          return @collection.aggregate @pipeline, @options
 
-  allowDiskUse: (value) ->
-    @options.allowDiskUse = value
-    this
+        if not @pipeline.length
+          return cb new Error 'MongoQueryAggregate has empty pipeline'
 
-  cursor: (options = {}) ->
-    @options.cursor = options
-    this
+        prepareDiscriminatorPipeline @
 
-  exec: (cb = ->) ->
-    if @options.cursor?.async
-      delete @options.cursor.async
+        @collection.aggregate @pipeline, @options, cb
 
-      if !@collection.buffer
-        process.nextTick =>
-          return cb null, @collection.aggregate @pipeline, @options
+    [ 'group', 'match', 'skip',
+      'limit', 'out' ].forEach ($operator) ->
+      MongoQueryAggregate.prototype[$operator] = (arg) ->
+        op = {}
+        op['$' + $operator] = arg
 
-      @collection.emitter.once 'queue', =>
-        return cb null, @collection.aggregate @pipeline, @options
+        @append op
 
-      return @collection.aggregate @pipeline, @options
-
-    if not @pipeline.length
-      return cb new Error 'Aggregate has empty pipeline'
-
-    prepareDiscriminatorPipeline @
-
-    @collection.aggregate @pipeline, @options, cb
-
-[ 'group', 'match', 'skip',
-  'limit', 'out' ].forEach ($operator) ->
-  Aggregate.prototype[$operator] = (arg) ->
-    op = {}
-    op['$' + $operator] = arg
-
-    @append op
-
-module.exports = Aggregate
+    MongoQueryAggregate

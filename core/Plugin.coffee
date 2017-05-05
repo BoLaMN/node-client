@@ -72,7 +72,7 @@ class Plugin extends Emitter
         value = injector.exec factory, @
         value
 
-  service: (name, factory) ->
+  factory: (name, factory) ->
     @provider name, ->
       instance = undefined
 
@@ -88,7 +88,7 @@ class Plugin extends Emitter
       injector.exec factory, instance
       instance
 
-  factory: (name, factory) ->
+  service: (name, factory) ->
     @provider name, ->
       @$get = factory
 

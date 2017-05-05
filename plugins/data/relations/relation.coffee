@@ -1,10 +1,8 @@
-extend = require '../utils/extend'
-buildOptions = require '../utils/build-options'
-
 module.exports = ->
 
-  @factory 'Relation', (Module, inflector) ->
+  @factory 'Relation', (Module, inflector, buildOptions, Utils) ->
     { camelize, pluralize } = inflector
+    { extend } = Utils
 
     class Relation extends Module
 

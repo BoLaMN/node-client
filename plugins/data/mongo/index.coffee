@@ -11,6 +11,8 @@ module.exports = (app) ->
   .initializer ->
 
     @include './orm'
+    @include './collection'
+    @include './cursor'
 
     @extension 'ObjectIdType', (Types, Type) ->
       class ObjectId extends Type

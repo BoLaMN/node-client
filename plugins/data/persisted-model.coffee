@@ -1,11 +1,7 @@
-getArgs = require './utils/get-args'
-assert = require './utils/assert'
-
-ObjectProxy = require './utils/proxy'
-
 module.exports = ->
 
-  @factory 'PersistedModel', (Model) ->
+  @factory 'PersistedModel', (Model, ObjectProxy, Utils, assert) ->
+    { getArgs } = Utils
 
     class PersistedModel extends Model
 

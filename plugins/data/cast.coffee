@@ -1,8 +1,6 @@
-buildOptions = require './utils/build-options'
-
 module.exports = ->
 
-  @factory 'Cast', (Types, Models) ->
+  @factory 'Cast', (Types, Models, buildOptions) ->
 
     class Cast
 

@@ -10,6 +10,66 @@ class Utils
       obj[fn(key)] = a2[idx]
     obj
 
+  @extend: (target, args...) ->
+    args.forEach (source) ->
+      return unless source
+
+      for own key of source
+        if source[key] isnt undefined
+          target[key] = source[key]
+
+    target
+
+  @defer: (cb) ->
+    resolve = undefined
+    reject = undefined
+
+    promise = new Promise (args...) ->
+      [ resolve, reject ] = args
+
+    if cb
+      promise.asCallback cb
+
+    resolve: resolve
+    reject: reject
+    promise: promise
+
+  @clone: (obj) ->
+
+    switch Object::toString.call(obj)
+      when '[object Array]'
+        copy = new Array(obj.length)
+
+        i = 0
+        l = obj.length
+
+        while i < l
+          copy[i] = Utils.clone(obj[i])
+          i++
+
+        return copy
+      when '[object Object]'
+        copy = {}
+
+        for key of obj
+          if Object::hasOwnProperty.call(obj, key)
+            copy[key] = Utils.clone(obj[key])
+
+        return copy
+      when '[object RegExp]'
+        flags = ''
+        flags += if obj.multiline then 'm' else ''
+        flags += if obj.global then 'g' else ''
+        flags += if obj.ignoreCase then 'i' else ''
+
+        return new RegExp(obj.source, flags)
+      when '[object Date]'
+        return new Date(obj.getTime())
+      else
+        return obj
+
+    return
+
   @getArgs: (fn) ->
     fn
       .toString()

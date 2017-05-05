@@ -1,8 +1,5 @@
 'use strict'
 
-Aggregate = require './aggregate'
-Where = require './where'
-
 { ObjectId } = require 'mongodb'
 
 'use strict'
@@ -15,7 +12,10 @@ module.exports = (app) ->
 
   .initializer ->
 
-    @factory 'MongoQuery', ->
+    @include './where'
+    @include './aggregate'
+
+    @factory 'MongoQuery', (MongoQueryWhere, MongoQueryAggregate) ->
 
       class MongoQuery
         constructor: (filter, @model, options = {}) ->
@@ -39,7 +39,7 @@ module.exports = (app) ->
         ###
 
         where: (conditions) ->
-          { query } = new Where conditions, @model
+          { query } = new MongoQueryWhere conditions, @model
           @filter.where = query
 
           this
@@ -52,7 +52,7 @@ module.exports = (app) ->
         ###
 
         aggregate: (conditions) ->
-          { query } = new Aggregate conditions
+          { query } = new MongoQueryAggregate conditions
           @filter.aggregate = query
 
           this

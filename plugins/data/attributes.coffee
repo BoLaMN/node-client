@@ -1,10 +1,8 @@
-extend = require './utils/extend'
-clone = require './utils/clone'
-
 module.exports = ->
 
-  @factory 'Attribute', (Storage, Module, Cast, inflector) ->
+  @factory 'Attribute', (Storage, Module, Cast, inflector, Utils) ->
     { camelize } = inflector
+    { clone, extend } = Utils
 
     class Attribute extends Module
       @include Cast::

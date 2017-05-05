@@ -1,8 +1,7 @@
-extend = require './utils/extend'
-
 module.exports = ->
 
-  @factory 'Model', (Entity, Attribute, Events, Hooks, Models, Storage, Cast, Relations) ->
+  @factory 'Model', (Entity, Attribute, Events, Hooks, Models, Storage, Cast, Relations, Utils) ->
+    { extend } = Utils
 
     class Model extends Entity
       @extend Events::

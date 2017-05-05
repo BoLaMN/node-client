@@ -1,8 +1,4 @@
-Cursor = require './cursor'
-
 { ObjectID } = require 'mongodb'
-
-extend = require '../utils/extend'
 
 writeOpts =
   writeConcern: w: 1
@@ -10,258 +6,261 @@ writeOpts =
 
 noop = ->
 
-class Collection
-  constructor: (@collection) ->
+module.exports = ->
 
-  aggregate: (pipeline, opts, cb) ->
-    strm = new Cursor @collection.aggregate pipeline, opts
+  @factory 'MongoCollection', (MongoCursor, Utils) ->
+    { extend } = Utils
 
-    if cb
-      return strm.toArray().asCallback cb
+    class MongoCollection
+      constructor: (@collection) ->
 
-    strm
+      aggregate: (pipeline, opts, cb) ->
+        strm = new MongoCursor @collection.aggregate pipeline, opts
 
-  createIndex: (index, opts, cb) ->
-    if typeof opts is 'function'
-      return @createIndex index, {}, opts
+        if cb
+          return strm.toArray().asCallback cb
 
-    if not opts
-      return @createIndex index, {}, noop
+        strm
 
-    if not cb
-      return @createIndex index, opts, noop
+      createIndex: (index, opts, cb) ->
+        if typeof opts is 'function'
+          return @createIndex index, {}, opts
 
-    @collection.createIndex index, opts
-      .asCallback cb
+        if not opts
+          return @createIndex index, {}, noop
 
-  count: (query, cb) ->
-    if typeof query is 'function'
-      return @count {}, query
+        if not cb
+          return @createIndex index, opts, noop
 
-    @find query
-      .count()
-      .asCallback cb
+        @collection.createIndex index, opts
+          .asCallback cb
 
-  distinct: (field, query, cb) ->
-    params =
-      key: field
-      query: query
+      count: (query, cb) ->
+        if typeof query is 'function'
+          return @count {}, query
 
-    @execute 'distinct', params
-      .then (results) -> results.values
-      .asCallback cb
+        @find query
+          .count()
+          .asCallback cb
 
-  drop: (cb) ->
-    @execute 'drop'
-      .asCallback cb
+      distinct: (field, query, cb) ->
+        params =
+          key: field
+          query: query
 
-  dropIndexes: (cb) ->
-    @execute 'dropIndexes', index: '*'
-      .asCallback cb
+        @execute 'distinct', params
+          .then (results) -> results.values
+          .asCallback cb
 
-  dropIndex: (index, cb) ->
-    @execute 'dropIndexes', index: index
-      .asCallback cb
+      drop: (cb) ->
+        @execute 'drop'
+          .asCallback cb
 
-  execute: (cmd, opts, cb) ->
-    if typeof opts is 'function'
-      return @execute cmd, null, opts
+      dropIndexes: (cb) ->
+        @execute 'dropIndexes', index: '*'
+          .asCallback cb
 
-    opts = opts or {}
+      dropIndex: (index, cb) ->
+        @execute 'dropIndexes', index: index
+          .asCallback cb
 
-    obj = {}
-    obj[cmd] = @collection.s.name
+      execute: (cmd, opts, cb) ->
+        if typeof opts is 'function'
+          return @execute cmd, null, opts
 
-    Object.keys(opts).forEach (key) ->
-      obj[key] = opts[key]
-      return
+        opts = opts or {}
 
-    @collection.s.db.command obj
-      .asCallback cb
+        obj = {}
+        obj[cmd] = @collection.s.name
 
-  ensureIndex: (index, opts, cb) ->
-    if typeof opts is 'function'
-      return @ensureIndex index, {}, opts
+        Object.keys(opts).forEach (key) ->
+          obj[key] = opts[key]
+          return
 
-    if not opts
-      return @ensureIndex index, {}, noop
+        @collection.s.db.command obj
+          .asCallback cb
 
-    if not cb
-      return @ensureIndex index, opts, noop
+      ensureIndex: (index, opts, cb) ->
+        if typeof opts is 'function'
+          return @ensureIndex index, {}, opts
 
-    @collection.ensureIndex(index, opts)
-      .asCallback cb
+        if not opts
+          return @ensureIndex index, {}, noop
 
-  findIndexes: (cb) ->
-    @collection.indexes()
-      .asCallback cb
+        if not cb
+          return @ensureIndex index, opts, noop
 
-  find: (query, projection, opts, cb) ->
-    if typeof query is 'function'
-      return @find {}, null, null, query
+        @collection.ensureIndex(index, opts)
+          .asCallback cb
 
-    if typeof projection is 'function'
-      return @find query, null, null, projection
+      findIndexes: (cb) ->
+        @collection.indexes()
+          .asCallback cb
 
-    if typeof opts is 'function'
-      return @find query, projection, null, opts
+      find: (query, projection, opts, cb) ->
+        if typeof query is 'function'
+          return @find {}, null, null, query
 
-    cursor = new Cursor @collection.find(query, projection, opts)
+        if typeof projection is 'function'
+          return @find query, null, null, projection
 
-    if cb
-      return cursor.asCallback cb
+        if typeof opts is 'function'
+          return @find query, projection, null, opts
 
-    cursor
+        cursor = new MongoCursor @collection.find(query, projection, opts)
 
-  findOne: (query, projection, cb) ->
-    if typeof query is 'function'
-      return @findOne {}, null, query
+        if cb
+          return cursor.asCallback cb
 
-    if typeof projection is 'function'
-      return @findOne query, null, projection
+        cursor
 
-    @collection.findOne query, projection
-      .asCallback cb
+      findOne: (query, projection, cb) ->
+        if typeof query is 'function'
+          return @findOne {}, null, query
 
-  findAndModify: (query, update, sort, opts, cb) ->
-    if not opts and not cb
-      return @findAndModify query, update, [], {}, noop
+        if typeof projection is 'function'
+          return @findOne query, null, projection
 
-    if typeof sort is 'function'
-      return @findAndModify query, update, [], {}, opts
+        @collection.findOne query, projection
+          .asCallback cb
 
-    if typeof opts is 'function'
-      return @findAndModify query, update, sort, {}, opts
+      findAndModify: (query, update, sort, opts, cb) ->
+        if not opts and not cb
+          return @findAndModify query, update, [], {}, noop
 
-    params =
-      query: query
-      update: update
-      sort: sort
+        if typeof sort is 'function'
+          return @findAndModify query, update, [], {}, opts
 
-    @execute 'findAndModify', params, extend(writeOpts, opts)
-      .then (results) ->
-        [ results.value, results.lastErrorObject or n: 0 ]
-      .asCallback cb, spread: true
+        if typeof opts is 'function'
+          return @findAndModify query, update, sort, {}, opts
 
-  findOneAndUpdate: (query, data, opts, cb) ->
-    if not opts and not cb
-      return @findOneAndUpdate query, data, {}, noop
+        params =
+          query: query
+          update: update
+          sort: sort
 
-    if typeof opts is 'function'
-      return @findOneAndUpdate query, data, {}, opts
+        @execute 'findAndModify', params, extend(writeOpts, opts)
+          .then (results) ->
+            [ results.value, results.lastErrorObject or n: 0 ]
+          .asCallback cb, spread: true
 
-    @execute 'findOneAndUpdate', query, data, opts
-      .then (results) ->
-        [ result.value, result.lastErrorObject or n: 0 ]
-      .asCallback cb, spread: true
+      findOneAndUpdate: (query, data, opts, cb) ->
+        if not opts and not cb
+          return @findOneAndUpdate query, data, {}, noop
 
-  group: (doc, cb) ->
-    key = doc.key or doc.keyf
+        if typeof opts is 'function'
+          return @findOneAndUpdate query, data, {}, opts
 
-    @collection.group key, doc.cond, doc.initial, doc.reduce, doc.finalize
-      .asCallback cb
+        @execute 'findOneAndUpdate', query, data, opts
+          .then (results) ->
+            [ result.value, result.lastErrorObject or n: 0 ]
+          .asCallback cb, spread: true
 
-  insert: (docs, opts, cb) ->
-    if not opts and not cb
-      return @insert docs, {}, noop
+      group: (doc, cb) ->
+        key = doc.key or doc.keyf
 
-    if typeof opts is 'function'
-      return @insert docs, {}, opts
+        @collection.group key, doc.cond, doc.initial, doc.reduce, doc.finalize
+          .asCallback cb
 
-    if opts and not cb
-      return @insert docs, opts, noop
+      insert: (docs, opts, cb) ->
+        if not opts and not cb
+          return @insert docs, {}, noop
 
-    ops = extend writeOpts, opts
+        if typeof opts is 'function'
+          return @insert docs, {}, opts
 
-    @collection.insert docs, ops
-      .asCallback cb
+        if opts and not cb
+          return @insert docs, opts, noop
 
-  isCapped: (cb) ->
-    @collection.isCapped()
-      .asCallback cb
+        ops = extend writeOpts, opts
 
-  mapReduce: (map, reduce, opts, cb) ->
-    if typeof opts is 'function'
-      return @mapReduce map, reduce, {}, opts
+        @collection.insert docs, ops
+          .asCallback cb
 
-    if not cb
-      return @mapReduce map, reduce, opts, noop
+      isCapped: (cb) ->
+        @collection.isCapped()
+          .asCallback cb
 
-    @collection.mapReduce map, reduce, opts
-      .asCallback cb
+      mapReduce: (map, reduce, opts, cb) ->
+        if typeof opts is 'function'
+          return @mapReduce map, reduce, {}, opts
 
-  reIndex: (cb) ->
-    @execute 'reIndex'
-      .asCallback cb
+        if not cb
+          return @mapReduce map, reduce, opts, noop
 
-  remove: (query, opts, cb) ->
-    if typeof query is 'function'
-      return @remove {}, { justOne: false }, query
+        @collection.mapReduce map, reduce, opts
+          .asCallback cb
 
-    if typeof opts is 'function'
-      return @remove query, { justOne: false }, opts
+      reIndex: (cb) ->
+        @execute 'reIndex'
+          .asCallback cb
 
-    if typeof opts is 'boolean'
-      return @remove query, { justOne: opts }, cb
+      remove: (query, opts, cb) ->
+        if typeof query is 'function'
+          return @remove {}, { justOne: false }, query
 
-    if not opts
-      return @remove query, { justOne: false }, cb
+        if typeof opts is 'function'
+          return @remove query, { justOne: false }, opts
 
-    if not cb
-      return @remove query, opts, noop
+        if typeof opts is 'boolean'
+          return @remove query, { justOne: opts }, cb
 
-    deleteOperation = if opts.justOne then 'deleteOne' else 'deleteMany'
+        if not opts
+          return @remove query, { justOne: false }, cb
 
-    @collection[deleteOperation] query, extend(opts, writeOpts)
-      .then (results) -> results.result
-      .asCallback cb
+        if not cb
+          return @remove query, opts, noop
 
-  rename: (name, opts, cb) ->
-    if typeof opts is 'function'
-      return @rename name, {}, opts
+        deleteOperation = if opts.justOne then 'deleteOne' else 'deleteMany'
 
-    if not opts
-      return @rename name, {}, noop
+        @collection[deleteOperation] query, extend(opts, writeOpts)
+          .then (results) -> results.result
+          .asCallback cb
 
-    if not cb
-      return @rename name, noop
+      rename: (name, opts, cb) ->
+        if typeof opts is 'function'
+          return @rename name, {}, opts
 
-    @collection.rename name, opts
-      .asCallback cb
+        if not opts
+          return @rename name, {}, noop
 
-  save: (doc, opts, cb) ->
-    if not opts and not cb
-      return @save doc, {}, noop
+        if not cb
+          return @rename name, noop
 
-    if typeof opts is 'function'
-      return @save doc, {}, opts
+        @collection.rename name, opts
+          .asCallback cb
 
-    if not cb
-      return @save doc, opts, noop
+      save: (doc, opts, cb) ->
+        if not opts and not cb
+          return @save doc, {}, noop
 
-    if doc._id
-      @update { _id: doc._id }, doc, extend({ upsert: true }, opts)
-        .asCallback cb
-    else
-      @insert doc, opts
-        .asCallback cb
+        if typeof opts is 'function'
+          return @save doc, {}, opts
 
-  stats: (cb) ->
-    @execute 'collStats'
-      .asCallback cb
+        if not cb
+          return @save doc, opts, noop
 
-  toString: ->
-    @collection.s.name
+        if doc._id
+          @update { _id: doc._id }, doc, extend({ upsert: true }, opts)
+            .asCallback cb
+        else
+          @insert doc, opts
+            .asCallback cb
 
-  update: (query, update, opts, cb) ->
-    if not opts and not cb
-      return @update query, update, {}, noop
+      stats: (cb) ->
+        @execute 'collStats'
+          .asCallback cb
 
-    if typeof opts is 'function'
-      return @update query, update, {}, opts
+      toString: ->
+        @collection.s.name
 
-    @collection.update query, update, extend(writeOpts, opts)
-      .then (results) -> results.result
-      .asCallback cb
+      update: (query, update, opts, cb) ->
+        if not opts and not cb
+          return @update query, update, {}, noop
 
-module.exports = Collection
+        if typeof opts is 'function'
+          return @update query, update, {}, opts
+
+        @collection.update query, update, extend(writeOpts, opts)
+          .then (results) -> results.result
+          .asCallback cb

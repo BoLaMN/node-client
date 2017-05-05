@@ -1,16 +1,12 @@
 debug = require('debug')('loopback:connector:mongodb-advanced')
 
-Collection = require './collection'
-
-buildOptions = require '../utils/build-options'
-
 { ObjectId } = require 'mongodb'
 { inspect } = require 'util'
 { parseUpdateData } = require './utils'
 
 module.exports = ->
 
-  @factory 'MongoORM', (Adapter, MongoQuery) ->
+  @factory 'MongoORM', (Adapter, MongoQuery, MongoCollection, buildOptions) ->
     class MongoORM extends Adapter
 
       constructor: (model) ->
@@ -26,7 +22,7 @@ module.exports = ->
       ###
       execute: (command, args...) ->
         @constructor.connect().then (db) =>
-          @collection ?= new Collection db.collection @model.modelName
+          @collection ?= new MongoCollection db.collection @model.modelName
 
           context =
             hookState: {}

@@ -46,6 +46,8 @@ module.exports = (app) ->
     @include './model'
     @include './cast'
     @include './types'
+    @include './object-proxy'
+    @include './utils/build-options'
 
     @assembler 'model', ->
       (name, config) ->

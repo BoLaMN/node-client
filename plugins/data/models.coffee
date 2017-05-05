@@ -1,4 +1,3 @@
-
 module.exports = ->
 
   @factory 'Models', (Storage) ->

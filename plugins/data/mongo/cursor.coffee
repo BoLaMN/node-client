@@ -1,106 +1,109 @@
 { Readable } = require 'readable-stream'
 
-class Cursor extends Readable
-  constructor: (cursor) ->
-    super
-      objectMode: true
-      highWaterMark: 0
+module.exports = ->
 
-    @cursor = cursor
+  @factory 'MongoCursor', ->
+    class MongoCursor extends Readable
+      constructor: (cursor) ->
+        super
+          objectMode: true
+          highWaterMark: 0
 
-  next: (cb = ->) ->
-    if @cursor.cursorState.dead or @cursor.cursorState.killed
-      return cb null, null
+        @cursor = cursor
 
-    @cursor.next()
-      .asCallback cb
+      next: (cb = ->) ->
+        if @cursor.cursorState.dead or @cursor.cursorState.killed
+          return cb null, null
 
-  rewind: (cb = ->) ->
-    @cursor.rewind cb
-    this
+        @cursor.next()
+          .asCallback cb
 
-  toArray: ->
-    new Promise (resolve, reject) =>
-      array = []
+      rewind: (cb = ->) ->
+        @cursor.rewind cb
+        this
 
-      iterate = =>
-        @next (err, obj) ->
-          if err
-            return reject err
-          if not obj
-            return resolve array
-          array.push obj
+      toArray: ->
+        new Promise (resolve, reject) =>
+          array = []
+
+          iterate = =>
+            @next (err, obj) ->
+              if err
+                return reject err
+              if not obj
+                return resolve array
+              array.push obj
+              iterate()
+
           iterate()
 
-      iterate()
+      mapArray: (mapfn, options) ->
+        new Promise (resolve, reject) =>
+          array = []
 
-  mapArray: (mapfn, options) ->
-    new Promise (resolve, reject) =>
-      array = []
+          iterate = =>
+            @next (err, obj) ->
+              if err
+                return reject err
+              if not obj?
+                return resolve array
+              if mapfn.constructor
+                val = new mapfn obj, options
+              else
+                val = mapfn obj
+              array.push val
+              iterate()
 
-      iterate = =>
-        @next (err, obj) ->
-          if err
-            return reject err
-          if not obj?
-            return resolve array
-          if mapfn.constructor
-            val = new mapfn obj, options
-          else
-            val = mapfn obj
-          array.push val
           iterate()
 
-      iterate()
+      forEach: (fn) ->
 
-  forEach: (fn) ->
+        iterate = =>
+          @next (err, obj) ->
+            return fn err if err
+            fn err, obj
+            return if not obj
+            iterate()
 
-    iterate = =>
-      @next (err, obj) ->
-        return fn err if err
-        fn err, obj
-        return if not obj
         iterate()
 
-    iterate()
+      count: (cb = ->) ->
+        @cursor.count false, @opts, cb
 
-  count: (cb = ->) ->
-    @cursor.count false, @opts, cb
+      size: (cb = ->) ->
+        @cursor.count true, @opts, cb
 
-  size: (cb = ->) ->
-    @cursor.count true, @opts, cb
+      explain: (cb = ->) ->
+        @cursor.explain cb
 
-  explain: (cb = ->) ->
-    @cursor.explain cb
+      destroy: (cb = ->) ->
+        if not @cursor.close
+          return cb()
 
-  destroy: (cb = ->) ->
-    if not @cursor.close
-      return cb()
+        @cursor.close cb
 
-    @cursor.close cb
+      _read: ->
+        @next (err, data) =>
+          if err
+            return @emit 'error', err
+          @push data
 
-  _read: ->
-    @next (err, data) =>
-      if err
-        return @emit 'error', err
-      @push data
+    [ 'batchSize'
+      'hint'
+      'limit'
+      'maxTimeMS'
+      'max'
+      'min'
+      'skip'
+      'snapshot'
+      'sort'
+    ].forEach (opt) ->
+      MongoCursor.prototype[opt] = (obj, cb = ->) ->
+        @_opts[opt] = obj
 
-[ 'batchSize'
-  'hint'
-  'limit'
-  'maxTimeMS'
-  'max'
-  'min'
-  'skip'
-  'snapshot'
-  'sort'
-].forEach (opt) ->
-  Cursor.prototype[opt] = (obj, cb = ->) ->
-    @_opts[opt] = obj
+        if cb
+          return @toArray cb
 
-    if cb
-      return @toArray cb
+        this
 
-    this
-
-module.exports = Cursor
+    MongoCursor
