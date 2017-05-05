@@ -23,19 +23,19 @@ module.exports = ->
       server.enable 'user agent parser'
       server.enable 'sessions'
 
-    @enabled = true
+    enabled: true
 
-    @config = (configurator) ->
+    config: (configurator) ->
       configStageConfigurators.push(configurator)
 
-    @run = (configurator) ->
+    run: (configurator) ->
       runStageConfigurators.push(configurator)
 
-    @reset = ->
+    reset: ->
       configStageConfigurators.length = 0
       runStageConfigurators.length = 0
 
-    @get = ->
+    $get: ->
 
       applyConfigurators: ->
         configStageConfigurators.forEach (configurator) ->
@@ -45,7 +45,7 @@ module.exports = ->
         runStageConfigurators.forEach (configurator) ->
           configurator(app)
 
-      $get: (name) ->
+      get: (name) ->
         server.get name
 
       enabled: (name) ->
