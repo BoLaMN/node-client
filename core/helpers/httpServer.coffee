@@ -71,7 +71,7 @@ module.exports = ->
           log.error err
           process.exit 1
 
-  .run (httpServer, env, path, express, settings, log) ->
+  .run (httpServer, env, path, express, settings, log, injector) ->
 
     if not httpServer.enabled
       return
@@ -84,7 +84,7 @@ module.exports = ->
       next()
 
     if httpServer.enabled('logging')
-      httpServer.use(inject.single('httpServerLogger'))
+      httpServer.use(injector.get('httpServerLogger'))
 
     if httpServer.enabled('json body parser')
       httpServer.use require('body-parser').json()
