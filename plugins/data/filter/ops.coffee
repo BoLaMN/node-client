@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'Ops', (Type, Dot, Eql) ->
+  @factory 'Ops', (TypeOf, Dot, Eql) ->
     ###*
     # $ne: not equal.
     ###
@@ -13,35 +13,35 @@ module.exports = ->
     ###
 
     $gt: (matcher, val) ->
-      Type(matcher) is 'number' and val > matcher
+      TypeOf(matcher) is 'number' and val > matcher
 
     ###*
     # $gte: greater than equal.
     ###
 
     $gte: (matcher, val) ->
-      Type(matcher) is 'number' and val >= matcher
+      TypeOf(matcher) is 'number' and val >= matcher
 
     ###*
     # $lt: less than.
     ###
 
     $lt: (matcher, val) ->
-      Type(matcher) is 'number' and val < matcher
+      TypeOf(matcher) is 'number' and val < matcher
 
     ###*
     # $lte: less than equal.
     ###
 
     $lte: (matcher, val) ->
-      Type(matcher) is 'number' and val <= matcher
+      TypeOf(matcher) is 'number' and val <= matcher
 
     ###*
     # $regex: supply a regular expression as a string.
     ###
 
     $regex: (matcher, val) ->
-      if 'regexp' isnt Type('matcher')
+      if 'regexp' isnt TypeOf('matcher')
         matcher = new RegExp(matcher)
       matcher.test val
 
@@ -60,7 +60,7 @@ module.exports = ->
     ###
 
     $in: (matcher, val) ->
-      if 'array' isnt Type(matcher)
+      if 'array' isnt TypeOf(matcher)
         return false
 
       i = 0

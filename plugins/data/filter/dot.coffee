@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'Dot', (Type) ->
+  @factory 'Dot', (TypeOf) ->
 
     parent = (obj, key, init) ->
       if ~key.indexOf('.')
@@ -10,9 +10,9 @@ module.exports = ->
         i = 0
 
         while i < pieces.length - 1
-          if Number(pieces[i]) is pieces[i] and 'array' is Type(ret)
+          if Number(pieces[i]) is pieces[i] and 'array' is TypeOf(ret)
             ret = ret[pieces[i]]
-          else if 'object' is Type(ret)
+          else if 'object' is TypeOf(ret)
             if init and not ret.hasOwnProperty(pieces[i])
               ret[pieces[i]] = {}
             if ret
@@ -28,7 +28,7 @@ module.exports = ->
         par = parent(obj, path)
         mainKey = path.split('.').pop()
 
-        t = Type(par)
+        t = TypeOf(par)
 
         if 'object' is t or 'array' is t
           return par[mainKey]
@@ -51,7 +51,7 @@ module.exports = ->
         par = parent(obj, path, true)
         mainKey = path.split('.').pop()
 
-        if par and 'object' is Type(par)
+        if par and 'object' is TypeOf(par)
           par[mainKey] = val
       else
         obj[path] = val

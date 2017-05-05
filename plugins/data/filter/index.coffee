@@ -19,10 +19,10 @@ module.exports = (app) ->
     @include './eql'
     @include './filter'
     @include './dot'
-    @include './type'
+    @include './type-of'
     @include './where'
 
-    @factory 'Query', (Modifiers, Filter, Dot, Type, Where) ->
+    @factory 'Query', (Modifiers, Filter, Dot, Where) ->
       (obj = {}, query = {}, update = {}, opts = {}) ->
         strict = not not opts.strict
 

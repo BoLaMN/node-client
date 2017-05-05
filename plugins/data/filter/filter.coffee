@@ -2,7 +2,7 @@ debug = require('debug')('filter:match')
 
 module.exports = ->
 
-  @factory 'Filter', (Type, Eql, Ops) ->
+  @factory 'Filter', (TypeOf, Eql, Ops) ->
 
     filter = (target = {}, query) ->
       ret = {}
@@ -61,7 +61,7 @@ module.exports = ->
         while i < keys.length
           target = target[keys[i]]
 
-          switch Type(target)
+          switch TypeOf(target)
             when 'array'
               prefix = keys.slice(0, i + 1).join('.')
               search = keys.slice(i + 1).join('.')
@@ -80,7 +80,7 @@ module.exports = ->
                   q = {}
                   q[search] = val
 
-                  if 'object' is Type(subset[ii])
+                  if 'object' is TypeOf(subset[ii])
                     debug 'attempting subdoc search with query %j', q
 
                     if filter(subset[ii], q)
@@ -123,7 +123,7 @@ module.exports = ->
     ###
 
     compare = (matcher, val) ->
-      if 'object' isnt Type(matcher)
+      if 'object' isnt TypeOf(matcher)
         return Eql(matcher, val)
 
       keys = Object.keys(matcher)

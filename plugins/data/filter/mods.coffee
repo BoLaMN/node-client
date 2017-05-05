@@ -2,7 +2,7 @@ debug = require('debug')('filter:mods')
 
 module.exports = ->
 
-  @factory 'Modifiers', (Type, Dot, Eql) ->
+  @factory 'Modifiers', (TypeOf, Dot, Eql) ->
 
     ###*
     # Helper for determining if an array has the given value.
@@ -43,8 +43,8 @@ module.exports = ->
         while i < vals.length
           matcher = vals[i]
 
-          if 'object' is Type(matcher)
-            if 'object' is Type(val)
+          if 'object' is TypeOf(matcher)
+            if 'object' is TypeOf(val)
               match = false
 
               if Object.keys(matcher).length
@@ -94,7 +94,7 @@ module.exports = ->
     ###
 
     numeric = (val) ->
-      'number' is Type(val) or Number(val) is val
+      'number' is TypeOf(val) or Number(val) is val
 
     ###*
     # Performs a `$set`.
@@ -109,7 +109,7 @@ module.exports = ->
       key = path.split('.').pop()
       obj = Dot.parent(obj, path, true)
 
-      switch Type(obj)
+      switch TypeOf(obj)
         when 'object'
           if not Eql(obj[key], val)
             return ->
@@ -125,7 +125,7 @@ module.exports = ->
           else
             throw new Error('can\'t append to array using string field name [' + key + ']')
         else
-          throw new Error('$set only supports object not ' + Type(obj))
+          throw new Error('$set only supports object not ' + TypeOf(obj))
 
       return
 
@@ -142,7 +142,7 @@ module.exports = ->
       key = path.split('.').pop()
       obj = Dot.parent(obj, path)
 
-      switch Type(obj)
+      switch TypeOf(obj)
         when 'array', 'object'
           if obj.hasOwnProperty(key)
             -> delete obj[key]
@@ -170,7 +170,7 @@ module.exports = ->
         throw new Error('$rename target may not be a parent of source')
 
       p = Dot.parent(obj, path)
-      t = Type(p)
+      t = TypeOf(p)
 
       if 'object' is t
         key = path.split('.').pop()
@@ -183,11 +183,11 @@ module.exports = ->
             # target does initialize the path
             newp = Dot.parent(obj, newKey, true)
 
-            # and also fails silently upon Type mismatch
-            if 'object' is Type(newp)
+            # and also fails silently upon TypeOf mismatch
+            if 'object' is TypeOf(newp)
               newp[newKey.split('.').pop()] = val
             else
-              debug 'invalid $rename target path Type'
+              debug 'invalid $rename target path TypeOf'
 
             # returns the name of the new key
             newKey
@@ -208,21 +208,21 @@ module.exports = ->
     ###
 
     $inc: (obj, path, inc) ->
-      if 'number' isnt Type(inc)
+      if 'number' isnt TypeOf(inc)
         throw new Error('Modifier $inc allowed for numbers only')
 
       obj = Dot.parent(obj, path, true)
       key = path.split('.').pop()
 
-      switch Type(obj)
+      switch TypeOf(obj)
         when 'array', 'object'
           if obj.hasOwnProperty(key)
-            if 'number' isnt Type(obj[key])
+            if 'number' isnt TypeOf(obj[key])
               throw new Error('Cannot apply $inc modifier to non-number')
             return ->
               obj[key] += inc
               inc
-          else if 'object' is Type(obj) or numeric(key)
+          else if 'object' is TypeOf(obj) or numeric(key)
             return ->
               obj[key] = inc
               inc
@@ -246,10 +246,10 @@ module.exports = ->
       obj = Dot.parent(obj, path)
       key = path.split('.').pop()
 
-      switch Type(obj)
+      switch TypeOf(obj)
         when 'array', 'object'
           if obj.hasOwnProperty(key)
-            switch Type(obj[key])
+            switch TypeOf(obj[key])
               when 'array'
                 if obj[key].length
                   return ->
@@ -281,10 +281,10 @@ module.exports = ->
       obj = Dot.parent(obj, path, true)
       key = path.split('.').pop()
 
-      switch Type(obj)
+      switch TypeOf(obj)
         when 'object'
           if obj.hasOwnProperty(key)
-            if 'array' is Type(obj[key])
+            if 'array' is TypeOf(obj[key])
               return ->
                 obj[key].push val
                 val
@@ -296,7 +296,7 @@ module.exports = ->
               val
         when 'array'
           if obj.hasOwnProperty(key)
-            if 'array' is Type(obj[key])
+            if 'array' is TypeOf(obj[key])
               return ->
                 obj[key].push val
                 val
@@ -321,16 +321,16 @@ module.exports = ->
     ###
 
     $pushAll: (obj, path, val) ->
-      if 'array' isnt Type(val)
+      if 'array' isnt TypeOf(val)
         throw new Error('Modifier $pushAll/pullAll allowed for arrays only')
 
       obj = Dot.parent(obj, path, true)
       key = path.split('.').pop()
 
-      switch Type(obj)
+      switch TypeOf(obj)
         when 'object'
           if obj.hasOwnProperty(key)
-            if 'array' is Type(obj[key])
+            if 'array' is TypeOf(obj[key])
               return ->
                 obj[key].push.apply obj[key], val
                 val
@@ -342,7 +342,7 @@ module.exports = ->
               val
         when 'array'
           if obj.hasOwnProperty(key)
-            if 'array' is Type(obj[key])
+            if 'array' is TypeOf(obj[key])
               return ->
                 obj[key].push.apply obj[key], val
                 val
@@ -365,12 +365,12 @@ module.exports = ->
       obj = Dot.parent(obj, path, true)
       key = path.split('.').pop()
 
-      t = Type(obj)
+      t = TypeOf(obj)
 
       switch t
         when 'object'
           if obj.hasOwnProperty(key)
-            if 'array' is Type(obj[key])
+            if 'array' is TypeOf(obj[key])
               pulled = []
               splice = pull(obj[key], [ val ], pulled)
 
@@ -382,7 +382,7 @@ module.exports = ->
               throw new Error('Cannot apply $pull/$pullAll modifier to non-array')
         when 'array'
           if obj.hasOwnProperty(key)
-            if 'array' is Type(obj[key])
+            if 'array' is TypeOf(obj[key])
               pulled = []
               splice = pull(obj[key], [ val ], pulled)
 
@@ -405,18 +405,18 @@ module.exports = ->
     ###
 
     $pullAll: (obj, path, val) ->
-      if 'array' isnt Type(val)
+      if 'array' isnt TypeOf(val)
         throw new Error('Modifier $pushAll/pullAll allowed for arrays only')
 
       obj = Dot.parent(obj, path, true)
       key = path.split('.').pop()
 
-      t = Type(obj)
+      t = TypeOf(obj)
 
       switch t
         when 'object'
           if obj.hasOwnProperty(key)
-            if 'array' is Type(obj[key])
+            if 'array' is TypeOf(obj[key])
               pulled = []
               splice = pull(obj[key], val, pulled)
 
@@ -428,7 +428,7 @@ module.exports = ->
               throw new Error('Cannot apply $pull/$pullAll modifier to non-array')
         when 'array'
           if obj.hasOwnProperty(key)
-            if 'array' is Type(obj[key])
+            if 'array' is TypeOf(obj[key])
               pulled = []
               splice = pull(obj[key], val, pulled)
 
@@ -457,7 +457,7 @@ module.exports = ->
     ###
 
     $addToSet: (obj, path, val, recursing) ->
-      if not recursing and 'array' is Type(val.$each)
+      if not recursing and 'array' is TypeOf(val.$each)
         fns = []
 
         i = 0
@@ -487,10 +487,10 @@ module.exports = ->
       obj = Dot.parent(obj, path, true)
       key = path.split('.').pop()
 
-      switch Type(obj)
+      switch TypeOf(obj)
         when 'object'
           if obj.hasOwnProperty(key)
-            if 'array' is Type(obj[key])
+            if 'array' is TypeOf(obj[key])
               if not has(obj[key], val)
                 return ->
                   obj[key].push val
@@ -503,7 +503,7 @@ module.exports = ->
               val
         when 'array'
           if obj.hasOwnProperty(key)
-            if 'array' is Type(obj[key])
+            if 'array' is TypeOf(obj[key])
               if not has(obj[key], val)
                 return ->
                   obj[key].push val

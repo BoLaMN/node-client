@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'Eql', (Type) ->
+  @factory 'Eql', (TypeOf) ->
     ###*
     # MongoDB style value comparisons.
     #
@@ -10,13 +10,13 @@ module.exports = ->
     ###
 
     eql = (matcher, val) ->
-      switch Type(matcher)
+      switch TypeOf(matcher)
         when 'null', 'undefined'
           return null is val
         when 'regexp'
           return matcher.test(val)
         when 'array'
-          if 'array' is Type(val) and matcher.length is val.length
+          if 'array' is TypeOf(val) and matcher.length is val.length
             i = 0
 
             while i < matcher.length

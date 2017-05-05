@@ -2,7 +2,7 @@ toString = Object::toString
 
 module.exports = ->
 
-  @factory 'Type', ->
+  @factory 'TypeOf', ->
     (val) ->
       switch toString.call(val)
         when '[object Function]'
