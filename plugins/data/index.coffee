@@ -4,7 +4,7 @@ module.exports = (app) ->
 
   app
 
-  .module 'Data', [ 'Relations', 'Server' ]
+  .module 'Data', [ 'Relations', 'Server', 'MongoDBAdapter' ]
 
   .initializer ->
 
@@ -46,8 +46,6 @@ module.exports = (app) ->
     @include './model'
     @include './cast'
     @include './types'
-    @include './adapter'
-    @include './mongo/mongo'
 
     @assembler 'model', ->
       (name, config) ->
