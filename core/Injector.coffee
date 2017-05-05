@@ -45,7 +45,10 @@ class Injector
       factory = @[dependencies][dependency]
 
       if not factory
-        throw new ReferenceError "Dependency '#{dependency}' not defined in module '#{ @name }' of #{ deps }"
+        try
+          factory = @[dependencies][dependency] = require dependency
+        catch e
+          throw new ReferenceError "Dependency '#{dependency}' not defined of #{ deps }"
 
       args = @inject @parse factory
       service = factory args...
