@@ -6,7 +6,7 @@ module.exports = (app) ->
 
   app
 
-  .module 'MongoDBAdapter', [ 'Adapter' ]
+  .module 'MongoDBAdapter', [ 'Adapter', 'MongoQuery' ]
 
   .initializer ->
 

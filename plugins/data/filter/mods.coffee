@@ -1,106 +1,101 @@
-###*
-# Module dependencies.
-###
-
-eql = require './eql'
-
 debug = require('debug')('filter:mods')
-
-###*
-# Helper for determining if an array has the given value.
-#
-# @param {Array} array
-# @param {Object} value to check
-# @return {Boolean}
-###
-
-has = (array, val) ->
-  i = 0
-  l = array.length
-
-  while i < l
-    if eql(val, array[i])
-      return true
-    i++
-
-  false
-
-###*
-# Array#filter function generator for `$pull`/`$pullAll` operations.
-#
-# @param {Array} array of values to match
-# @param {Array} array to populate with results
-# @return {Function} that splices the array
-###
-
-pull = (arr, vals, pulled) ->
-  indexes = []
-
-  a = 0
-
-  while a < arr.length
-    val = arr[a]
-    i = 0
-
-    while i < vals.length
-      matcher = vals[i]
-
-      if 'object' is Type(matcher)
-        if 'object' is Type(val)
-          match = false
-
-          if Object.keys(matcher).length
-            for i of matcher
-              if matcher.hasOwnProperty(i)
-                if eql(matcher[i], val[i])
-                  match = true
-                else
-                  match = false
-                  break
-          else if not Object.keys(val).length
-            match = true
-
-          if match
-            indexes.push a
-            pulled.push val
-
-            i++
-            continue
-        else
-          debug 'ignoring pull match against object'
-      else
-        if eql(matcher, val)
-          indexes.push a
-          pulled.push val
-
-          i++
-          continue
-      i++
-    a++
-
-  ->
-    i = 0
-
-    while i < indexes.length
-      index = indexes[i]
-      arr.splice index - i, 1
-
-      i++
-
-###*
-# Helper to determine if a value is numeric.
-#
-# @param {String|Number} value
-# @return {Boolean} true if numeric
-# @api private
-###
-
-numeric = (val) ->
-  'number' is Type(val) or Number(val) is val
 
 module.exports = ->
 
-  @factory 'Modifiers', (Type, Dot) ->
+  @factory 'Modifiers', (Type, Dot, Eql) ->
+
+    ###*
+    # Helper for determining if an array has the given value.
+    #
+    # @param {Array} array
+    # @param {Object} value to check
+    # @return {Boolean}
+    ###
+
+    has = (array, val) ->
+      i = 0
+      l = array.length
+
+      while i < l
+        if Eql(val, array[i])
+          return true
+        i++
+
+      false
+
+    ###*
+    # Array#filter function generator for `$pull`/`$pullAll` operations.
+    #
+    # @param {Array} array of values to match
+    # @param {Array} array to populate with results
+    # @return {Function} that splices the array
+    ###
+
+    pull = (arr, vals, pulled) ->
+      indexes = []
+
+      a = 0
+
+      while a < arr.length
+        val = arr[a]
+        i = 0
+
+        while i < vals.length
+          matcher = vals[i]
+
+          if 'object' is Type(matcher)
+            if 'object' is Type(val)
+              match = false
+
+              if Object.keys(matcher).length
+                for i of matcher
+                  if matcher.hasOwnProperty(i)
+                    if Eql(matcher[i], val[i])
+                      match = true
+                    else
+                      match = false
+                      break
+              else if not Object.keys(val).length
+                match = true
+
+              if match
+                indexes.push a
+                pulled.push val
+
+                i++
+                continue
+            else
+              debug 'ignoring pull match against object'
+          else
+            if Eql(matcher, val)
+              indexes.push a
+              pulled.push val
+
+              i++
+              continue
+          i++
+        a++
+
+      ->
+        i = 0
+
+        while i < indexes.length
+          index = indexes[i]
+          arr.splice index - i, 1
+
+          i++
+
+    ###*
+    # Helper to determine if a value is numeric.
+    #
+    # @param {String|Number} value
+    # @return {Boolean} true if numeric
+    # @api private
+    ###
+
+    numeric = (val) ->
+      'number' is Type(val) or Number(val) is val
+
     ###*
     # Performs a `$set`.
     #
@@ -116,14 +111,14 @@ module.exports = ->
 
       switch Type(obj)
         when 'object'
-          if not eql(obj[key], val)
+          if not Eql(obj[key], val)
             return ->
               obj[key] = val
               val
 
         when 'array'
           if numeric(key)
-            if not eql(obj[key], val)
+            if not Eql(obj[key], val)
               return ->
                 obj[key] = val
                 val

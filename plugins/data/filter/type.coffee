@@ -1,7 +1,3 @@
-###*
-# toString ref.
-###
-
 toString = Object::toString
 
 module.exports = ->

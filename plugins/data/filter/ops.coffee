@@ -1,9 +1,3 @@
-###*
-# Module dependencies.
-###
-
-Eql = require './Eql'
-
 module.exports = ->
 
   @factory 'Ops', (Type, Dot, Eql) ->
