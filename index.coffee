@@ -1,5 +1,7 @@
 'use strict'
 
+require 'require-cson'
+
 server = require('./core/Host').bootstrap()
 
 if !module.parent

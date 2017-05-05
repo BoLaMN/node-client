@@ -1,0 +1,49 @@
+name: "ACL"
+plural: "acls"
+
+base: "PersistedModel"
+
+properties:
+  model:
+    type: "string"
+
+  property:
+    type: "string"
+
+  accessType:
+    type: "string"
+
+  permission:
+    type: "string"
+
+  principalType:
+    type: "string"
+
+  principalId:
+    type: "string"
+
+acls: [
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "DENY"
+  }
+  {
+    principalType: "Role"
+    principalId: "workflow:read"
+    permission: "ALLOW"
+    accessType: "READ"
+  }
+  {
+    principalType: "Role"
+    principalId: "workflow:write"
+    permission: "ALLOW"
+    accessType: "WRITE"
+  }
+  {
+    principalType: "Role"
+    principalId: "workflow:delete"
+    permission: "ALLOW"
+    accessType: "DELETE"
+  }
+]

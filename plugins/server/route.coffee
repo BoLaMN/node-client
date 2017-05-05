@@ -101,6 +101,7 @@ module.exports = ->
           i++
 
         req.match = match
+        req.route = @
 
         true
 
