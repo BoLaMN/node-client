@@ -1,8 +1,6 @@
-Entity = require './entity'
-
 module.exports = ->
 
-  @factory 'Storage', ->
+  @factory 'Storage', (Entity) ->
 
     class Storage extends Entity
       constructor: (obj = {}) ->

@@ -1,13 +1,10 @@
-{ camelize, pluralize } = require '../utils/inflector'
-
 extend = require '../utils/extend'
-
-Module = require '../module'
 buildOptions = require '../utils/build-options'
 
 module.exports = ->
 
-  @factory 'Relation', ->
+  @factory 'Relation', (Module, inflector) ->
+    { camelize, pluralize } = inflector
 
     class Relation extends Module
 

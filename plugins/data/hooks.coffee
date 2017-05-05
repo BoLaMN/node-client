@@ -1,114 +1,118 @@
 wrap = require './utils/wrap'
 
-class Hooks
-  constructor: (event, fn) ->
-    if event and fn
-      @observe event, fn
+module.exports = ->
 
-  fire: (event, ctx = {}, fn = ->) ->
-    if typeof ctx is 'function'
-      return @fire event, {}, ctx
+  @factory 'Hook', ->
 
-    { instance } = ctx.options?
+    class Hook
+      constructor: (fn) ->
+        @fns = []
 
-    if event[0] isnt '$'
-      event = '$' + event
+        if fn
+          @observe fn
 
-    q = @defer fn
+      observe: (fn) ->
+        if Array.isArray fn
+          i = 0
 
-    evt = {}
+          while f = fn[i++]
+            @observe f
 
-    if instance
-      evt = instance.$events?[event]
+          return @
 
-      instance.$property instance, event,
-        value: true
+        @fns.push fn
 
-    self = (err) =>
-      if err
-        return q.reject err
+        @
 
-      @notify event, ctx, ->
-        q.resolve ctx
+      notify: (ctx, done) ->
+        i = 0
+        fns = @fns
 
-    nested = (key, cb) ->
-      inst = evt[key]
-      inst.fire event, options, cb
+        fail = (val) ->
+          throw val
 
-    evts = Object.keys evt
+        next = (err) =>
+          if err
+            return (done or fail)(err)
 
-    if evts?.length
-      @each evts, nested, self
-    else self()
+          fn = fns[i++]
 
-    q.promise
+          if not fn
+            return done()
 
-  observe: (event, fn) ->
-    if Array.isArray event
-      event.forEach (e) =>
-        @observe e, fn
-      return @
+          wrap(fn, next).apply @, [ ctx ]
 
-    if event[0] isnt '$'
-      event = '$' + event
+          return
 
-    @hooks ?= {}
-    @hooks[event] ?= new Hook
-    @hooks[event].observe fn
+        next()
 
-    @
+        @
 
-  notify: (event, ctx, fn = ->) ->
-    if event[0] isnt '$'
-      event = '$' + event
+  @factory 'Hooks', (Hook) ->
 
-    if not @hooks?[event]
-      return fn()
+    class Hooks
+      constructor: (event, fn) ->
+        if event and fn
+          @observe event, fn
 
-    @hooks[event].notify ctx, fn
+      fire: (event, ctx = {}, fn = ->) ->
+        if typeof ctx is 'function'
+          return @fire event, {}, ctx
 
-class Hook
-  constructor: (fn) ->
-    @fns = []
+        { instance } = ctx.options?
 
-    if fn
-      @observe fn
+        if event[0] isnt '$'
+          event = '$' + event
 
-  observe: (fn) ->
-    if Array.isArray fn
-      i = 0
+        q = @defer fn
 
-      while f = fn[i++]
-        @observe f
+        evt = {}
 
-      return @
+        if instance
+          evt = instance.$events?[event]
 
-    @fns.push fn
+          instance.$property instance, event,
+            value: true
 
-    @
+        self = (err) =>
+          if err
+            return q.reject err
 
-  notify: (ctx, done) ->
-    i = 0
-    fns = @fns
+          @notify event, ctx, ->
+            q.resolve ctx
 
-    fail = (val) ->
-      throw val
+        nested = (key, cb) ->
+          inst = evt[key]
+          inst.fire event, options, cb
 
-    next = (err) =>
-      if err
-        return (done or fail)(err)
+        evts = Object.keys evt
 
-      fn = fns[i++]
+        if evts?.length
+          @each evts, nested, self
+        else self()
 
-      if not fn
-        return done()
+        q.promise
 
-      wrap(fn, next).apply @, [ ctx ]
+      observe: (event, fn) ->
+        if Array.isArray event
+          event.forEach (e) =>
+            @observe e, fn
+          return @
 
-      return
+        if event[0] isnt '$'
+          event = '$' + event
 
-    next()
+        @hooks ?= {}
+        @hooks[event] ?= new Hook
+        @hooks[event].observe fn
 
-    @
+        @
 
-module.exports = Hooks
+      notify: (event, ctx, fn = ->) ->
+        if event[0] isnt '$'
+          event = '$' + event
+
+        if not @hooks?[event]
+          return fn()
+
+        @hooks[event].notify ctx, fn

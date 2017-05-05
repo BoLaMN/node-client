@@ -1,13 +1,8 @@
-Entity = require './entity'
-Events = require './emitter'
-Attribute = require "./attributes"
-Hooks = require './hooks'
-
 extend = require './utils/extend'
 
 module.exports = ->
 
-  @factory 'Model', (Models, Storage, Cast, Relations) ->
+  @factory 'Model', (Entity, Attribute, Events, Hooks, Models, Storage, Cast, Relations) ->
 
     class Model extends Entity
       @extend Events::

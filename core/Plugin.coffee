@@ -3,6 +3,7 @@
 Provider = require './Provider'
 Emitter = require './Emitter'
 
+{ camelize } = require './Inflector'
 { zipObject } = require './Utils'
 
 path = require 'path'
@@ -23,7 +24,8 @@ class Plugin extends Emitter
       modules = [ modules ]
 
     if Array.isArray modules
-      modules = zipObject modules, modules
+      modules = zipObject modules, modules, (v) ->
+        camelize v, true
 
     Object.keys(modules).forEach (key) =>
       @factory key, -> require modules[key]

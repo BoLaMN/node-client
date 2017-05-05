@@ -116,6 +116,7 @@ class Registry
     .initializer ->
 
       @require
+        inflector: './Inflector'
         Utils: './Utils'
 
     @

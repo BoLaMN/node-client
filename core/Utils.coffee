@@ -4,10 +4,10 @@ class Utils
     Object.keys(object).map (key) ->
       object[key]
 
-  @zipObject: (a1, a2) ->
+  @zipObject: (a1, a2, fn = ->) ->
     obj = {}
     for key, idx in a1
-      obj[key] = a2[idx]
+      obj[fn(key)] = a2[idx]
     obj
 
   @getArgs: (fn) ->

@@ -1,51 +1,52 @@
-Module = require './module'
 property = require './utils/property'
 
-class Entity extends Module
+module.exports = ->
 
-  @defer: (cb) ->
-    resolve = undefined
-    reject = undefined
+  @factory 'Entity', (Module) ->
 
-    promise = new Promise (args...) ->
-      [ resolve, reject ] = args
+    class Entity extends Module
 
-    if cb
-      promise.asCallback cb
+      @defer: (cb) ->
+        resolve = undefined
+        reject = undefined
 
-    resolve: resolve
-    reject: reject
-    promise: promise
+        promise = new Promise (args...) ->
+          [ resolve, reject ] = args
 
-  @each: (items, iterate, callback = ->) ->
-    data = []
-    count = 0
+        if cb
+          promise.asCallback cb
 
-    run = (item, index) ->
-      iterate item, (obj) ->
-        if not index
-          callback obj
-        else
-          data[index] = obj
+        resolve: resolve
+        reject: reject
+        promise: promise
 
-        count += 1
+      @each: (items, iterate, callback = ->) ->
+        data = []
+        count = 0
 
-        if count is items.length
-          callback data
+        run = (item, index) ->
+          iterate item, (obj) ->
+            if not index
+              callback obj
+            else
+              data[index] = obj
 
-    if Array.isArray items
-      if not items.length
-        return callback()
-      items.forEach run
-    else run items
+            count += 1
 
-  constructor: ->
-    super
+            if count is items.length
+              callback data
 
-  $property: (key, accessor = {}) ->
-    property @, key, accessor
+        if Array.isArray items
+          if not items.length
+            return callback()
+          items.forEach run
+        else run items
 
-  $each: Entity.each
-  $defer: Entity.defer
+      constructor: ->
+        super
 
-module.exports = Entity
+      $property: (key, accessor = {}) ->
+        property @, key, accessor
+
+      $each: Entity.each
+      $defer: Entity.defer

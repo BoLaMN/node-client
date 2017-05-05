@@ -13,67 +13,69 @@ iterate = (ev, fn) ->
 
 id = 0
 
-class Emitter
-  constructor: ->
-    return
+module.exports = ->
 
-  add: (ev, cb) ->
-    if not @events
-      property @, 'events',
-        writable: true
-        value: {}
+  @factory 'Events', ->
 
-    cb.id = id++
+    class Events
+      constructor: ->
+        return
 
-    @events[ev] ?= []
-    @events[ev].push cb
+      add: (ev, cb) ->
+        if not @events
+          property @, 'events',
+            writable: true
+            value: {}
 
-    @events[ev].length
+        cb.id = id++
 
-  on: (ev, cb) ->
-    @add ev, cb
-    @
+        @events[ev] ?= []
+        @events[ev].push cb
 
-  off: (ev, cb) ->
-    if not @events?[ev]
-      return
+        @events[ev].length
 
-    itr = iterate.bind @
+      on: (ev, cb) ->
+        @add ev, cb
+        @
 
-    itr ev, (e, i) =>
-      if e is cb
-        @events[ev].splice i, 1
+      off: (ev, cb) ->
+        if not @events?[ev]
+          return
 
-    if not @events[ev]?.length
-      delete @events[ev]
+        itr = iterate.bind @
 
-  broadcast: (args...) ->
-    itr = iterate.bind @
+        itr ev, (e, i) =>
+          if e is cb
+            @events[ev].splice i, 1
 
-    itr '*', (e) =>
-      e.apply @, args
+        if not @events[ev]?.length
+          delete @events[ev]
 
-    @
+      broadcast: (args...) ->
+        itr = iterate.bind @
 
-  emit: (ev, args...) ->
-    itr = iterate.bind @
+        itr '*', (e) =>
+          e.apply @, args
 
-    itr ev, (e) =>
-      e.apply @, args
+        @
 
-    @broadcast ev, args...
+      emit: (ev, args...) ->
+        itr = iterate.bind @
 
-    @
+        itr ev, (e) =>
+          e.apply @, args
 
-  once: (ev, cb) ->
-    return @ if not cb
+        @broadcast ev, args...
 
-    c = =>
-      @events[ev].splice idx, 1
-      cb.apply @, arguments
+        @
 
-    idx = @add ev, c
+      once: (ev, cb) ->
+        return @ if not cb
 
-    @
+        c = =>
+          @events[ev].splice idx, 1
+          cb.apply @, arguments
 
-module.exports = Emitter
+        idx = @add ev, c
+
+        @

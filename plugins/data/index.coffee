@@ -34,6 +34,11 @@ module.exports = (app) ->
       'glob'
     ]
 
+    @include './module'
+    @include './entity'
+    @include './hooks'
+    @include './attributes'
+    @include './emitter'
     @include './storage'
     @include './models'
     @include './shared-model'

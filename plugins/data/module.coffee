@@ -1,48 +1,49 @@
 asCallback = require './utils/as-callback'
 
-Events = require './emitter'
 property = require './utils/property'
 
-class Module extends Events
+module.exports = ->
 
-  @mixin: (obj) ->
-    @extend obj
-    @include obj::
+  @factory 'Module', (Events) ->
 
-  @include: (obj) ->
-    for key, value of obj when key isnt 'constructor'
-      @::[key] = value
-    @
+    class Module extends Events
 
-  @extend: (obj, self) ->
-    for key, value of obj when key isnt 'constructor'
-      @[key] = value
-    @
+      @mixin: (obj) ->
+        @extend obj
+        @include obj::
 
-  @property: (cls, key, accessor) ->
-    if arguments.length is 2
-      return @property @, cls, key
+      @include: (obj) ->
+        for key, value of obj when key isnt 'constructor'
+          @::[key] = value
+        @
 
-    property cls, key, accessor
+      @extend: (obj, self) ->
+        for key, value of obj when key isnt 'constructor'
+          @[key] = value
+        @
 
-  @type: (val) ->
-    if val is null
-      return 'null'
+      @property: (cls, key, accessor) ->
+        if arguments.length is 2
+          return @property @, cls, key
 
-    s = Object::toString.call val
+        property cls, key, accessor
 
-    t = s.match(/\[object (.*?)\]/)[1].toLowerCase()
+      @type: (val) ->
+        if val is null
+          return 'null'
 
-    if t is 'number'
-      if isNaN val
-        return 'nan'
+        s = Object::toString.call val
 
-      if not isFinite val
-        return 'infinity'
+        t = s.match(/\[object (.*?)\]/)[1].toLowerCase()
 
-    t
+        if t is 'number'
+          if isNaN val
+            return 'nan'
 
-  constructor: ->
-    super
+          if not isFinite val
+            return 'infinity'
 
-module.exports = Module
+        t
+
+      constructor: ->
+        super
