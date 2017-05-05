@@ -25,7 +25,15 @@ class Injector
     @
 
   get: (name, context) ->
-    @exec @[dependencies][name], context
+    factory = @[dependencies][name]
+
+    args = @inject @parse factory
+    service = factory args...
+
+    (@[decorators][name] or []).forEach (decorate) ->
+      service = decorate service
+
+    factory.apply context, args
 
   parse: (factory) ->
     s = factory + ''
