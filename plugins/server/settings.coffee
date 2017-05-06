@@ -2,7 +2,7 @@
 
 module.exports = ->
 
-  @factory 'Settings', (Utils, fs, path, crypto) ->
+  @provider 'settings', (Utils, fs, path, crypto) ->
 
     class Settings
 
@@ -49,13 +49,14 @@ module.exports = ->
         catch error
           throw error
 
-  @factory 'settings', (Settings, path, fs) ->
-    filepath = path.join(process.cwd(), 'settings.json')
+    @$get = ->
 
-    try
-      data = Settings.deserialize fs.readFileSync(filepath)
-    catch error
-      if error.code isnt 'ENOENT'
-        throw error
+      filepath = path.join(process.cwd(), 'settings.json')
 
-    new Settings data
+      try
+        data = Settings.deserialize fs.readFileSync(filepath)
+      catch error
+        if error.code isnt 'ENOENT'
+          throw error
+
+      new Settings data

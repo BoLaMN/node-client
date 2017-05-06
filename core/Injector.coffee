@@ -43,9 +43,12 @@ class Injector
 
     if not factory
       try
-        factory = @[dependencies][name] = require name
+        module = require name
       catch e
         throw new ReferenceError "Dependency '#{name}' not defined"
+
+      if module
+        factory = @[dependencies][name] = -> module
 
     factory
 
