@@ -84,7 +84,7 @@ module.exports = (app) ->
       base: 'MyModel'
       adapter: 'MongoDB'
 
-    @extension 'MyModelExtension', (MyModel) ->
+    @decorator 'MyModel', (MyModel) ->
 
       MyModel.hasMany 'Picture'
 

@@ -11,7 +11,7 @@ class Injector
 
     @register 'injector',
       factory:
-        $get: -> @
+        $get: => @
       type: 'injector'
 
   register: (name, { type, factory }) ->
