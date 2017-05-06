@@ -56,12 +56,11 @@ module.exports = (app) ->
     @run (settings, glob, path) ->
       directory = settings.directorys.models
       pattern = path.join directory, '**/*.{cson,json}'
-      console.log pattern
+
       files = glob.sync path.resolve pattern
 
       models = files.map (filename) ->
         config = require filename
-        console.log config
         buildModel config.name, config
 
       models

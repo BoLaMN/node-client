@@ -242,7 +242,6 @@ module.exports = ->
         for name, config of routes
           @remoteMethod name, config
 
-        console.log api.section @modelName
         @
 
       @remoteMethod: (name, { method, path, params, description, accessType }) ->
@@ -255,5 +254,4 @@ module.exports = ->
           console.error "method #{name} not found"
           return
 
-        console.log @modelName, name, method, path, params, description, accessType
         route[method] name, path, { params, description, accessType, args }, fn.bind @
