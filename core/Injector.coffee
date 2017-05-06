@@ -21,9 +21,10 @@ class Injector
     else
       @[dependencies][name] = factory.$get
 
-      if type is 'provider'
-        @[dependencies][name + 'Provider'] = ->
-          factory
+    if type is 'provider'
+      @[dependencies][name + 'Provider'] = ->
+        factory
+
     @
 
   get: (name, context) ->
