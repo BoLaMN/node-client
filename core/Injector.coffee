@@ -20,8 +20,10 @@ class Injector
       @[decorators][name].push factory
     else
       @[dependencies][name] = factory.$get
-      @[dependencies][name + 'Provider'] = ->
-        factory
+
+      if type is 'provider'
+        @[dependencies][name + 'Provider'] = ->
+          factory
     @
 
   get: (name, context) ->
@@ -68,5 +70,8 @@ class Injector
   exec: (factory, context) ->
     args = @inject @parse factory
     factory.apply context, args
+
+  inspect: ->
+    Object.keys @[dependencies]
 
 module.exports = Injector

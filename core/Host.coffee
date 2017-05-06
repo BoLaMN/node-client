@@ -4,15 +4,17 @@ injector = require './injectorInstance'
 
 Registry = require './Registry'
 
+registry = Symbol()
+
 class Host
 
   constructor: ->
-    @registry = new Registry()
+    @[registry] = new Registry()
 
   @bootstrap: ->
     host = new Host
 
-    host.registry
+    host[registry]
       .core()
       .glob()
       .require()
@@ -24,7 +26,10 @@ class Host
 
   run: ->
     @injector = injector
-    @registry.start()
-    @
+    @[registry].start()
+    @injector
+
+  inspect: ->
+    @[registry]
 
 module.exports = Host

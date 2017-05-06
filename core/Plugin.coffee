@@ -48,19 +48,19 @@ class Plugin extends Emitter
       injector.exec configurator, @
     @
 
-  provider: (name, factory) ->
+  provider: (name, factory, type = 'provider') ->
     provider = new Provider
 
     injector.exec factory, provider
 
     injector.register name,
       factory: provider
-      type: 'provider'
+      type: type
 
     @
 
   constant: (name, factory) ->
-    @factory name, factory
+    @factory name, factory, 'constant'
 
   value: (name, factory) ->
     @provider name, ->
@@ -71,8 +71,9 @@ class Plugin extends Emitter
           return value
         value = injector.exec factory, @
         value
+    , 'value'
 
-  factory: (name, factory) ->
+  factory: (name, factory, type = 'factory') ->
     @provider name, ->
       instance = undefined
 
@@ -81,16 +82,19 @@ class Plugin extends Emitter
           return instance
         instance = injector.exec factory
         instance
+    , type
 
   controller: (name, factory) ->
     @factory name, ->
       instance = new Emitter
       injector.exec factory, instance
       instance
+    , 'controller'
 
   service: (name, factory) ->
     @provider name, ->
       @$get = factory
+    , 'service'
 
   decorator: (name, factory) ->
     injector.register name,
