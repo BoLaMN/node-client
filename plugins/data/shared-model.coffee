@@ -248,10 +248,15 @@ module.exports = ->
         route = api.section @modelName
 
         fn = Utils.get @, name
-        args = Utils.getArgs fn
 
         if not fn
-          console.error "method #{name} not found"
+          [ prot, rel, fn ] = name.split '.'
+          fn = Utils.get @relations, [ rel, prot, fn ].join '.'
+
+        if not fn
+          console.error "method #{name} not found on #{ @modelName }"
           return
+
+        args = Utils.getArgs fn
 
         route[method] name, path, { params, description, accessType, args }, fn.bind @
