@@ -232,7 +232,7 @@ module.exports = ->
     #  method: 'post'
     #  path: '/findOrCreate'
 
-  @factory 'SharedModel', (PersistedModel, api, Utils) ->
+  @factory 'SharedModel', (PersistedModel, api, Utils, injector) ->
 
     class SharedModel extends PersistedModel
 
@@ -241,6 +241,13 @@ module.exports = ->
 
         for name, config of routes
           @remoteMethod name, config
+
+        @relations.on '*', (rel, config) =>
+          routes = injector.get(config.$type + 'Routes') or
+                   injector.get 'RelationRoutes'
+
+          for name, route of routes.bind(config)()
+            @remoteMethod name, route
 
         @
 

@@ -32,16 +32,11 @@ module.exports = (app) ->
 
           attach = (modelTo = {}) =>
             relation = injector.get(type).define @, modelTo, params
+
             relation.property '$args', value: args
+            relation.property '$type', value: type
 
             @relations.define relation.as, relation
-
-            if @__super__.constructor.name is 'SharedModel'
-              routes = injector.get(type + 'Routes') or
-                       injector.get 'RelationRoutes'
-
-              for name, config of routes.bind(relation)()
-                @remoteMethod name, config
 
           if params.polymorphic and type not in [ 'HasOne', 'BelongsTo' ]
             attach()
