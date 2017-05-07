@@ -57,7 +57,6 @@ module.exports = ->
           @[key] = val
 
         @middlewares = [
-          @decodeParams.bind(@)
           @wrapHandler(handler).bind(@)
         ]
 
@@ -73,7 +72,8 @@ module.exports = ->
         if !m
           return false
 
-        match = {}
+        params = {}
+        errors = []
 
         i = 0
 
@@ -85,7 +85,7 @@ module.exports = ->
           type = param.type
 
           if param.optional and value == null
-            match[key] = value
+            params[key] = value
             i++
             continue
 
@@ -97,10 +97,22 @@ module.exports = ->
           if not type.check(value)
             return false
 
-          match[key] = value
+          if missing = param.missing req
+            missing.resource = @name or 'root'
+            errors.push missing
+          else if invalid = param.invalid req
+            invalid.resource = @name or 'root'
+            errors.push invalid
+
+          params[key] = value
           i++
 
-        req.match = match
+        if errors.length
+          err = new HttpError.UnprocessableEntity 'Validation failed'
+          err.errors = errors
+          req.errors = err
+
+        req.params = params
         req.route = @
 
         true
@@ -111,6 +123,7 @@ module.exports = ->
         (req, res, next) ->
           arr = []
 
+          console.log 'params', req.params
 
           for arg, idx in args
             arr[idx] = req.params[arg]
@@ -126,28 +139,6 @@ module.exports = ->
           handler.apply null, arr
 
           return
-
-      decodeParams: (req, res, next) ->
-        if not req.match
-          return
-
-        req.params = req.params or {}
-
-        errors = []
-
-        for key, param of @params
-          if missing = param.missing req
-            missing.resource = @name or 'root'
-            errors.push missing
-          else if invalid = param.invalid req
-            invalid.resource = @name or 'root'
-            errors.push invalid
-
-        if errors.length
-          err = new HttpError.UnprocessableEntity 'Validation failed'
-          err.errors = errors
-
-        next err
 
       toObject: ->
         route = @toJSON()

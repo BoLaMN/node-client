@@ -30,7 +30,7 @@ module.exports = ->
         else
           @type = Types.get @type
 
-      missing: ({ match, body, parsedUrl }) ->
+      missing: ({ params, body, parsedUrl }) ->
         { query } = parsedUrl
 
         if @optional
@@ -40,7 +40,7 @@ module.exports = ->
           @source is 'context' or
           @source is 'body' and (@name of body) or
           @source is 'query' and (@name of query) or
-          @source is 'url' and (@name of match)
+          @source is 'url' and (@name of params)
 
         if exists
           return false
@@ -62,14 +62,14 @@ module.exports = ->
 
         value
 
-      invalid: ({ match, body, parsedUrl, params, locals }) ->
+      invalid: ({ body, parsedUrl, params, locals }) ->
         { query } = parsedUrl
 
         value = switch @source
           when 'context' then locals
           when 'body'    then @check body
           when 'query'   then @check query
-          when 'url'     then @check match
+          when 'url'     then @check params
 
         if value
           params[@name] = value
