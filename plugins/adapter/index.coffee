@@ -26,7 +26,7 @@ module.exports = (app) ->
         @initialize: (name, @settings, fn = ->) ->
           @models = new Storage
 
-          Adapters.$define name, @
+          Adapters.define name, @
 
         @connect: (cb = ->) ->
           process.nextTick cb
@@ -41,4 +41,4 @@ module.exports = (app) ->
           super
 
           @model = model
-          @constructor.models.$define @model.modelName, @model
+          @constructor.models.define @model.modelName, @model

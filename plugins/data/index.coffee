@@ -45,6 +45,7 @@ module.exports = (app) ->
     @include './persisted-model'
     @include './model'
     @include './cast'
+    @include './mixins'
     @include './types'
     @include './object-proxy'
     @include './utils/build-options'

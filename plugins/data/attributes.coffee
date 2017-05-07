@@ -10,7 +10,7 @@ module.exports = ->
       @attribute: (name, type, options) ->
         @attributes ?= new Storage
 
-        exists = @attributes.$get name
+        exists = @attributes.get name
 
         if exists
           return @
@@ -33,7 +33,7 @@ module.exports = ->
 
         attr = new Attribute name, options
 
-        @attributes.$define name, attr
+        @attributes.define name, attr
 
         @
 

@@ -7,9 +7,9 @@ module.exports = ->
         super
 
         for key, value of obj
-          @$define key, value
+          @define key, value
 
-      $get: (names, next) ->
+      get: (names, next) ->
 
         get = (name, cb) =>
           if @[name]
@@ -26,7 +26,7 @@ module.exports = ->
         else
           @$each names, get, next
 
-      $define: (name, obj) ->
+      define: (name, obj) ->
         if @[name]
           return true
 

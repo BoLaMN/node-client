@@ -33,7 +33,7 @@ module.exports = (app) ->
           if v.match /^[a-fA-F0-9]{24}$/
             return new ObjectID v
 
-      Types.$define 'objectid', ObjectId
+      Types.define 'objectid', ObjectId
 
     @factory 'MongoDB', (MongoORM, MongoClient) ->
       class MongoDB extends MongoORM

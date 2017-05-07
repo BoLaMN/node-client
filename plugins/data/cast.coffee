@@ -11,8 +11,8 @@ module.exports = ->
 
         { models } = instance.constructor
 
-        @fn ?= Models.$get @type
-        @fn ?= Types.$get @type
+        @fn ?= Models.get @type
+        @fn ?= Types.get @type
 
         if Array.isArray @type
           return new Type.Array(value).map (val, i) =>

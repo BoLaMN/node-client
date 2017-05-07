@@ -34,7 +34,7 @@ module.exports = (app) ->
             relation = injector.get(type).define @, modelTo, params
             relation.property '$args', value: args
 
-            @relations.$define relation.as, relation
+            @relations.define relation.as, relation
 
             if @__super__.constructor.name is 'SharedModel'
               routes = injector.get(type + 'Routes') or
@@ -46,7 +46,7 @@ module.exports = (app) ->
           if params.polymorphic and type not in [ 'HasOne', 'BelongsTo' ]
             attach()
           else
-            Models.$get model, attach
+            Models.get model, attach
 
         @hasMany: (args...) ->
           @defineRelation 'HasMany', args...

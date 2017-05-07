@@ -29,7 +29,7 @@ module.exports = ->
         Object.keys(attributes).forEach (key) =>
           @attribute key, attributes[key]
 
-        Models.$define @modelName, @
+        Models.define @modelName, @
 
         @
 

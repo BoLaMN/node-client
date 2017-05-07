@@ -17,7 +17,7 @@ module.exports = ->
             name1 = @from.modelName + @to.modelName
             name2 = @to.modelName + @from.modelName
 
-            @through = Models.$get(name1) or Models.$get(name2)
+            @through = Models.get(name1) or Models.get(name2)
 
             if not @through
               @through = Model.define name1

@@ -24,11 +24,11 @@ module.exports = ->
         @optional = not not @optional
 
         if @type instanceof RegExp
-          RegExpType = Types.$get 'RegExp'
+          RegExpType = Types.get 'RegExp'
 
           @type = RegExpType.construct @type
         else if @type is 'string'
-          @type = Types.$get @type
+          @type = Types.get @type
 
       missing: ({ match, body, parsedUrl }) ->
         { query } = parsedUrl
