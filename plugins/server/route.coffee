@@ -72,31 +72,14 @@ module.exports = ->
         if !m
           return false
 
-        params = {}
+        req.params = {}
+
         errors = []
 
-        i = 0
+        for key, idx in @keys
+          req.params[key] = m[idx + 1]
 
-        while i < @keys.length
-          value = m[i + 1]
-          key = @keys[i]
-
-          param = @params[key]
-          type = param.type
-
-          if param.optional and value == null
-            params[key] = value
-            i++
-            continue
-
-          try
-            value = type.parse(value)
-          catch e
-            return false
-
-          if not type.check(value)
-            return false
-
+        for name, param of @params
           if missing = param.missing req
             missing.resource = @name or 'root'
             errors.push missing
@@ -104,15 +87,11 @@ module.exports = ->
             invalid.resource = @name or 'root'
             errors.push invalid
 
-          params[key] = value
-          i++
-
         if errors.length
           err = new HttpError.UnprocessableEntity 'Validation failed'
           err.errors = errors
           req.errors = err
 
-        req.params = params
         req.route = @
 
         true

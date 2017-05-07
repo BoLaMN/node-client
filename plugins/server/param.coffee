@@ -62,7 +62,8 @@ module.exports = ->
 
         value
 
-      invalid: ({ body, parsedUrl, params, locals }) ->
+      invalid: (req) ->
+        { body, parsedUrl, params, locals } = req
         { query } = parsedUrl
 
         value = switch @source
@@ -72,9 +73,11 @@ module.exports = ->
           when 'url'     then @check params
 
         if value
-          params[@name] = value
+          req.params[@name] = value
+          return false
         else if @default
-          params[@name] = @default
+          req.params[@name] = @default
+          return false
         else if @optional
           return
         else

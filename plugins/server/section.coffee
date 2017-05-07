@@ -75,16 +75,16 @@ module.exports = ->
         section
 
       _handle: (req, res, next) ->
+        req.locals ?= {}
+        req.params ?= {}
 
-        if !req.parsedUrl
-          req.parsedUrl = url.parse(req.url, true)
+        if not req.parsedUrl
+          req.parsedUrl = url.parse req.url, true
 
         path = req.parsedUrl.pathname
-
-        req.params = req.params or {}
         method = req.method.toLowerCase()
 
-        if @methods.indexOf(method) == -1
+        if @methods.indexOf(method) is -1
           return next()
 
         handler = @match req, path, method
