@@ -57,7 +57,7 @@ module.exports = ->
           @[key] = val
 
         @middlewares = [
-          @wrapHandler(handler)
+          @wrapHandler(handler).bind(@)
         ]
 
         @method = (@method or 'GET').toLowerCase()
@@ -67,6 +67,9 @@ module.exports = ->
           @params[name] = new RouteParam name, param
 
       match: (req, path) ->
+        if req.method.toLowerCase() isnt @method
+          return false
+
         m = path.match(@regex)
 
         if !m

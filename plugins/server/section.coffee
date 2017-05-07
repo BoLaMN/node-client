@@ -114,8 +114,8 @@ module.exports = ->
             handler = section.match req, subPath, method
             return handler if handler
           else
-            for name, section of @sections
-              handler = section.match req, path, method
+            for name, subsection of @sections
+              handler = subsection.match req, path, method
               return handler if handler
 
         return

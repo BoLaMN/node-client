@@ -13,41 +13,46 @@ module.exports = ->
           @remoteMethod name, config
 
         @relations.on '*', (rel, config) =>
-          routes = injector.get(config.$type + 'Routes') or
-                   injector.get 'RelationRoutes'
+          specific = injector.get config.$type + 'Routes'
+          defaults = injector.get 'RelationRoutes'
 
           parent = api.section @modelName
           section = parent.section rel
-          model = @
 
-          for method, route of routes.bind(config)()
-            route.args = Object.keys route.params
-            route.args.push 'cb'
+          add = (routes) =>
+            Object.keys(routes).forEach (name) =>
+              route = routes[name]
 
-            fn = (args...) ->
-              console.log 'shared model', args
+              route.args = Object.keys route.params
+              route.args.push 'cb'
 
-              data = {}
+              fn = (args...) ->
+                data = {}
 
-              for arg, idx in route.args
-                data[arg] = args[idx]
+                for arg, idx in route.args
+                  data[arg] = args[idx]
 
-              args.shift()
+                args.shift()
 
-              primaryKey = data[config.primaryKey]
-              foreignKey = data[config.foreignKey]
+                primaryKey = data[config.primaryKey]
+                foreignKey = data[config.foreignKey]
 
-              instance = new model
-              instance.setId primaryKey
+                instance = new @
+                instance.setId primaryKey
 
-              relation = instance[config.as]
-              relation[method].apply relation, args
+                relation = instance[config.as]
+                relation[name].apply relation, args
 
-              return
+                return
 
-            @remoteMethod method, route, section, fn.bind @
+              section[route.method] name, route, fn.bind @
 
-          return
+            return
+
+          add defaults.bind(config)()
+
+          if specific
+            add specific.bind(config)()
 
         @
 
