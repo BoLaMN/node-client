@@ -17,7 +17,6 @@ module.exports = ->
           defaults = injector.get 'RelationRoutes'
 
           parent = api.section @modelName
-          section = parent.section rel
 
           add = (routes) =>
             Object.keys(routes).forEach (name) =>
@@ -45,6 +44,7 @@ module.exports = ->
 
                 return
 
+              section = parent.section rel, route.path
               section[route.method] name, route, fn.bind @
 
             return

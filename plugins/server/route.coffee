@@ -154,3 +154,31 @@ module.exports = ->
           route.params = @params
 
         route
+
+      toSwagger: ->
+        params = []
+
+        for name, param of @params
+          params.push param.toSwagger()
+
+        parent = @parent
+        base = []
+
+        while parent
+          base.unshift parent.name
+          parent = parent.parent
+
+        base.shift()
+
+        name = base.join '.'
+
+        tags: [ base[0] ]
+        summary: @description
+        operationId: name + '.' + @name
+        parameters: params
+        responses:
+          "200":
+            description: "Request was successful"
+            schema:
+              $ref: "#/definitions/OrderProductContent"
+        deprecated: false

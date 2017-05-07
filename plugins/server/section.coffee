@@ -7,26 +7,26 @@ module.exports = ->
 
   @factory 'Section', (Request, Route, Utils, url) ->
 
+    methods = [
+      'head'
+      'get'
+      'put'
+      'post'
+      'delete'
+      'patch'
+      'upgrade'
+      'options'
+    ]
+
     class Section
-      constructor: (@name = '', description) ->
+      constructor: (@name, @path = '', description) ->
         @routes = {}
         @sections = {}
 
         @middlewares = []
         @errorHandlers = []
 
-        @methods = [
-          'head'
-          'get'
-          'put'
-          'post'
-          'delete'
-          'patch'
-          'upgrade'
-          'options'
-        ]
-
-        @methods.forEach (method) =>
+        methods.forEach (method) =>
           @routes[method] = []
 
           @[method] = ((method, name, options, handler) =>
@@ -45,7 +45,7 @@ module.exports = ->
 
       all: (method, route, options, handler) ->
         args = arguments
-        @methods.forEach (method) =>
+        methods.forEach (method) =>
           @[method].apply @, args
         @
 
@@ -63,14 +63,16 @@ module.exports = ->
         @routes[route.method].push route
         @
 
-      section: (name, description) ->
-        if @sections[name]
-          return @sections[name]
+      section: (name, path, description) ->
+        path = path or name
 
-        section = new Section name, description
+        if @sections[path]
+          return @sections[path]
+
+        section = new Section name, path, description
         section.parent = this
 
-        @sections[name] = section
+        @sections[path] = section
 
         section
 
@@ -84,7 +86,7 @@ module.exports = ->
         path = req.parsedUrl.pathname
         method = req.method.toLowerCase()
 
-        if @methods.indexOf(method) is -1
+        if methods.indexOf(method) is -1
           return next()
 
         handler = @match req, path, method
@@ -142,8 +144,8 @@ module.exports = ->
 
         api.sections = {}
 
-        for name, section of @sections
-          api.sections[name] = section
+        for path, section of @sections
+          api.sections[path] = section
 
         if not Object.keys(api.sections).length
           delete api.sections
@@ -161,5 +163,24 @@ module.exports = ->
 
         if not Object.keys(api.routes).length
           delete api.routes
+
+        api
+
+      toSwagger: (api = {}) ->
+        name = '/' + (@parent?.name or @name)
+
+        for path, section of @sections
+          section.toSwagger api
+
+        for method, routes of @routes
+          for route in routes
+            info = route.toSwagger()
+            path = route.path
+              .replace /\/:([\w\.\-\_]+)(\*?)/g, '/{$1}'
+              .replace /\/$/, ''
+
+            if info
+              api.paths[name + path] ?= {}
+              api.paths[name + path][method] = info
 
         api

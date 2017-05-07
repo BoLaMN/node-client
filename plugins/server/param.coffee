@@ -102,3 +102,11 @@ module.exports = ->
 
       toJSON: ->
         @toObject()
+
+      toSwagger: ->
+        name: @name
+        in: @source
+        description: @description
+        required: @required
+        type: @type
+        format: "JSON"
