@@ -24,7 +24,12 @@ tap = (handler) ->
     promise.resolve handler(v)
     v
 
+bind = (self, value) ->
+  Promise.resolve(value).bind self
+
 Promise::asCallback ?= asCallback
 Promise::tap ?= tap
+
+Promise.bind ?= bind
 
 module.exports = asCallback
