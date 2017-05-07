@@ -140,3 +140,28 @@ module.exports = ->
             required: false
         description: "Update a related item by id for #{ @as }."
         accessType: 'WRITE'
+
+      patchById:
+        method: 'patch'
+        path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
+        params:
+          "#{ @primaryKey }":
+            type: primaryKeyType
+            description: "Primary key for #{ @from.modelName }"
+            required: true
+            source: 'path'
+          "#{ @foreignKey }":
+            type: foreignKeyType
+            description: "Foreign key for #{ @as }"
+            required: true
+            source: 'path'
+          data:
+            type: @to.modelName
+            source: 'body'
+            required: false
+          options:
+            type: 'object'
+            source: 'context'
+            required: false
+        description: "Patch a related item by id for #{ @as }."
+        accessType: 'WRITE'

@@ -110,6 +110,19 @@ module.exports = ->
             instance.updateAttributes data, options
           .asCallback cb
 
+      patchById: (fkId, data = {}, options = {}, cb = ->) ->
+        if typeof options is 'function'
+          return @patchById fkId, data, {}, options
+
+        if typeof data is 'function'
+          return @patchById fkId, {}, {}, data
+
+        instance = @build data
+        instance.setId fkId
+
+        instance.save options
+          .asCallback cb
+
       destroy: (fkId, options = {}, cb = ->) ->
         if typeof options is 'function'
           return @destroy fkId, {}, options
