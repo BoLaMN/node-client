@@ -84,3 +84,24 @@ module.exports = ->
             required: false
         description: "Counts #{ @as } of #{ @to.modelName }"
         accessType: 'READ'
+
+      exists:
+        method: 'head'
+        path: "/:#{ @primaryKey }/#{ @as }"
+        params:
+          "#{ @primaryKey }":
+            type: primaryKeyType
+            description: "Primary key for #{ @from.modelName }"
+            required: true
+            source: 'path'
+          where:
+            type: 'object'
+            source: 'query'
+            required: false
+            description: 'Criteria to match model instances'
+          options:
+            type: 'object'
+            source: 'context'
+            required: false
+        description: "#{ @as } exists of #{ @to.modelName }"
+        accessType: 'READ'

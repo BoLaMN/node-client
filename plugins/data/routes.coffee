@@ -177,8 +177,8 @@ module.exports = ->
           "update"
         ]
         description: "Update instances of the model matched by where from the data source."
-        path: "/update"
-        method: "post"
+        path: ""
+        method: "put"
 
       updateById:
         params:
