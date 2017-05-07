@@ -23,9 +23,9 @@ module.exports = ->
         @to.findByIds @, options
           .asCallback cb
 
-      findById: (fkId, options = {}, cb = ->) ->
+      find: (fkId, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @findById fkId, {}, cb
+          return @find fkId, {}, cb
 
         id = @instance[@foreignKey] or []
 
@@ -48,23 +48,23 @@ module.exports = ->
 
         item
 
-      updateById: (fkId, data = {}, options = {}, cb = ->) ->
+      update: (fkId, data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @updateById data, {}, options
+          return @update data, {}, options
 
         if typeof data is 'function'
-          return @updateById {}, {}, data
+          return @update {}, {}, data
 
-        @findById fkId, options
+        @find fkId, options
           .then (instance) ->
             instance.updateAttributes data, options
           .asCallback cb
 
-      destroyById: (fkId, options = {}, cb = ->) ->
+      destroy: (fkId, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @destroyById fkId, {}, options
+          return @destroy fkId, {}, options
 
-        @findById fkId, options
+        @find fkId, options
           .then (instance) =>
             Promise.all [
               @remove instance
@@ -78,7 +78,7 @@ module.exports = ->
 
         ids = @instance[@foreignKey] or []
 
-        @findById ids[index], options
+        @find ids[index], options
           .asCallback cb
 
       create: (data = {}, options = {}, cb = ->) ->

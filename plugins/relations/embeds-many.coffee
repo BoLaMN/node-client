@@ -25,9 +25,9 @@ module.exports = ->
 
         instance
 
-      findById: (fkId, options = {}, cb = ->) ->
+      find: (fkId, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @findById {}, options
+          return @find {}, options
 
         exists = @indexOf fkId
 
@@ -42,19 +42,19 @@ module.exports = ->
         if typeof options is 'function'
           return @exists {}, options
 
-        @findById fkId, options
+        @find fkId, options
           .then (data) ->
             not not data
           .asCallback cb
 
-      updateById: (fkId, data = {}, options = {}, cb = ->) ->
+      update: (fkId, data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @updateById fkId, data, {}, options
+          return @update fkId, data, {}, options
 
         if typeof data is 'function'
-          return @updateById fkId, {}, data
+          return @update fkId, {}, data
 
-        instance = @findById fkId
+        instance = @find fkId
         instance.setAttributes data
 
         if not instance.isValid()
@@ -62,11 +62,11 @@ module.exports = ->
 
         @instance.save().asCallback cb
 
-      destroyById: (fkId, options = {}, cb = ->) ->
+      destroy: (fkId, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @destroyById fkId, {}, options
+          return @destroy fkId, {}, options
 
-        instance = @findById fkId
+        instance = @find fkId
         list = @instance[@as]
 
         index = list.indexOf instance
@@ -96,9 +96,9 @@ module.exports = ->
         @instance.updateAttribute @as, list
           .asCallback cb
 
-      get: EmbedMany::findById
-      set: EmbedMany::updateById
-      unset: EmbedMany::destroyById
+      get: EmbedMany::find
+      set: EmbedMany::update
+      unset: EmbedMany::destroy
 
       at: (index, cb = ->) ->
         cb null, @[index]

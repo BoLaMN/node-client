@@ -21,7 +21,7 @@ module.exports = ->
 
       find: (fkId, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @findById fkId, {}, options
+          return @find fkId, {}, options
 
         if not @foreignKey
           return cb
@@ -50,7 +50,7 @@ module.exports = ->
         if typeof options is 'function'
           return @exists fkId, {}, options
 
-        @findById(fkId, options)
+        @find fkId, options
           .then (data) ->
             not not data
           .asCallback cb
@@ -100,22 +100,22 @@ module.exports = ->
 
       update: (fkId, data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @updateById fkId, data, {}, options
+          return @update fkId, data, {}, options
 
         if typeof data is 'function'
-          return @updateById fkId, {}, {}, data
+          return @update fkId, {}, {}, data
 
-        @findById fkId, options
+        @find fkId, options
           .then (instance) ->
             instance.updateAttributes data, options
           .asCallback cb
 
       patch: (fkId, data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @patchById fkId, data, {}, options
+          return @patch fkId, data, {}, options
 
         if typeof data is 'function'
-          return @patchById fkId, {}, {}, data
+          return @patch fkId, {}, {}, data
 
         query = @query()
         query.where[@to.primaryKey] = fkId

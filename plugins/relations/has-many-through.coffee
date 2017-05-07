@@ -25,9 +25,9 @@ module.exports = ->
 
         [ fk1, fk2 ]
 
-      findById: (fkId, options = {}, cb = ->) ->
+      find: (fkId, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @findById fkId, {}, options
+          return @find fkId, {}, options
 
         @exists fkId, options
           .then (exists) =>
@@ -36,9 +36,9 @@ module.exports = ->
             @to.findById fkId, options
           .asCallback cb
 
-      destroyById: (fkId, options = {}, cb = ->) ->
+      destroy: (fkId, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @destroyById fkId, {}, options
+          return @destroy fkId, {}, options
 
         @exists fkId, option
           .then (exists) =>
