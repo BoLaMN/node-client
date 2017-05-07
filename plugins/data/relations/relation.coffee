@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'Relation', (Module, inflector, Utils) ->
+  @factory 'Relation', (Module, inflector, Utils, SharedModel) ->
     { camelize, pluralize } = inflector
     { extend, buildOptions } = Utils
 
@@ -72,6 +72,10 @@ module.exports = ->
           @to.attribute @foreignKey, options
         else if @polymorphic
           @from.attribute @foreignKey, options
+
+        if @from instanceof SharedModel
+          for name, config of @routes()
+            @from.remoteMethod name, config
 
         @
 
