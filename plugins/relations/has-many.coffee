@@ -127,12 +127,13 @@ module.exports = ->
         if typeof options is 'function'
           return @destroy fkId, {}, options
 
-        @findById fkId, options
-          .then (inst) =>
-            index = @indexOf inst
+        instance = @build()
+        instance.setId fkId
 
-            if index > -1
-              @splice index, 1
+        index = @indexOf instance
 
-            inst.destroy options
+        if index > -1
+          @splice index, 1
+
+        instance.destroy options
           .asCallback cb
