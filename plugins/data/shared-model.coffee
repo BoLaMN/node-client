@@ -248,25 +248,23 @@ module.exports = ->
 
           parent = api.section @modelName
           section = parent.section rel
+          model = @
 
           for name, route of routes.bind(config)()
             route.args = Object.keys route.params
 
-            @remoteMethod name, route, section, (args..., cb) =>
-              console.log 'shared relation', args, route.args
-
+            @remoteMethod name, route, section, (args..., cb) ->
               data = {}
 
               for arg, idx in args
-                data[route.args[idx]] = arg
+                data[@args[idx]] = arg
 
               primaryKey = data[config.primaryKey]
               foreignKey = data[config.foreignKey]
 
-              instance = new @
+              instance = new model
               instance.setId primaryKey
-
-              instance[rel][name] foreignKey, cb
+              instance[@parent.name][@name] foreignKey, {}, cb
 
         @
 
@@ -281,4 +279,4 @@ module.exports = ->
 
         config.args ?= Utils.getArgs fn
 
-        route[config.method] name, config, fn.bind @
+        route[config.method] name, config, fn

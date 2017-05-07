@@ -119,6 +119,7 @@ module.exports = ->
 
       wrapHandler: (handler) ->
         args = @args
+        route = @
 
         (req, res, next) ->
           arr = []
@@ -136,7 +137,7 @@ module.exports = ->
 
             res.json json, headers, code
 
-          handler.apply null, arr
+          handler.apply route, arr
 
           return
 
