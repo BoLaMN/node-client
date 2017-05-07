@@ -57,7 +57,7 @@ module.exports = ->
           @[key] = val
 
         @middlewares = [
-          @wrapHandler(handler).bind(@)
+          @wrapHandler(handler)
         ]
 
         @method = (@method or 'GET').toLowerCase()
@@ -116,7 +116,7 @@ module.exports = ->
 
             res.json json, headers, code
 
-          handler.apply route, arr
+          handler.apply null, arr
 
           return
 

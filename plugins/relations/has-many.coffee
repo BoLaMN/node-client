@@ -100,10 +100,10 @@ module.exports = ->
 
       updateById: (fkId, data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @updateById data, {}, options
+          return @updateById fkId, data, {}, options
 
         if typeof data is 'function'
-          return @updateById {}, {}, data
+          return @updateById fkId, {}, {}, data
 
         @findById fkId, options
           .then (instance) ->

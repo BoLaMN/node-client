@@ -96,6 +96,11 @@ module.exports = ->
           .handle req, res, next
 
       match: (req, path, method) ->
+
+        for route in @routes[method]
+          if route.match req, path
+            return route.middlewares
+
         splitPath = path.split '/'
 
         if not splitPath[0]
@@ -107,16 +112,11 @@ module.exports = ->
           if section
             subPath = '/' + splitPath.slice(1).join('/')
             handler = section.match req, subPath, method
+            return handler if handler
           else
             for name, section of @sections
               handler = section.match req, path, method
-
-          if handler
-            return handler
-
-        for route in @routes[method]
-          if route.match req, path
-            return route.middlewares
+              return handler if handler
 
         return
 

@@ -20,22 +20,34 @@ module.exports = ->
           section = parent.section rel
           model = @
 
-          for name, route of routes.bind(config)()
+          for method, route of routes.bind(config)()
             route.args = Object.keys route.params
             route.args.push 'cb'
 
-            @remoteMethod name, route, section, (args..., cb) ->
+            fn = (args...) ->
+              console.log 'shared model', args
+
               data = {}
 
-              for arg, idx in args
-                data[@args[idx]] = arg
+              for arg, idx in route.args
+                data[arg] = args[idx]
+
+              args.shift()
 
               primaryKey = data[config.primaryKey]
               foreignKey = data[config.foreignKey]
 
               instance = new model
               instance.setId primaryKey
-              instance[@parent.name][@name] foreignKey, {}, cb
+
+              relation = instance[config.as]
+              relation[method].apply relation, args
+
+              return
+
+            @remoteMethod method, route, section, fn.bind @
+
+          return
 
         @
 
@@ -50,4 +62,4 @@ module.exports = ->
 
         config.args ?= Utils.getArgs fn
 
-        route[config.method] name, config, fn
+        route[config.method] name, config, fn.bind @
