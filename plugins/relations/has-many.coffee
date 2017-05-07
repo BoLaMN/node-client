@@ -117,10 +117,10 @@ module.exports = ->
         if typeof data is 'function'
           return @patchById fkId, {}, {}, data
 
-        instance = @build data
-        instance.setId fkId
+        query = @query()
+        query.where[@to.primaryKey] = fkId
 
-        instance.save options
+        @to.update query, data, options
           .asCallback cb
 
       destroy: (fkId, options = {}, cb = ->) ->
