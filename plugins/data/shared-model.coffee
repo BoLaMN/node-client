@@ -252,6 +252,7 @@ module.exports = ->
 
           for name, route of routes.bind(config)()
             route.args = Object.keys route.params
+            route.args.push 'cb'
 
             @remoteMethod name, route, section, (args..., cb) ->
               data = {}
