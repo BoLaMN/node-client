@@ -6,12 +6,12 @@ module.exports = (app) ->
 
   .initializer ->
 
-    @factory 'Adapter', (Storage, Entity, Events) ->
+    @include './adapters'
+
+    @factory 'Adapter', (Adapters, Storage, Entity, Events) ->
 
       class Adapter extends Entity
         @extend Events::
-
-        @adapters: new Storage
 
         @define: (name, settings = {}, fn = ->) ->
           if typeof settings is 'function'
@@ -26,7 +26,7 @@ module.exports = (app) ->
         @initialize: (name, @settings, fn = ->) ->
           @models = new Storage
 
-          @adapters.$define name, @
+          Adapters.$define name, @
 
         @connect: (cb = ->) ->
           process.nextTick cb

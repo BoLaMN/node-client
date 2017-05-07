@@ -1,7 +1,3 @@
-mongodb = require 'mongodb'
-
-{ MongoClient } = mongodb
-
 module.exports = (app) ->
 
   app
@@ -10,11 +6,20 @@ module.exports = (app) ->
 
   .initializer ->
 
+    @require
+      mongo: 'mongodb'
+
     @include './orm'
     @include './collection'
     @include './cursor'
 
-    @extension 'ObjectIdType', (Types, Type) ->
+    @factory 'MongoClient', (mongo) ->
+      mongo.MongoClient
+
+    @factory 'ObjectID', (mongo) ->
+      mongo.ObjectID
+
+    @extension 'ObjectIdType', (Types, Type, ObjectID) ->
       class ObjectId extends Type
         @check: (v) ->
           return false if @absent v
@@ -26,11 +31,11 @@ module.exports = (app) ->
             return v
 
           if v.match /^[a-fA-F0-9]{24}$/
-            return new mongodb.ObjectID v
+            return new ObjectID v
 
       Types.$define 'objectid', ObjectId
 
-    @factory 'MongoDB', (MongoORM) ->
+    @factory 'MongoDB', (MongoORM, MongoClient) ->
       class MongoDB extends MongoORM
 
         @buildUrl: ({ username, password, port, hostname, database }) ->

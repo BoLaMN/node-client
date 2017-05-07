@@ -1,12 +1,11 @@
 debug = require('debug')('loopback:connector:mongodb-advanced')
 
-{ ObjectId } = require 'mongodb'
 { inspect } = require 'util'
 { parseUpdateData } = require './utils'
 
 module.exports = ->
 
-  @factory 'MongoORM', (Adapter, MongoQuery, MongoCollection, Utils) ->
+  @factory 'MongoORM', (Adapter, MongoQuery, MongoCollection, Utils, ObjectID) ->
     { buildOptions } = Utils
 
     class MongoORM extends Adapter
@@ -396,12 +395,12 @@ module.exports = ->
         value = value.toObject?() or value
         id = @model.primaryKey
 
-        if value[id] instanceof ObjectId
+        if value[id] instanceof ObjectID
           value._id = id
         else if @matchMongoId value[id]
-          value._id = ObjectId value[id]
+          value._id = ObjectID value[id]
         else
-          value._id = value[id] or ObjectId.createPk()
+          value._id = value[id] or ObjectID.createPk()
 
         delete value[id]
 

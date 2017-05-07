@@ -1,17 +1,13 @@
 'use strict'
 
-{ ObjectId } = require 'mongodb'
-
 module.exports = ->
 
-  @factory 'MongoQueryWhere', ->
+  @factory 'MongoQueryWhere', (ObjectID) ->
     class MongoQueryWhere
       constructor: (conditions, @model) ->
         @query = {}
-
         @parse conditions
-
-        this
+        @
 
       ###*
       # Set "where" condition
@@ -32,7 +28,7 @@ module.exports = ->
 
           if typeof @[prop] is 'function'
             @[prop] cond
-          else if cond instanceof ObjectId
+          else if cond instanceof ObjectID
             @query[prop] = cond
           else if typeof cond isnt 'object'
             @query[prop] = cond

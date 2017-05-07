@@ -1,9 +1,5 @@
 'use strict'
 
-{ ObjectId } = require 'mongodb'
-
-'use strict'
-
 module.exports = (app) ->
 
   app

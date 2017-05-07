@@ -1,5 +1,3 @@
-{ ObjectID } = require 'mongodb'
-
 writeOpts =
   writeConcern: w: 1
   ordered: true
@@ -8,7 +6,7 @@ noop = ->
 
 module.exports = ->
 
-  @factory 'MongoCollection', (MongoCursor, Utils) ->
+  @factory 'MongoCollection', (MongoCursor, Utils, ObjectID) ->
     { extend } = Utils
 
     class MongoCollection
