@@ -63,18 +63,25 @@ module.exports = ->
         for arg, idx in argNames
           ctx[arg] = args[idx]
 
-        cb = ctx.cb or ->
-
-        Promise.bind @
-          .then ->
-            @fire 'before ' + command, ctx
-          .then ->
-            @dao[command].apply @dao, args
-          .then (res) ->
+        fns = [
+          => @fire 'before ' + command, ctx
+          => @dao[command].apply @dao, args
+          (res) =>
             ctx.result = res
             @fire 'after ' + command, ctx
-          .then ->
-            ctx.result
+        ]
+
+        current = Promise.resolve()
+
+        promises = fns.map (fn, i) ->
+          current = current.then (res) ->
+            fn res
+          current
+
+        cb = ctx.cb or ->
+
+        Promise.all promises
+          .then -> ctx.result
           .asCallback cb
 
       @find: (query = {}, options = {}, cb = ->) ->
