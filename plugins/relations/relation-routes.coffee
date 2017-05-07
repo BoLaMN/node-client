@@ -11,16 +11,16 @@ module.exports = ->
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           filter:
             type: 'object'
             source: 'query'
-            optional: true
+            required: false
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         description: "Queries #{ @as } of #{ @to.modelName }."
         accessType: 'READ'
 
@@ -31,16 +31,16 @@ module.exports = ->
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           data:
             type: @to.modelName
             source: 'body'
-            optional: true
+            required: false
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         description: "Creates a new instance in  #{ @as }  of this model."
         accessType: 'WRITE'
 
@@ -51,16 +51,16 @@ module.exports = ->
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           where:
             type: 'object'
             source: 'query'
-            optional: true
+            required: false
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         description: "Deletes all #{ @as } of this model."
         accessType: 'WRITE'
 
@@ -71,16 +71,16 @@ module.exports = ->
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           where:
             type: 'object'
             source: 'query'
-            optional: true
+            required: false
             description: 'Criteria to match model instances'
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         description: "Counts #{ @as } of #{ @to.modelName }"
         accessType: 'READ'

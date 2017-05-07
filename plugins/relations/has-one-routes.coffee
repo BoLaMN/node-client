@@ -11,16 +11,16 @@ module.exports = ->
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           refresh:
             type: 'boolean'
             source: 'query'
-            optional: true
+            required: false
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         description: "Fetches hasOne relation #{ @as }."
         accessType: 'READ'
 
@@ -31,8 +31,8 @@ module.exports = ->
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           data:
             type: @to.modelName
             source: 'body'
@@ -49,8 +49,8 @@ module.exports = ->
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           data:
             type: @to.modelName
             source: 'body'
@@ -67,8 +67,8 @@ module.exports = ->
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           options:
             type: 'object'
             source: 'context'

@@ -11,7 +11,7 @@ module.exports = ->
           @[name] = val
 
         switch @source
-          when 'query', 'url'
+          when 'query', 'path'
             @type = @type or 'string'
           when undefined, 'body'
             @type = @type or 'json'
@@ -19,9 +19,9 @@ module.exports = ->
           when 'context'
             @type = @type or 'object'
           else
-            throw new Error "parameter source muste be 'context', url', 'query' or 'body'"
+            throw new Error "parameter source muste be 'context', path', 'query' or 'body'"
 
-        @optional = not not @optional
+        @required = not not @required
 
         if @type instanceof RegExp
           RegExpType = Types.get 'RegExp'
@@ -33,14 +33,14 @@ module.exports = ->
       missing: ({ params, body, parsedUrl }) ->
         { query } = parsedUrl
 
-        if @optional
+        if not @required
           return false
 
         exists =
           @source is 'context' or
           @source is 'body' and (@name of body) or
           @source is 'query' and (@name of query) or
-          @source is 'url' and (@name of params)
+          @source is 'path' and (@name of params)
 
         if exists
           return false
@@ -70,7 +70,7 @@ module.exports = ->
           when 'context' then locals
           when 'body'    then @check body
           when 'query'   then @check query
-          when 'url'     then @check params
+          when 'path'     then @check params
 
         if value
           req.params[@name] = value
@@ -78,7 +78,7 @@ module.exports = ->
         else if @default
           req.params[@name] = @default
           return false
-        else if @optional
+        else if not @required
           return
         else
           field: @name
@@ -93,7 +93,7 @@ module.exports = ->
         param =
           type: @type?.toString()?.toLowerCase()
           source: @source
-          optional: @optional
+          required: @required
 
         if @description
           param.description = @description

@@ -7,7 +7,7 @@ module.exports = ->
 
   @include './param'
 
-  @factory 'Route', (Types, Utils, url, HttpError, RouteParam) ->
+  @factory 'Route', (Types, Utils, path, HttpError, RouteParam) ->
 
     normalizePath = (path, keys, params) ->
       for name of params
@@ -25,13 +25,13 @@ module.exports = ->
 
           param = params[key]
           param.type = param.type or 'string'
-          param.optional = false
+          param.required = true
 
           if !param.source
-            param.source = 'url'
+            param.source = 'path'
 
-          if param.source != 'url'
-            throw new Error('Url parameters must have \'url\' as source but found \'' + param.source + '\'')
+          if param.source != 'path'
+            throw new Error('Url parameters must have \'path\' as source but found \'' + param.source + '\'')
 
           if wildcard
             '(/*)'

@@ -9,21 +9,21 @@ module.exports = ->
           "#{ @primaryKey }":
             type: 'any'
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           "#{ @foreignKey }":
             type: 'any'
             description: "Foreign key for #{ @as }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           data:
             type: @through.modelName
             source: 'body'
-            optional: true
+            required: false
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         description: "Add a related item by id for #{ @as }."
         accessType: 'WRITE'
 
@@ -34,17 +34,17 @@ module.exports = ->
           "#{ @primaryKey }":
             type: 'any'
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           "#{ @foreignKey }":
             type: 'any'
             description: "Foreign key for #{ @as }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         description: "Remove the #{ @as } relation to an item by id."
         accessType: 'WRITE'
 
@@ -55,17 +55,17 @@ module.exports = ->
           "#{ @primaryKey }":
             type: 'any'
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           "#{ @foreignKey }":
             type: 'any'
             description: "Foreign key for #{ @as }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         description: "Check the existence of #{ @as } relation to an item by id."
         accessType: 'READ'
 
@@ -81,17 +81,17 @@ module.exports = ->
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           "#{ @foreignKey }":
             type: foreignKeyType
             description: "Foreign key for #{ @as }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         description: "Find a related item by id for #{ @as }."
         accessType: 'READ'
 
@@ -102,17 +102,17 @@ module.exports = ->
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           "#{ @foreignKey }":
             type: foreignKeyType
             description: "Foreign key for #{ @as }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         description: "Delete a related item by id for #{ @as }."
         accessType: 'WRITE'
 
@@ -123,20 +123,20 @@ module.exports = ->
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           "#{ @foreignKey }":
             type: foreignKeyType
             description: "Foreign key for #{ @as }"
-            optional: false
-            source: 'url'
+            required: true
+            source: 'path'
           data:
             type: @to.modelName
             source: 'body'
-            optional: true
+            required: false
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         description: "Update a related item by id for #{ @as }."
         accessType: 'WRITE'

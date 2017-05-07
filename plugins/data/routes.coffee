@@ -13,7 +13,7 @@ module.exports = ->
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         accessType: "WRITE"
         description: "Delete all matching records."
         path: "/"
@@ -23,12 +23,12 @@ module.exports = ->
         params:
           "#{ @primaryKey }":
             description: "Model #{ @primaryKey }"
-            source: "url"
+            source: "path"
             type: primaryKeyType
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         accessType: "WRITE"
         aliases: [
           "destroyById"
@@ -44,11 +44,11 @@ module.exports = ->
             description: "Model instance data"
             source: "body"
             type: "object"
-            optional: true
+            required: false
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         accessType: "WRITE"
         description: "Create a new instance of the model and persist it into the data source."
         path: "/"
@@ -59,12 +59,12 @@ module.exports = ->
           where:
             description: "Criteria to match model instances"
             type: "object"
-            optional: true
+            required: false
             source: 'query'
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         accessType: "READ"
         description: "Count instances of the model matched by where from the data source."
         path: "/count"
@@ -75,11 +75,11 @@ module.exports = ->
           "#{ @primaryKey }":
             description: "Model #{ @primaryKey }"
             type: primaryKeyType
-            source: 'url'
+            source: 'path'
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         accessType: "READ"
         description: "Check whether a model instance exists in the data source."
         path: "/:#{ @primaryKey }"
@@ -91,11 +91,11 @@ module.exports = ->
             description: "Filter defining fields, where, include, order, offset, and limit"
             type: "object"
             source: 'query'
-            optional: true
+            required: false
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         accessType: "READ"
         description: "Find all instances of the model matched by filter from the data source."
         path: "/"
@@ -105,17 +105,17 @@ module.exports = ->
         params:
           "#{ @primaryKey }":
             description: "Model #{ @primaryKey }"
-            source: "url"
+            source: "path"
             type: primaryKeyType
           filter:
             description: "Filter defining fields and include"
             type: "object"
             source: 'query'
-            optional: true
+            required: false
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         accessType: "READ"
         description: "Find a model instance by #{ @primaryKey } from the data source."
         path: "/:#{ @primaryKey }"
@@ -130,7 +130,7 @@ module.exports = ->
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         accessType: "READ"
         description: "Find first instance of the model matched by filter from the data source."
         path: "/findOne"
@@ -140,7 +140,7 @@ module.exports = ->
         params:
           "#{ @primaryKey }":
             description: "Model #{ @primaryKey }"
-            source: "url"
+            source: "path"
             type: primaryKeyType
           data:
             description: "An object of model property name/value pairs"
@@ -149,7 +149,7 @@ module.exports = ->
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         accessType: "WRITE"
         aliases: [
           "patchAttributes"
@@ -171,7 +171,7 @@ module.exports = ->
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         accessType: "WRITE"
         aliases: [
           "update"
@@ -184,7 +184,7 @@ module.exports = ->
         params:
           "#{ @primaryKey }":
             description: "Model #{ @primaryKey }"
-            source: "url"
+            source: "path"
             type: primaryKeyType
           data:
             description: "Model instance data"
@@ -193,7 +193,7 @@ module.exports = ->
           options:
             type: 'object'
             source: 'context'
-            optional: true
+            required: false
         accessType: "WRITE"
         description: "Replace attributes for a model instance and persist it into the data source."
         path: "/:#{ @primaryKey }/patch"
