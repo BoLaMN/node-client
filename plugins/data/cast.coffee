@@ -1,6 +1,7 @@
 module.exports = ->
 
-  @factory 'Cast', (Types, Models, buildOptions) ->
+  @factory 'Cast', (Types, Models, Utils) ->
+    { buildOptions } = Utils
 
     class Cast
 

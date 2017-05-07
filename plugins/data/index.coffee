@@ -48,6 +48,8 @@ module.exports = (app) ->
     @include './types'
     @include './object-proxy'
     @include './utils/build-options'
+    @include './utils/wrap'
+    @include './utils/property'
 
     @assembler 'model', ->
       (name, config) ->

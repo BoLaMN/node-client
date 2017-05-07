@@ -1,21 +1,20 @@
-property = require './utils/property'
-
-iterate = (ev, fn) ->
-  if not @events
-    return
-
-  e = @events[ev] or []
-  i = e.length - 1
-
-  while i >= 0 and e
-    fn e[i] if e[i]
-    i--
-
-id = 0
-
 module.exports = ->
 
-  @factory 'Events', ->
+  @factory 'Events', (Utils) ->
+    { property } = Utils
+
+    iterate = (ev, fn) ->
+      if not @events
+        return
+
+      e = @events[ev] or []
+      i = e.length - 1
+
+      while i >= 0 and e
+        fn e[i] if e[i]
+        i--
+
+    id = 0
 
     class Events
       constructor: ->

@@ -1,8 +1,7 @@
-wrap = require './utils/wrap'
-
 module.exports = ->
 
-  @factory 'Hook', ->
+  @factory 'Hook', (Utils) ->
+    { wrap } = Utils
 
     class Hook
       constructor: (fn) ->

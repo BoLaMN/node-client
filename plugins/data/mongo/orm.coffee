@@ -6,7 +6,9 @@ debug = require('debug')('loopback:connector:mongodb-advanced')
 
 module.exports = ->
 
-  @factory 'MongoORM', (Adapter, MongoQuery, MongoCollection, buildOptions) ->
+  @factory 'MongoORM', (Adapter, MongoQuery, MongoCollection, Utils) ->
+    { buildOptions } = Utils
+
     class MongoORM extends Adapter
 
       constructor: (model) ->
@@ -416,3 +418,4 @@ module.exports = ->
           id = id.toString()
 
         id.match /^[a-fA-F0-9]{24}$/
+

@@ -1,20 +1,24 @@
-property = (cls, key, accessor = {}) ->
-  if cls[key]
-    return
+module.exports = ->
 
-  if typeof accessor is 'function'
-    accessor = { get: accessor }
+  @decorator 'Utils', (Utils) ->
 
-  if accessor.value is undefined and accessor.get is undefined
-    accessor.set = accessor.set or (val) ->
-      @[key] = val
+    Utils.property = (cls, key, accessor = {}) ->
+      if cls[key]
+        return
 
-    accessor.get = accessor.get or ->
-      @[key]
+      if typeof accessor is 'function'
+        accessor = { get: accessor }
 
-  if key.startsWith '$'
-    accessor.enumerable = false
+      if accessor.value is undefined and accessor.get is undefined
+        accessor.set = accessor.set or (val) ->
+          @[key] = val
 
-  Object.defineProperty cls, key, accessor
+        accessor.get = accessor.get or ->
+          @[key]
 
-module.exports = property
+      if key.startsWith '$'
+        accessor.enumerable = false
+
+      Object.defineProperty cls, key, accessor
+
+    Utils

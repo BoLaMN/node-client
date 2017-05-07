@@ -1,3 +1,5 @@
+require './Promise'
+
 class Utils
 
   @values: (object = {}) ->

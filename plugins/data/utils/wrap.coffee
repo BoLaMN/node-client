@@ -1,42 +1,46 @@
-wrap = (fn) ->
-  (args...) ->
-    last = args[args.length - 1]
-    ctx = @
+module.exports = ->
 
-    done = if typeof last == 'function' then args.pop() else ->
+  @decorator 'Utils', (Utils) ->
 
-    if !fn
-      return done.apply(@, [ null ].concat(args))
+    promise = (done) ->
+      (value) ->
+        done null, value
+        value
 
-    if fn.length > args.length
-      try
-        return fn.apply(@, args.concat(done))
-      catch e
-        return done(e)
+    sync = (fn, done) ->
+      ->
 
-    sync(fn, done).apply @, args
+        try
+          ret = fn.apply @, arguments
+        catch err
+          return done err
 
-promise = (done) ->
-  (value) ->
-    done null, value
-    value
+        if pret and 'function' == typeof ret.then
+          end = promise done
+          ret.then end, end
+        else
+          if ret instanceof Error
+            done ret
+          else done null, ret
 
-sync = (fn, done) ->
-  ->
+        return
 
-    try
-      ret = fn.apply @, arguments
-    catch err
-      return done err
+    Utils.wrap = (fn) ->
+      (args...) ->
+        last = args[args.length - 1]
+        ctx = @
 
-    if pret and 'function' == typeof ret.then
-      end = promise done
-      ret.then end, end
-    else
-      if ret instanceof Error
-        done ret
-      else done null, ret
+        done = if typeof last == 'function' then args.pop() else ->
 
-    return
+        if !fn
+          return done.apply(@, [ null ].concat(args))
 
-module.exports = wrap
+        if fn.length > args.length
+          try
+            return fn.apply(@, args.concat(done))
+          catch e
+            return done(e)
+
+        sync(fn, done).apply @, args
+
+    Utils

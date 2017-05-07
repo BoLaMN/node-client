@@ -14,7 +14,7 @@ module.exports = ->
             source[key] or
             defaultValue
 
-          Utils.setDeepProperty @,
+          Utils.set @,
             key.split('-').slice(-1),
             if formatter then formatter(value) else value
 

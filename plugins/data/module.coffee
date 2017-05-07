@@ -1,10 +1,7 @@
-asCallback = require './utils/as-callback'
-
-property = require './utils/property'
-
 module.exports = ->
 
-  @factory 'Module', (Events) ->
+  @factory 'Module', (Events, Utils) ->
+    { property } = Utils
 
     class Module extends Events
 

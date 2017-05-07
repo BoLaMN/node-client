@@ -1,7 +1,8 @@
 module.exports = ->
 
-  @factory 'buildOptions', (Utils) ->
-    (instance, name, index) ->
+  @decorator 'Utils', (Utils) ->
+
+    Utils.buildOptions = (instance, name, index) ->
       if arguments.length is 2
         index = name
         { name, instance } = instance
@@ -18,3 +19,5 @@ module.exports = ->
       obj.root = instance.$parent or undefined
       obj.parent = instance
       obj
+
+    Utils

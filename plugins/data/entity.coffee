@@ -1,8 +1,7 @@
-property = require './utils/property'
-
 module.exports = ->
 
-  @factory 'Entity', (Module) ->
+  @factory 'Entity', (Module, Utils) ->
+    { property } = Utils
 
     class Entity extends Module
 

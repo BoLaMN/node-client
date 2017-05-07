@@ -1,8 +1,8 @@
 module.exports = ->
 
-  @factory 'Relation', (Module, inflector, buildOptions, Utils) ->
+  @factory 'Relation', (Module, inflector, Utils) ->
     { camelize, pluralize } = inflector
-    { extend } = Utils
+    { extend, buildOptions } = Utils
 
     class Relation extends Module
 
