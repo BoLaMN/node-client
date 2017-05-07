@@ -252,9 +252,21 @@ module.exports = ->
           for name, route of routes.bind(config)()
             route.args = Object.keys route.params
 
-            @remoteMethod name, route, section, (args..., cb) ->
-              console.log 'shared relation', args
-              cb()
+            @remoteMethod name, route, section, (args..., cb) =>
+              console.log 'shared relation', args, route.args
+
+              data = {}
+
+              for arg, idx in args
+                data[route.args[idx]] = arg
+
+              primaryKey = data[config.primaryKey]
+              foreignKey = data[config.foreignKey]
+
+              instance = new @
+              instance.setId primaryKey
+
+              instance[rel][name] foreignKey, cb
 
         @
 
