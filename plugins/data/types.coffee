@@ -147,7 +147,7 @@ class exports.Float extends Type
 
 class exports.Any extends Type
   @check: (v) ->
-    @absent v
+    @present v
 
 class exports.Number extends exports.Float
   @check: (v) ->

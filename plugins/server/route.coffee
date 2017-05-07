@@ -43,7 +43,7 @@ module.exports = ->
       new RegExp '^' + path + '$'
 
     class Route
-      constructor: (@name, @route, options, handler) ->
+      constructor: (@name, options, handler) ->
         if typeof options == 'function' or Array.isArray(options)
           handler = options
           options = {}
@@ -62,13 +62,13 @@ module.exports = ->
         ]
 
         @method = (@method or 'GET').toLowerCase()
-        @routeRe = normalizePath @route, @keys, @params
+        @regex = normalizePath @path, @keys, @params
 
         for name, param of @params
           @params[name] = new RouteParam name, param
 
       match: (req, path) ->
-        m = path.match(@routeRe)
+        m = path.match(@regex)
 
         if !m
           return false
@@ -94,7 +94,7 @@ module.exports = ->
           catch e
             return false
 
-          if !type.check(value)
+          if not type.check(value)
             return false
 
           match[key] = value
@@ -167,7 +167,7 @@ module.exports = ->
 
       toJSON: ->
         route =
-          path: @route
+          path: @path
           method: @method
 
         if @name

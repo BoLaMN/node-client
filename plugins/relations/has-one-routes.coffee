@@ -4,7 +4,7 @@ module.exports = ->
     ->
       primaryKeyType = @from.attributes[@primaryKey].type
 
-      "prototype.#{ @as }.get":
+      get:
         method: 'get'
         path: "/:#{ @primaryKey }/#{ @as }"
         params:
@@ -24,7 +24,7 @@ module.exports = ->
         description: "Fetches hasOne relation #{ @as }."
         accessType: 'READ'
 
-      "prototype.#{ @as }.create":
+      create:
         method: 'post'
         path: "/:#{ @primaryKey }/#{ @as }"
         params:
@@ -42,7 +42,7 @@ module.exports = ->
         description: "Creates a new instance in #{ @as } of this model."
         accessType: 'WRITE'
 
-      "prototype.#{ @as }.update":
+      update:
         method: 'put'
         path: "/:#{ @primaryKey }/#{ @as }"
         params:
@@ -60,7 +60,7 @@ module.exports = ->
         description: "Update #{ @as } of this model."
         accessType: 'WRITE'
 
-      "prototype.#{ @as }.destroy":
+      destroy:
         method: 'delete'
         path: "/:#{ @primaryKey }/#{ @as }"
         params:

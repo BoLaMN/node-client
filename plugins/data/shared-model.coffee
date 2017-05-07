@@ -246,24 +246,27 @@ module.exports = ->
           routes = injector.get(config.$type + 'Routes') or
                    injector.get 'RelationRoutes'
 
+          parent = api.section @modelName
+          section = parent.section rel
+
           for name, route of routes.bind(config)()
-            @remoteMethod name, route
+            route.args = Object.keys route.params
+
+            @remoteMethod name, route, section, (args..., cb) ->
+              console.log 'shared relation', args
+              cb()
 
         @
 
-      @remoteMethod: (name, { method, path, params, description, accessType }) ->
-        route = api.section @modelName
+      @remoteMethod: (name, config, section, fn) ->
+        route = section or api.section @modelName
 
-        fn = Utils.get @, name
-
-        if not fn
-          [ prot, rel, fn ] = name.split '.'
-          fn = Utils.get @relations, [ rel, prot, fn ].join '.'
+        fn ?= Utils.get @, name
 
         if not fn
           console.error "method #{name} not found on #{ @modelName }"
           return
 
-        args = Utils.getArgs fn
+        config.args ?= Utils.getArgs fn
 
-        route[method] name, path, { params, description, accessType, args }, fn.bind @
+        route[config.method] name, config, fn.bind @

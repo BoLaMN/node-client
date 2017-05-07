@@ -2,7 +2,7 @@ module.exports = ->
 
   @value 'HasManyThroughRoutes', ->
     ->
-      "prototype.#{ @as }.link":
+      link:
         method: 'put'
         path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ @foreignKey }"
         params:
@@ -27,7 +27,7 @@ module.exports = ->
         description: "Add a related item by id for #{ @as }."
         accessType: 'WRITE'
 
-      "prototype.#{ @as }.unlink":
+      unlink:
         method: 'delete'
         path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ @foreignKey }"
         params:
@@ -48,7 +48,7 @@ module.exports = ->
         description: "Remove the #{ @as } relation to an item by id."
         accessType: 'WRITE'
 
-      "prototype.#{ @as }.exists":
+      exists:
         method: 'head'
         path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ @foreignKey }"
         params:
@@ -74,7 +74,7 @@ module.exports = ->
       primaryKeyType = @to.attributes[@primaryKey]?.type or 'any'
       foreignKeyType = @from.attributes[@foreignKey]?.type or 'any'
 
-      "prototype.#{ @as }.findById":
+      findById:
         method: 'get'
         path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
         params:
@@ -95,7 +95,7 @@ module.exports = ->
         description: "Find a related item by id for #{ @as }."
         accessType: 'READ'
 
-      "prototype.#{ @as }.destroy":
+      destroy:
         method: 'delete'
         path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
         params:
@@ -116,7 +116,7 @@ module.exports = ->
         description: "Delete a related item by id for #{ @as }."
         accessType: 'WRITE'
 
-      "prototype.#{ @as }.updateById":
+      updateById:
         method: 'put'
         path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
         params:

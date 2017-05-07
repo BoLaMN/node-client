@@ -45,9 +45,7 @@ module.exports = ->
 
         if Array.isArray @type
           @type = @type.map (f) ->
-            camelize f if typeof f is 'string'
-        else if @type
-          @type = camelize @type
+            f if typeof f is 'string'
 
         @emit 'define', @, name, options
 

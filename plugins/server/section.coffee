@@ -29,13 +29,14 @@ module.exports = ->
         @methods.forEach (method) =>
           @routes[method] = []
 
-          @[method] = ((method, name, route, options, handler) =>
+          @[method] = ((method, name, options, handler) =>
             if typeof options == 'function' or Array.isArray(options)
               handler = options
               options = {}
+
             options.method = method
 
-            @_route name, route, options, handler
+            @_route name, options, handler
           ).bind @, method
 
         @del = @delete
@@ -56,8 +57,8 @@ module.exports = ->
         @errorHandlers.push.apply @errorHandlers, Utils.flatten(middleware)
         @
 
-      _route: (name, route, options, handler) ->
-        route = new Route name, route, options, handler
+      _route: (name, options, handler) ->
+        route = new Route name, options, handler
         route.parent = this
         @routes[route.method].push route
         @
@@ -106,20 +107,16 @@ module.exports = ->
           if section
             subPath = '/' + splitPath.slice(1).join('/')
             handler = section.match req, subPath, method
+          else
+            for name, section of @sections
+              handler = section.match req, path, method
 
-            if handler
-              return handler
+          if handler
+            return handler
 
-        methodRoutes = @routes[method]
-        i = 0
-
-        while i < methodRoutes.length
-          route = methodRoutes[i]
-
+        for route in @routes[method]
           if route.match req, path
             return route.middlewares
-
-          i++
 
         return
 
