@@ -74,7 +74,7 @@ module.exports = ->
       primaryKeyType = @to.attributes[@primaryKey]?.type or 'any'
       foreignKeyType = @from.attributes[@foreignKey]?.type or 'any'
 
-      findById:
+      find:
         method: 'get'
         path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
         params:
@@ -116,7 +116,7 @@ module.exports = ->
         description: "Delete a related item by id for #{ @as }."
         accessType: 'WRITE'
 
-      updateById:
+      update:
         method: 'put'
         path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
         params:
@@ -141,7 +141,7 @@ module.exports = ->
         description: "Update a related item by id for #{ @as }."
         accessType: 'WRITE'
 
-      patchById:
+      patch:
         method: 'patch'
         path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
         params:

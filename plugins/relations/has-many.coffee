@@ -19,7 +19,7 @@ module.exports = ->
 
         new @to data, @buildOptions()
 
-      findById: (fkId, options = {}, cb = ->) ->
+      find: (fkId, options = {}, cb = ->) ->
         if typeof options is 'function'
           return @findById fkId, {}, options
 
@@ -98,7 +98,7 @@ module.exports = ->
             @push res
           .asCallback cb
 
-      updateById: (fkId, data = {}, options = {}, cb = ->) ->
+      update: (fkId, data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
           return @updateById fkId, data, {}, options
 
@@ -110,7 +110,7 @@ module.exports = ->
             instance.updateAttributes data, options
           .asCallback cb
 
-      patchById: (fkId, data = {}, options = {}, cb = ->) ->
+      patch: (fkId, data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
           return @patchById fkId, data, {}, options
 
