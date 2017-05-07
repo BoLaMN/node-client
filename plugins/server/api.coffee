@@ -13,19 +13,19 @@ module.exports = ->
         tags = []
         definitions = {}
 
-        for section of @sections
-          tags.push { section }
+        for name of @sections
+          tags.push { name }
 
-          model = injector.get section
+          model = injector.get name
           attributes = model.attributes
 
           required = []
 
-          for name, attribute of attributes
-            if attribute.required
-              required.push name
+          for attribute, field of attributes
+            if field.required
+              required.push attribute
 
-          definitions[section] =
+          definitions[name] =
             properties: attributes
             required: required
             additionalProperties: false
