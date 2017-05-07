@@ -2,6 +2,8 @@ module.exports = ->
 
   @value 'Routes', ->
     ->
+      primaryKeyType = @attributes[@primaryKey]?.type or 'any'
+
       destroy:
         params:
           where:
@@ -19,10 +21,10 @@ module.exports = ->
 
       destroyById:
         params:
-          id:
-            description: "Model id"
+          "#{ @primaryKey }":
+            description: "Model #{ @primaryKey }"
             source: "url"
-            type: "any"
+            type: primaryKeyType
           options:
             type: 'object'
             source: 'context'
@@ -32,8 +34,8 @@ module.exports = ->
           "destroyById"
           "removeById"
         ]
-        description: "Delete a model instance by id from the data source."
-        path: "/:id"
+        description: "Delete a model instance by #{ @primaryKey } from the data source."
+        path: "/:#{ @primaryKey }"
         method: "del"
 
       create:
@@ -70,9 +72,9 @@ module.exports = ->
 
       exists:
         params:
-          id:
-            description: "Model id"
-            type: "any"
+          "#{ @primaryKey }":
+            description: "Model #{ @primaryKey }"
+            type: primaryKeyType
             source: 'url'
           options:
             type: 'object'
@@ -80,7 +82,7 @@ module.exports = ->
             optional: true
         accessType: "READ"
         description: "Check whether a model instance exists in the data source."
-        path: "/:id"
+        path: "/:#{ @primaryKey }"
         method: "head"
 
       find:
@@ -101,10 +103,10 @@ module.exports = ->
 
       findById:
         params:
-          id:
-            description: "Model id"
+          "#{ @primaryKey }":
+            description: "Model #{ @primaryKey }"
             source: "url"
-            type: "any"
+            type: primaryKeyType
           filter:
             description: "Filter defining fields and include"
             type: "object"
@@ -115,8 +117,8 @@ module.exports = ->
             source: 'context'
             optional: true
         accessType: "READ"
-        description: "Find a model instance by id from the data source."
-        path: "/:id"
+        description: "Find a model instance by #{ @primaryKey } from the data source."
+        path: "/:#{ @primaryKey }"
         method: "get"
 
       findOne:
@@ -136,10 +138,10 @@ module.exports = ->
 
       'prototype.updateAttributes':
         params:
-          id:
-            description: "Model id"
+          "#{ @primaryKey }":
+            description: "Model #{ @primaryKey }"
             source: "url"
-            type: "any"
+            type: primaryKeyType
           data:
             description: "An object of model property name/value pairs"
             source: "body"
@@ -180,10 +182,10 @@ module.exports = ->
 
       updateById:
         params:
-          id:
-            description: "Model id"
+          "#{ @primaryKey }":
+            description: "Model #{ @primaryKey }"
             source: "url"
-            type: "any"
+            type: primaryKeyType
           data:
             description: "Model instance data"
             source: "body"
@@ -194,7 +196,7 @@ module.exports = ->
             optional: true
         accessType: "WRITE"
         description: "Replace attributes for a model instance and persist it into the data source."
-        path: "/:id/patch"
+        path: "/:#{ @primaryKey }/patch"
         method: "post"
 
       #patchOrCreate:
