@@ -16,7 +16,7 @@ module.exports = ->
             required: false
         accessType: "WRITE"
         description: "Delete all matching records."
-        path: "/"
+        path: ""
         method: "delete"
 
       destroyById:
@@ -51,7 +51,7 @@ module.exports = ->
             required: false
         accessType: "WRITE"
         description: "Create a new instance of the model and persist it into the data source."
-        path: "/"
+        path: ""
         method: "post"
 
       count:
@@ -98,7 +98,7 @@ module.exports = ->
             required: false
         accessType: "READ"
         description: "Find all instances of the model matched by filter from the data source."
-        path: "/"
+        path: ""
         method: "get"
 
       findById:
@@ -155,7 +155,7 @@ module.exports = ->
           "patchAttributes"
         ]
         description: "Patch attributes for a model instance and persist it into the data source."
-        path: "/"
+        path: ""
         method: "patch"
 
       update:
@@ -196,8 +196,8 @@ module.exports = ->
             required: false
         accessType: "WRITE"
         description: "Replace attributes for a model instance and persist it into the data source."
-        path: "/:#{ @primaryKey }/patch"
-        method: "post"
+        path: "/:#{ @primaryKey }"
+        method: "patch"
 
       #patchOrCreate:
       #  params:
@@ -211,7 +211,7 @@ module.exports = ->
       #    "updateOrCreate"
       #  ]
       #  description: "Patch an existing model instance or insert a new one into the data source."
-      #  path: "/"
+      #  path: ""
       #  method: "patch"
 
       #replaceOrCreate:
