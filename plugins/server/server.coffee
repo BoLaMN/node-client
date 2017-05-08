@@ -2,7 +2,7 @@
 
 module.exports = ->
 
-  @factory 'server', (api, bodyParser, connect, settings) ->
+  @factory 'server', (api, bodyParser, connect, settings, cors) ->
     server = connect()
 
     server.use '/api', api.handle
@@ -10,6 +10,6 @@ module.exports = ->
     api.use bodyParser.json()
 
     #api.use cookieParser settings.cookie_secret
-    #api.use cors()
+    api.use cors()
 
     server

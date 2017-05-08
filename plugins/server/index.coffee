@@ -13,6 +13,7 @@ module.exports = (app) ->
       url: 'url'
       HttpError: 'http-error'
       connect: 'connect'
+      cors: 'cors'
 
     @include './section'
     @include './middleware'

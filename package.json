@@ -15,6 +15,7 @@
     "body-parser": "^1.14.2",
     "callsite": "^1.0.0",
     "connect": "^3.6.1",
+    "cors": "^2.8.3",
     "debug": "^2.6.4",
     "glob": "^6.0.4",
     "http-error": "0.0.6",
