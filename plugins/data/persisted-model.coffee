@@ -12,20 +12,22 @@ module.exports = ->
         @execute 'create', data, options
           .asCallback cb
 
-      @count: (where = {}, options = {}, cb = ->) ->
+      @count: (query = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @count where, {}, options
+          return @count query, {}, options
 
-        query = where: where
+        if not query.where
+          query = where: query
 
-        @execute 'count', where, options
+        @execute 'count', query, options
           .asCallback cb
 
-      @destroy: (where = {}, options = {}, cb = ->) ->
+      @destroy: (query = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @destroy where, {}, options
+          return @destroy query, {}, options
 
-        query = where: where
+        if not query.where
+          query = where: query
 
         @execute 'destroy', query, options
           .asCallback cb
@@ -91,11 +93,12 @@ module.exports = ->
         @execute 'find', query, options
           .asCallback cb
 
-      @findOne: (where = {}, options = {}, cb = ->) ->
+      @findOne: (query = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @findOne where, {}, options
+          return @findOne query, {}, options
 
-        query = where: where
+        if not query.where
+          query = where: query
 
         @execute 'findOne', query, options
           .asCallback cb
