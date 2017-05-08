@@ -19,6 +19,7 @@ module.exports = (app) ->
     @include './api'
     @include './server'
     @include './settings'
+    @include './swagger'
 
     @run (server, api, settings, MyModel) ->
 

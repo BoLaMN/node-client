@@ -2,7 +2,7 @@ module.exports = ->
 
   @value 'Routes', ->
     ->
-      primaryKeyType = @attributes[@primaryKey]?.type or 'any'
+      primaryKeyType = @attributes[@primaryKey]?.type or 'string'
 
       destroy:
         params:
@@ -16,7 +16,7 @@ module.exports = ->
             required: false
         accessType: "WRITE"
         description: "Delete all matching records."
-        path: ""
+        path: "/"
         method: "delete"
 
       destroyById:
@@ -51,7 +51,7 @@ module.exports = ->
             required: false
         accessType: "WRITE"
         description: "Create a new instance of the model and persist it into the data source."
-        path: ""
+        path: "/"
         method: "post"
 
       count:
@@ -98,7 +98,7 @@ module.exports = ->
             required: false
         accessType: "READ"
         description: "Find all instances of the model matched by filter from the data source."
-        path: ""
+        path: "/"
         method: "get"
 
       findById:
@@ -155,7 +155,7 @@ module.exports = ->
           "patchAttributes"
         ]
         description: "Patch attributes for a model instance and persist it into the data source."
-        path: ""
+        path: "/"
         method: "patch"
 
       update:
@@ -177,7 +177,7 @@ module.exports = ->
           "update"
         ]
         description: "Update instances of the model matched by where from the data source."
-        path: ""
+        path: "/"
         method: "put"
 
       updateById:
@@ -211,7 +211,7 @@ module.exports = ->
       #    "updateOrCreate"
       #  ]
       #  description: "Patch an existing model instance or insert a new one into the data source."
-      #  path: ""
+      #  path: "/"
       #  method: "patch"
 
       #replaceOrCreate:

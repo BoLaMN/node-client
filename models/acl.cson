@@ -1,7 +1,7 @@
 name: "ACL"
 plural: "acls"
 
-base: "PersistedModel"
+base: "SharedModel"
 
 properties:
   model:

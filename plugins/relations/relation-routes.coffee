@@ -2,7 +2,7 @@ module.exports = ->
 
   @value 'RelationRoutes', ->
     ->
-      primaryKeyType = @from.attributes[@primaryKey].type
+      primaryKeyType = @from.attributes[@primaryKey].type or 'string'
 
       get:
         method: 'get'

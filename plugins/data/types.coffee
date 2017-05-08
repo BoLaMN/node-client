@@ -255,6 +255,8 @@ class exports.Json extends Type
 
     JSON.parse value
 
+class exports.Object extends exports.Json
+
 module.exports = ->
 
   @factory 'Type', ->
@@ -270,7 +272,7 @@ module.exports = ->
         @define 'boolean', exports.Boolean
         @define 'integer', exports.Integer
         @define 'json', exports.Json
-        @define 'object', exports.Json
+        @define 'object', exports.Object
         @define 'array', exports.Array
         @define 'date', exports.Date
         @define 'float', exports.Float

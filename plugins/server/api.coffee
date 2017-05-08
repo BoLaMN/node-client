@@ -2,16 +2,26 @@
 
 module.exports = ->
 
-  @factory 'api', (Section, Middleware, injector) ->
+  @factory 'api', (Section, Middleware, injector, Swagger, Utils) ->
+    { extend } = Utils
+
     class Api extends Section
       constructor: ->
         super
 
         @use Middleware.defaults
+        @error Middleware.errorHandler
+
+        fn = (cb) ->
+          cb null, @toSwagger()
+
+        @get 'swagger', { args: [ 'cb' ], path: '/swagger.json' }, fn.bind @
 
       toSwagger: ->
         tags = []
-        definitions = {}
+
+        definitions =
+          'x-any': properties: {}
 
         for name of @sections
           tags.push { name }
@@ -20,13 +30,18 @@ module.exports = ->
           attributes = model.attributes
 
           required = []
+          properties = {}
 
-          for attribute, field of attributes
+          for own attribute, field of attributes
+            properties[attribute] = {}
+            schema = Swagger.buildFromSchemaType field
+            extend properties[attribute], field, schema
+
             if field.required
               required.push attribute
 
           definitions[name] =
-            properties: attributes
+            properties: properties
             required: required
             additionalProperties: false
 

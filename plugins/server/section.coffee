@@ -26,6 +26,9 @@ module.exports = ->
         @middlewares = []
         @errorHandlers = []
 
+        if @path[0] isnt '/'
+          @path = '/' + @path
+
         methods.forEach (method) =>
           @routes[method] = []
 
@@ -89,7 +92,7 @@ module.exports = ->
         if methods.indexOf(method) is -1
           return next()
 
-        handler = @match req, path, method
+        handler = @match req, req.url, method
 
         if not handler
           return next()
@@ -112,8 +115,7 @@ module.exports = ->
           section = @sections[splitPath[0]]
 
           if section
-            subPath = '/' + splitPath.slice(1).join('/')
-            handler = section.match req, subPath, method
+            handler = section.match req, path, method
             return handler if handler
           else
             for name, subsection of @sections
@@ -167,7 +169,6 @@ module.exports = ->
         api
 
       toSwagger: (api = {}) ->
-        name = '/' + (@parent?.name or @name)
 
         for path, section of @sections
           section.toSwagger api
@@ -180,7 +181,7 @@ module.exports = ->
               .replace /\/$/, ''
 
             if info
-              api.paths[name + path] ?= {}
-              api.paths[name + path][method] = info
+              api.paths[path] ?= {}
+              api.paths[path][method] = info
 
         api

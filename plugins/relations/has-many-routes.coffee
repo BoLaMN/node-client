@@ -71,8 +71,8 @@ module.exports = ->
 
   @value 'HasManyRoutes', ->
     ->
-      primaryKeyType = @to.attributes[@primaryKey]?.type or 'any'
-      foreignKeyType = @from.attributes[@foreignKey]?.type or 'any'
+      primaryKeyType = @from.attributes[@primaryKey]?.type or 'string'
+      foreignKeyType = @to.attributes[@foreignKey]?.type or 'string'
 
       find:
         method: 'get'

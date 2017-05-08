@@ -7,7 +7,7 @@ module.exports = ->
 
   @include './param'
 
-  @factory 'Route', (Types, Utils, path, HttpError, RouteParam) ->
+  @factory 'Route', (Types, Utils, HttpError, RouteParam) ->
 
     normalizePath = (path, keys, params) ->
       for name of params
@@ -60,6 +60,8 @@ module.exports = ->
           @wrapHandler(handler).bind(@)
         ]
 
+        @path = @path.replace /\/$/, ''
+
         @method = (@method or 'GET').toLowerCase()
         @regex = normalizePath @path, @keys, @params
 
@@ -105,8 +107,6 @@ module.exports = ->
 
         (req, res, next) ->
           arr = []
-
-          console.log 'params', req.params
 
           for arg, idx in args
             arr[idx] = req.params[arg]
@@ -158,7 +158,7 @@ module.exports = ->
       toSwagger: ->
         params = []
 
-        for name, param of @params
+        for name, param of @params when param.source isnt 'context'
           params.push param.toSwagger()
 
         parent = @parent
@@ -180,5 +180,5 @@ module.exports = ->
           "200":
             description: "Request was successful"
             schema:
-              $ref: "#/definitions/OrderProductContent"
+              $ref: "#/definitions/" + name
         deprecated: false

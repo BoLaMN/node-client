@@ -18,7 +18,7 @@ module.exports = ->
 
         query = where: where
 
-        @execute 'count', query, options
+        @execute 'count', where, options
           .asCallback cb
 
       @destroy: (where = {}, options = {}, cb = ->) ->
@@ -48,10 +48,7 @@ module.exports = ->
         query = where:
           id: id
 
-        finish = (err, data) ->
-          cb err, not not data
-
-        @count query, options
+        @execute 'count', query, options
           .then (data) -> not not data
           .asCallback cb
 

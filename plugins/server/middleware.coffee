@@ -36,6 +36,13 @@ module.exports = ->
 
       next()
 
+    errorHandler: (err, req, res, next) ->
+      { code, statusCode } = err
+      console.log err
+      res.json err, {}, code or statusCode or 500
+
+      return
+
     describeApi: (root) ->
       (req, res, next) ->
         res.json root.describe()

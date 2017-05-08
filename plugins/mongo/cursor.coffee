@@ -68,19 +68,23 @@ module.exports = ->
         iterate()
 
       count: (cb = ->) ->
-        @cursor.count false, @opts, cb
+        @cursor.count false, @opts
+          .asCallback cb
 
       size: (cb = ->) ->
-        @cursor.count true, @opts, cb
+        @cursor.count true, @opts
+          .asCallback cb
 
       explain: (cb = ->) ->
-        @cursor.explain cb
+        @cursor.explain
+          .asCallback cb
 
       destroy: (cb = ->) ->
         if not @cursor.close
           return cb()
 
-        @cursor.close cb
+        @cursor.close
+          .asCallback cb
 
       _read: ->
         @next (err, data) =>
