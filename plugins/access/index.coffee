@@ -67,12 +67,12 @@ module.exports = (app) ->
             return Promise.reject new InvalidArgumentError 'RESPONSE'
 
           { params, query, body, route } = req
-          { method, name, parent } = route
+          { method, name, modelName } = route
 
           modelId = params.id or body.id or query.id
 
           @context = new AccessContext
-            modelName: parent.name
+            modelName: modelName
             modelId: modelId
             methodName: name
 
@@ -87,6 +87,9 @@ module.exports = (app) ->
           handler.getAuth()
 
         getAuth: ->
+
+          if not @context.modelName
+            return Promise.resolve()
 
           @context.checkAccess()
             .then (@allowed) =>

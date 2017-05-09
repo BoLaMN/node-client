@@ -65,6 +65,11 @@ module.exports = ->
         when 'number'
           schema.type = 'number'
           schema.format = schema.format or 'double'
+        when 'object'
+          if def.source is 'query'
+            schema.type = 'string'
+          else
+            schema.type = 'object'
         when 'any'
           if def.source is 'path'
             schema.type = 'string'
@@ -75,6 +80,15 @@ module.exports = ->
             schema.type = typeLowerCase
           else
             schema.$ref = '#/definitions/' + type
+
+      if def.source is 'body'
+        if schema.$ref
+          schema = schema:
+            $ref: schema.$ref
+        else
+          schema = schema:
+            type: schema.type
+
 
       schema
 

@@ -105,8 +105,8 @@ module.exports = ->
 
       toSwagger: ->
         Utils.extend
-          name: @name
           in: @source
+          name: @name
           description: @description
           required: @required
         , Swagger.buildFromSchemaType @

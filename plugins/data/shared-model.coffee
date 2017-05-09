@@ -24,7 +24,9 @@ module.exports = ->
 
               route.args = Object.keys route.params
               route.args.push 'cb'
+
               route.path = '/' + @modelName + route.path
+              route.modelName = config.to.modelName or @modelName
 
               fn = (args...) ->
                 data = {}
@@ -68,5 +70,7 @@ module.exports = ->
 
         config.args ?= Utils.getArgs fn
         config.path = '/' + @modelName + config.path
+
+        config.modelName = @modelName
 
         route[config.method] name, config, fn.bind @

@@ -16,8 +16,9 @@ module.exports = ->
         for own key, value of context
           @[key] = value
 
-        @model = injector.get @modelName
-        @acls = @model.acls
+        if @modelName
+          @model = injector.get @modelName
+          @acls = @model.acls
 
         AccessToken = injector.get 'AccessToken'
 

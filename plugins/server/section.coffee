@@ -177,13 +177,14 @@ module.exports = ->
 
         for method, routes of @routes
           for route in routes
-            info = route.toSwagger()
-            path = route.path
-              .replace /\/:([\w\.\-\_]+)(\*?)/g, '/{$1}'
-              .replace /\/$/, ''
+            if route.path isnt '/swagger.json'
+              info = route.toSwagger()
+              path = route.path
+                .replace /\/:([\w\.\-\_]+)(\*?)/g, '/{$1}'
+                .replace /\/$/, ''
 
-            if info
-              api.paths[path] ?= {}
-              api.paths[path][method] = info
+              if info
+                api.paths[path] ?= {}
+                api.paths[path][method] = info
 
         api

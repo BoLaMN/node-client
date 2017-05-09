@@ -30,7 +30,6 @@ module.exports = ->
           model = injector.get name
           attributes = model.attributes
 
-          required = []
           properties = {}
 
           for own attribute, field of attributes
@@ -38,12 +37,8 @@ module.exports = ->
             schema = Swagger.buildFromSchemaType field
             extend properties[attribute], field, schema
 
-            if field.required
-              required.push attribute
-
           definitions[name] =
             properties: properties
-            required: required
             additionalProperties: false
 
         super

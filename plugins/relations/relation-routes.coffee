@@ -44,7 +44,7 @@ module.exports = ->
         description: "Creates a new instance in  #{ @as }  of this model."
         accessType: 'WRITE'
 
-      destroy:
+      delete:
         method: 'delete'
         path: "/:#{ @primaryKey }/#{ @as }"
         params:

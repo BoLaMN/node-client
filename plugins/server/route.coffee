@@ -165,7 +165,12 @@ module.exports = ->
         params = []
 
         for name, param of @params when param.source isnt 'context'
-          params.push param.toSwagger()
+          prm = param.toSwagger()
+
+          if prm.id
+            prm.id = 1
+
+          params.push prm
 
         parent = @parent
         base = []
@@ -186,5 +191,5 @@ module.exports = ->
           "200":
             description: "Request was successful"
             schema:
-              $ref: "#/definitions/" + name
+              $ref: "#/definitions/" + @modelName
         deprecated: false
