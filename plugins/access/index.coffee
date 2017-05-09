@@ -55,9 +55,7 @@ module.exports = (app) ->
     @factory 'AccessHandler', (OAuthError, ServerError, AccessDeniedError, InvalidArgumentError, AccessContext, AccessReq, AccessRes) ->
 
       class AccessHandler
-        constructor: (options) ->
-          for key, value of options
-            @[key] = value
+        constructor: (@context) ->
 
           @authenticateHandler = handle: ->
             Promise.resolve userId: '1', roles: []
@@ -69,44 +67,38 @@ module.exports = (app) ->
           if not response instanceof AccessRes
             throw new InvalidArgumentError 'RESPONSE'
 
-          Promise.bind this
-            .then ->
-              @accessContext.checkAccess
-            .then (@allowed) ->
-              @getAuth request, response
-            .then (token) ->
-              @afterAuth request, token
+          @getAuth request, response
+            .then (token) =>
+              @afterAuth token
             .catch (e) ->
               if not e instanceof OAuthError
                 e = new ServerError e
-
               throw e
 
-              return
-
         getAuth: (request, response) ->
-          if @allowed
-            return Promise.resolve @allowed
 
-          @authenticateHandler.handle request, response
-            .then (token) ->
-              if not token.userId and not token.roles
-                throw new ServerError 'USEROBJECT'
+          @context.checkAccess()
+            .then (@allowed) ->
+              if @allowed
+                return Promise.resolve @allowed
 
-              token
+              @authenticateHandler.handle request, response
+                .then (token) ->
+                  if not token.userId and not token.roles
+                    throw new ServerError 'USEROBJECT'
 
-        afterAuth: (request, token) ->
+                  token
+
+        afterAuth: (token) ->
           if @allowed
             return Promise.resolve @allowed
 
           if not token
             throw new AccessDeniedError 'NOACCESS'
 
-          @accessContext.setToken token
+          @context.setToken token
 
-          request.accessContext = @accessContext
-
-          @accessContext.checkAccess
+          @context.checkAccess()
             .then (allowed) ->
               if not allowed
                 throw new AccessDeniedError 'NOACCESS'
@@ -130,10 +122,8 @@ module.exports = (app) ->
 
         context.setAccessTypeForRoute route
 
-        console.log context
-
         new AccessHandler context
           .handle request, response
           .tap ->
-            req.accessContext = request.accessContext
+            req.context = request.context
           .asCallback next
