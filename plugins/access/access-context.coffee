@@ -59,7 +59,7 @@ module.exports = ->
 
       isInRole: (acl) ->
         new Promise (resolve) =>
-          debug 'isInRole(): %s', acl.principalId
+          role = 'isInRole(): ' + acl.principalId
 
           matchPrincipal = (acl) =>
             @principals.filter ({ type, id }) ->
@@ -70,18 +70,17 @@ module.exports = ->
           resolver = ACL.resolvers[acl.principalId]
 
           if resolver
-            debug 'Custom resolver found for role %s', acl.principalId
             resolver acl.principalId, @, (result) ->
-              debug 'isInRole() returns: ' + result
+              debug role + ', returns: ' + result
               return resolve result
             return
 
           if @principals.length is 0
-            debug 'isInRole() returns: false'
+            debug role + ', returns: false'
             return resolve false
 
           if matchPrincipal(acl).length
-            debug 'isInRole() returns: true'
+            debug role + ', returns: true'
             return resolve true
 
           resolve false
