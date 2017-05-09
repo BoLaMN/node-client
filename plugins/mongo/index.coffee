@@ -35,7 +35,7 @@ module.exports = (app) ->
 
       Types.define 'objectid', ObjectId
 
-    @factory 'MongoDB', (MongoORM, MongoClient) ->
+    @adapter 'MongoDB', (MongoORM, MongoClient) ->
       class MongoDB extends MongoORM
 
         @buildUrl: ({ username, password, port, hostname, database }) ->

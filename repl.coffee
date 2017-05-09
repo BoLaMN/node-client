@@ -31,7 +31,7 @@ usage = ->
     types.forEach (type) ->
       modules = list[type]
       name = type.charAt(0).toUpperCase() + type.slice(1)
-      msg += " - #{ name }: #{ modules.join(', ') }\n"
+      msg += " - #{ name }s: #{ modules.join(', ') }\n"
 
   msg += "============================================\n\n"
 

@@ -8,6 +8,10 @@ module.exports = (app) ->
 
     @include './adapters'
 
+    @assembler 'adapter', ->
+      (name, factory) ->
+        @factory name, factory, 'adapter'
+
     @factory 'Adapter', (Adapters, Storage, Entity, Events) ->
 
       class Adapter extends Entity
