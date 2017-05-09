@@ -59,16 +59,14 @@ module.exports = (app) ->
           for key, value of options
             @[key] = value
 
-          @authenticateHandler = new AuthenticateHandler
-            addAcceptedScopesHeader: true
-            addAuthorizedScopesHeader: true
-            allowBearerTokensInQueryString: false
+          @authenticateHandler = handle: ->
+            Promise.resolve userId: '1', roles: []
 
         handle: (request, response) ->
-          if not request instanceof Request
+          if not request instanceof AccessReq
             throw new InvalidArgumentError 'REQUEST'
 
-          if not response instanceof Response
+          if not response instanceof AccessRes
             throw new InvalidArgumentError 'RESPONSE'
 
           Promise.bind this
@@ -131,6 +129,8 @@ module.exports = (app) ->
           methodName: name
 
         context.setAccessTypeForRoute route
+
+        console.log context
 
         new AccessHandler context
           .handle request, response

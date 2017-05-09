@@ -29,7 +29,7 @@ usage = ->
 
   if types.length > 0
     types.forEach (type) ->
-      modules = list[type]
+      modules = list[type].sort()
       name = type.charAt(0).toUpperCase() + type.slice(1)
       msg += " - #{ name }s: #{ modules.join(', ') }\n"
 

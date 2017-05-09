@@ -82,9 +82,11 @@ module.exports = ->
       _handle: (req, res, next) ->
         req.locals ?= {}
         req.params ?= {}
+        req.body   ?= {}
 
         if not req.parsedUrl
           req.parsedUrl = url.parse req.url, true
+          req.query = req.parsedUrl.query
 
         path = req.parsedUrl.pathname
         method = req.method.toLowerCase()

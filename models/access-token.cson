@@ -1,0 +1,80 @@
+name: "AccessToken"
+plural: "access-tokens"
+
+base: "PersistedModel"
+
+properties:
+
+  accessToken:
+    type: "string"
+    required: true
+    id: true
+
+  tokenType:
+    type: "string"
+    enum: ['Bearer', 'mac']
+    default: 'Bearer'
+
+  accessTokenExpiresAt:
+    type: "date"
+
+  issuer:
+    type: "string"
+
+  roles:
+    type: [ 'string' ]
+
+  scope:
+    type: [ 'string' ]
+
+  jwt:
+    type: "string"
+
+  refreshToken:
+    type: 'string'
+
+  refreshTokenExpiresAt:
+    type: 'date'
+
+relations:
+
+  user:
+    type: "hasOne"
+    model: "User"
+    foreignKey: "userId"
+
+  client:
+    type: "belongsTo"
+    model: "Application"
+    foreignKey: "clientId"
+
+  application:
+    type: "belongsTo"
+    model: "Application"
+    foreignKey: "appId"
+
+acls: [
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "DENY"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:read"
+    permission: "ALLOW"
+    accessType: "READ"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:write"
+    permission: "ALLOW"
+    accessType: "WRITE"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:delete"
+    permission: "ALLOW"
+    accessType: "DELETE"
+  }
+]

@@ -9,8 +9,6 @@ module.exports = ->
         { headers, body, @method, @query } = options
 
         @body = body or {}
-        @models = options.app.models
-        @issuer = options.app.get 'issuer'
 
         if not headers
           throw new InvalidArgumentError 'HEADERS'
