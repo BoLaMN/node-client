@@ -28,7 +28,8 @@ class Plugin extends Emitter
         camelize v, true
 
     Object.keys(modules).forEach (key) =>
-      @factory key, -> require modules[key]
+      service = -> require modules[key]
+      @factory key, service, 'require'
     @
 
   include: (filename) ->

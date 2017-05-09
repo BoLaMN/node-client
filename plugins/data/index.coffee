@@ -23,7 +23,10 @@ module.exports = (app) ->
         config.as = as
         factory[config.type] config
 
-      @factory name, -> factory
+      service = ->
+        factory
+
+      @factory name, service, 'model'
 
       @
 

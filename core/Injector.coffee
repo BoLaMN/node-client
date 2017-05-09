@@ -2,12 +2,14 @@
 
 dependencies = Symbol()
 decorators = Symbol()
+modules = Symbol()
 
 class Injector
 
   constructor: ->
     @[dependencies] = {}
     @[decorators] = {}
+    @[modules] = {}
 
     @register 'injector',
       factory:
@@ -19,7 +21,14 @@ class Injector
       @[decorators][name] ?= []
       @[decorators][name].push factory
     else
+
+      if @[dependencies][name]
+        return
+
       @[dependencies][name] = factory.$get
+
+      @[modules][type] ?= []
+      @[modules][type].push name
 
     if type is 'provider'
       @[dependencies][name + 'Provider'] = ->
@@ -74,6 +83,9 @@ class Injector
   exec: (factory, context) ->
     args = @inject @parse factory
     factory.apply context, args
+
+  listByType: ->
+    @[modules]
 
   list: ->
     Object.keys @[dependencies]

@@ -11,11 +11,31 @@ require 'require-cson'
 
 server = require('./core/Host').bootstrap()
 
+injector = server.run()
+
 runInContext = (js, context, filename) ->
   if context is global
     vm.runInThisContext js, filename
   else
     vm.runInContext js, context, filename
+
+usage = ->
+  list = injector.listByType()
+  types = Object.keys list
+
+  msg = "\n============================================\n" +
+        " REPL Console\n\n" +
+        " Primary handles available:\n\n"
+
+  if types.length > 0
+    types.forEach (type) ->
+      modules = list[type]
+      name = type.charAt(0).toUpperCase() + type.slice(1)
+      msg += " - #{ name }: #{ modules.join(', ') }\n"
+
+  msg += "============================================\n\n"
+
+  msg
 
 config =
   prompt: 'sh> ',
@@ -109,6 +129,14 @@ addMultilineHandler = ({rli, inputStream, outputStream, _prompt, prompt }) ->
 
     return
 
+addUsage = (shell) ->
+
+  shell.commands.usage =
+    help: 'Show usage commands'
+    action: ->
+      shell.outputStream.write usage injector.list()
+      shell.displayPrompt()
+
 addHistory = (shell, filename, maxSize) ->
   lastLine = null
 
@@ -160,8 +188,6 @@ start = ->
   context = shell.context
   context.server = server
 
-  injector = server.run()
-
   context.exit = ->
     process.exit 0
 
@@ -171,11 +197,15 @@ start = ->
     modules.forEach (module) ->
       context[module] = injector.get module
 
+    shell.outputStream.write usage modules
+    shell.displayPrompt()
+
   shell.on 'exit', ->
     shell.outputStream.write '\n' if not shell.rli.closed
 
   addMultilineHandler shell
   addHistory shell, config.historyFile, config.historyMaxInputSize
+  addUsage shell
 
   shell.commands[getCommandId(shell, 'load')].help = 'Load code from a file into this REPL session'
 
