@@ -92,9 +92,9 @@ tap = (handler) ->
 Promise::asCallback ?= asCallback
 Promise::tap ?= tap
 
-Promise.each = (vals, iterator, { concurrency, handle, stopEarly, resolve } = {}) ->
+Promise.each = (vals, iterator, { concurrency, handle, stopEarly, finish } = {}) ->
   new Promise (resolve, reject) ->
-    return resolve resolve?() unless vals.length
+    return resolve finish?() unless vals.length
 
     concurrency ?= 1024
     throttled = throttle concurrency, iterator
@@ -120,7 +120,7 @@ Promise.each = (vals, iterator, { concurrency, handle, stopEarly, resolve } = {}
 
         if remaining is 0 or stopEarly?()
           stopped = true
-          resolve resolve?()
+          resolve finish?()
 
     for promise, i in promises
       try promise resolver(i), reject
@@ -143,7 +143,7 @@ Promise.eachSeries = (vals, iterator, options = {}) ->
 
     iterate = ->
       if (i >= vals.length) or options.stopEarly?()
-        resolve options.resolve?()
+        resolve options.finish?()
       else
         try
           promise = iterator vals[i]
@@ -181,28 +181,28 @@ Promise.map = (vals, iterator) ->
 
   @each vals, iterator,
     handle: (val, i) -> res[i] = val
-    resolve: -> res
+    finish: -> res
 
 Promise.mapSeries = (inputs, iterator) ->
   res = []
 
   @eachSeries inputs, iterator,
     handle: (result) -> res.push result
-    resolve: -> res
+    finish: -> res
 
 Promise.mapLimit = (inputs, concurrency, iterator) ->
   res = []
 
   @eachLimit inputs, concurrency, iterator,
     handle: (result) -> res.push result
-    resolve: -> res
+    finish: -> res
 
 Promise.reduce = (vals, reduction, iterator) ->
   iteratee = (val) -> iterator reduction, val
 
   @eachSeries vals, iteratee,
     handle: (result) -> reduction = result
-    resolve: -> reduction
+    finish: -> reduction
 
 Promise.someSeries = (vals, iterator) ->
   found = false
@@ -213,7 +213,7 @@ Promise.someSeries = (vals, iterator) ->
       return unless result
       val = vals[i]
       found = true
-    resolve: -> val
+    finish: -> val
     stopEarly: -> found
 
 Promise.some = (vals, iterator) ->
@@ -225,7 +225,7 @@ Promise.some = (vals, iterator) ->
       return unless result
       val = vals[i]
       found = true
-    resolve: -> val
+    finish: -> val
     stopEarly: -> found
 
 Promise.filter = (vals, iterator) ->
@@ -234,7 +234,7 @@ Promise.filter = (vals, iterator) ->
   @each vals, iterator,
     handle: (result, i) ->
       arr.push vals[i] if result
-    resolve: -> arr
+    finish: -> arr
 
 Promise.filterSeries = (vals, iterator) ->
   arr = []
@@ -242,6 +242,6 @@ Promise.filterSeries = (vals, iterator) ->
   @eachSeries vals, iterator,
     handle: (result, i) ->
       arr.push vals[i] if result
-    resolve: -> arr
+    finish: -> arr
 
 module.exports = asCallback
