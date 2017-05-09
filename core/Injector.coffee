@@ -75,7 +75,10 @@ class Injector
     args = @inject @parse factory
     factory.apply context, args
 
-  inspect: ->
+  list: ->
     Object.keys @[dependencies]
+
+  inspect: ->
+    @list()
 
 module.exports = Injector

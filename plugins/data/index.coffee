@@ -4,7 +4,7 @@ module.exports = (app) ->
 
   app
 
-  .module 'Data', [ 'Relations', 'Server', 'MongoDBAdapter' ]
+  .module 'Data', [ 'Relations', 'Server', 'MongoDBAdapter', 'Access' ]
 
   .initializer ->
 
@@ -44,6 +44,7 @@ module.exports = (app) ->
     @include './shared-model'
     @include './persisted-model'
     @include './model'
+    @include './acls'
     @include './cast'
     @include './mixins'
     @include './types'

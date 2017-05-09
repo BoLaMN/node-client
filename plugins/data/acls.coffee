@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'ModelACL', (ACL) ->
+  @factory 'ModelACL', (Models, AccessContext) ->
 
     class ModelACL
 
@@ -18,8 +18,7 @@ module.exports = ->
         config.methodName ?= null
         config.accessType ?= AccessContext.ALL
 
-        acl = new ACL config
-
-        @acls.push acl
+        Models.get 'ACL', (ACL) =>
+          @acls.push new ACL config
 
         @

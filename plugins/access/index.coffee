@@ -1,17 +1,13 @@
 
 module.exports = (app) ->
 
-  app.module 'Access', [ 'Data' ]
+  app.module 'Access', [ ]
 
   .initializer ->
 
     @include './errors'
     @include './access-context'
-    @include './access-request'
-    @include './is-in-role'
     @include './principal'
-    @include './resolve-permission'
-    @include './score'
     @include './utils/request'
     @include './utils/response'
 

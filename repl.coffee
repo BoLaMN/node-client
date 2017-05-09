@@ -7,6 +7,10 @@ coffee = require 'coffee-script'
 
 { updateSyntaxError } = require 'coffee-script/lib/coffee-script/helpers'
 
+require 'require-cson'
+
+server = require('./core/Host').bootstrap()
+
 runInContext = (js, context, filename) ->
   if context is global
     vm.runInThisContext js, filename
@@ -154,13 +158,18 @@ start = ->
   shell = repl.start config
 
   context = shell.context
+  context.server = server
+
+  injector = server.run()
 
   context.exit = ->
     process.exit 0
 
   process.nextTick ->
-    context.model = require './persisted-model'
-    context.adapter = require './adapter/mongo'
+    modules = injector.list()
+
+    modules.forEach (module) ->
+      context[module] = injector.get module
 
   shell.on 'exit', ->
     shell.outputStream.write '\n' if not shell.rli.closed

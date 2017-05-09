@@ -2,7 +2,7 @@ debug = require('debug')('security:acl')
 
 module.exports = ->
 
-  @factory 'AccessContext', (AccessPrincipal, injector, ACL) ->
+  @factory 'AccessContext', (AccessPrincipal, injector) ->
 
     class AccessContext
       constructor: (context = {}) ->
@@ -68,6 +68,8 @@ module.exports = ->
         matchPrincipal = (acl) =>
           @principals.filter ({ type, id }) ->
             type is acl.principalType and id is acl.principalId
+
+        ACL = injector.get 'ACL'
 
         resolver = ACL.resolvers[acl.principalId]
 

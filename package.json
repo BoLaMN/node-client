@@ -19,7 +19,8 @@
     "debug": "^2.6.4",
     "glob": "^6.0.4",
     "http-error": "0.0.6",
-    "mongodb": "^2.2.26"
+    "mongodb": "^2.2.26",
+    "standard-http-error": "^2.0.0"
   },
   "devDependencies": {
     "coffee-script": "^1.12.5"
