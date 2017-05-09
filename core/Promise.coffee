@@ -197,7 +197,7 @@ Promise.mapLimit = (inputs, concurrency, iterator) ->
     handle: (result) -> res.push result
     finish: -> res
 
-Promise.reduce = (vals, reduction, iterator) ->
+Promise.reduce = (vals, iterator, reduction) ->
   iteratee = (val) -> iterator reduction, val
 
   @eachSeries vals, iteratee,
