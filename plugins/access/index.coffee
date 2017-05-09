@@ -30,11 +30,11 @@ module.exports = (app) ->
         return
 
       ###*
-      # Check if the given principal is allowed to access the model/property
+      # Check if the given principal is allowed to access the model/methodName
       # @param {String} principalType The principal type.
       # @param {String} principalId The principal ID.
       # @param {String} model The model name.
-      # @param {String} property The property/method/relation name.
+      # @param {String} methodName The methodName/method/relation name.
       # @param {String} accessType The access type.
       # @callback {Function} callback Callback function.
       # @param {String|Error} err The error object
@@ -45,7 +45,7 @@ module.exports = (app) ->
         if debug.enabled
           debug '---ACL---'
           debug 'model %s', @model
-          debug 'property %s', @property
+          debug 'methodName %s', @methodName
           debug 'principalType %s', @principalType
           debug 'principalId %s', @principalId
           debug 'accessType %s', @accessType
@@ -132,11 +132,7 @@ module.exports = (app) ->
         context = new AccessContext
           modelName: parent.name
           modelId: modelId
-          property: method.name
           methodName: name
-          context:
-            req: req
-            res: res
 
         context.setAccessTypeForRoute route
 

@@ -7,7 +7,7 @@ module.exports = ->
     class AccessContext
       constructor: (context = {}) ->
         @model = AccessContext.ALL
-        @property = AccessContext.ALL
+        @methodName = AccessContext.ALL
         @accessType = AccessContext.ALL
         @permission = AccessContext.DEFAULT
 
@@ -44,18 +44,16 @@ module.exports = ->
 
       isWildcard: ->
         @model is AccessContext.ALL or
-        @property is AccessContext.ALL or
+        @methodName is AccessContext.ALL or
         @accessType is AccessContext.ALL
 
-      exactlyMatches: ({ model, property, accessType }) ->
+      exactlyMatches: ({ model, methodName, accessType }) ->
         matchesModel = model is @modelName
-        matchesProperty = property is @property
-
-        matchesMethodName = @methodName is property
+        matchesMethodName = methodName is @methodName
         matchesAccessType = accessType is @accessType
 
         if matchesModel and matchesAccessType
-          return matchesProperty or matchesMethodName
+          return matchesMethodName
 
         false
 
@@ -93,7 +91,7 @@ module.exports = ->
       getMatchingScore: (rule) ->
         props = [
           'model'
-          'property'
+          'methodName'
           'accessType'
         ]
 
@@ -112,7 +110,7 @@ module.exports = ->
               ruleValue = ruleValue or AccessContext.ALL
               #requestedValue = requestedValue or AccessContext.ALL
 
-            isMatchingMethodName = props[i] is 'property' and @methodName is ruleValue
+            isMatchingMethodName = props[i] is 'methodName' and @methodName is ruleValue
             isMatchingAccessType = ruleValue is requestedValue
 
             if props[i] is 'accessType' and not isMatchingAccessType
@@ -340,8 +338,7 @@ module.exports = ->
 
           debug 'modelName %s', @modelName
           debug 'modelId %s', @modelId
-          debug 'property %s', @property
-          debug 'method %s', @methodName
+          debug 'methodName %s', @methodName
           debug 'accessType %s', @accessType
 
           if @token

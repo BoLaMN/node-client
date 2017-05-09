@@ -8,7 +8,7 @@ properties:
   model:
     type: "string"
 
-  property:
+  methodName:
     type: "string"
 
   accessType:

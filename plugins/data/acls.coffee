@@ -15,7 +15,7 @@ module.exports = ->
         if config.principalId is '*'
           config.principalId = AccessContext.ALL
 
-        config.property ?= null
+        config.methodName ?= null
         config.accessType ?= AccessContext.ALL
 
         acl = new ACL config
