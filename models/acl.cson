@@ -5,7 +5,7 @@ base: "SharedModel"
 
 properties:
 
-  model:
+  modelName:
     type: "string"
 
   methodName:

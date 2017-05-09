@@ -3,39 +3,41 @@
 module.exports = ->
 
   @factory 'Request', (Utils) ->
-    { promisify } = Utils
+    { defer } = Utils
 
     class Request
       constructor: (@middlewares, @errorHandlers, @handlers) ->
 
-      run: (fns, args...) ->
+      run: (args...) ->
         length = args.length
 
         isPromise = (o = {}) ->
           typeof o.then is "function" or
           typeof o.catch is "function"
 
-        fns.map (fn, i) ->
-          new Promise (resolve, reject) ->
-            args[length] = (err, values...) ->
-              if err
-                return reject err
+        (fn) ->
+          deferred = defer()
 
-              resolve values
+          args[length] = (err, values...) ->
+            if err
+              return deferred.reject err
 
-            response = fn.apply null, args
+            deferred.resolve values
 
-            if isPromise response
-              resolve response
+          response = fn.apply null, args
 
-      handle: (@req, @res, done) ->
+          if isPromise response
+            return response
+          else deferred.promise
+
+      handle: (@req, @res) ->
         fns = @middlewares.concat @handlers
+        err = @error.bind @
 
-        Promise.all @run(fns, @req, @res)
-          .catch @error.bind(@)
-          .asCallback done
+        Promise.each fns, @run(@req, @res)
+          .then null, err
 
       error: (err) ->
         fns = @errorHandlers
 
-        Promise.all @run(fns, err, @req, @res)
+        Promise.each fns, @run(err, @req, @res)

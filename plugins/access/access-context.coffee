@@ -57,38 +57,36 @@ module.exports = ->
 
         false
 
-      isAllowed: ->
-        @permission isnt AccessContext.DENY
+      isInRole: (acl) ->
+        new Promise (resolve) =>
+          debug 'isInRole(): %s', acl.principalId
 
-      isInRole: (acl, callback) ->
-        debug 'isInRole(): %s', acl.principalId
+          @debug()
 
-        @debug()
+          matchPrincipal = (acl) =>
+            @principals.filter ({ type, id }) ->
+              type is acl.principalType and id is acl.principalId
 
-        matchPrincipal = (acl) =>
-          @principals.filter ({ type, id }) ->
-            type is acl.principalType and id is acl.principalId
+          ACL = injector.get 'ACL'
 
-        ACL = injector.get 'ACL'
+          resolver = ACL.resolvers[acl.principalId]
 
-        resolver = ACL.resolvers[acl.principalId]
+          if resolver
+            debug 'Custom resolver found for role %s', acl.principalId
+            resolver acl.principalId, @, (result) ->
+              debug 'isInRole() returns: ' + result
+              return resolve result
+            return
 
-        if resolver
-          debug 'Custom resolver found for role %s', acl.principalId
-          resolver acl.principalId, @, (result) ->
-            debug 'isInRole() returns: ' + result
-            return callback result
-          return
+          if @principals.length is 0
+            debug 'isInRole() returns: false'
+            return resolve false
 
-        if @principals.length is 0
-          debug 'isInRole() returns: false'
-          return callback false
+          if matchPrincipal(acl).length
+            debug 'isInRole() returns: true'
+            return resolve true
 
-        if matchPrincipal(acl).length
-          debug 'isInRole() returns: true'
-          return callback true
-
-        callback false
+          resolve false
 
       getMatchingScore: (rule) ->
         props = [
@@ -182,8 +180,6 @@ module.exports = ->
         acls = acls.sort (rule1, rule2) =>
           @getMatchingScore(rule2) - @getMatchingScore(rule1)
 
-        permission = AccessContext.DEFAULT
-
         score = 0
         i = 0
 
@@ -201,19 +197,19 @@ module.exports = ->
 
           if not @isWildcard()
             # We should stop from the first match for non-wildcard
-            permission = candidate.permission
+            @permission = candidate.permission
             break
           else
             if @exactlyMatches(candidate)
-              permission = candidate.permission
+              @permission = candidate.permission
               break
 
             # For wildcard match, find the strongest permission
             candidateOrder = AccessContext.permissionOrder[candidate.permission]
-            permissionOrder = AccessContext.permissionOrder[permission]
+            permissionOrder = AccessContext.permissionOrder[@permission]
 
             if candidateOrder > permissionOrder
-              permission = candidate.permission
+              @permission = candidate.permission
 
           i++
 
@@ -223,9 +219,13 @@ module.exports = ->
           acls.forEach (acl) ->
             acl.debug()
 
-        @permission = permission
+        if @permission is AccessContext.DEFAULT
+          @permission = AccessContext.ALLOW
 
-        @
+        @isAllowed()
+
+      isAllowed: ->
+        @permission isnt AccessContext.DENY
 
       setAccessTypeForRoute: (route) ->
 
@@ -257,21 +257,11 @@ module.exports = ->
         return
 
       checkAccess: ->
+        isInRole = @isInRole.bind @
+        resolvePermission = @resolvePermission.bind @
 
-        new Promise (resolve, reject) =>
-          async.filter @acls, (acl, cb) =>
-            @isInRole acl, cb
-          , (acls) =>
-            resolved = @resolvePermission acls
-
-            if resolved and resolved.permission is AccessContext.DEFAULT
-              resolved.permission = AccessContext.ALLOW
-
-            resolved.debug()
-
-            resolve resolved.isAllowed()
-
-          return
+        Promise.filter @acls, isInRole
+          .then resolvePermission
 
       addPrincipal: (args...) ->
         principal = new AccessPrincipal args...
@@ -288,7 +278,7 @@ module.exports = ->
       get: (type) ->
         p = @principals.find (p) ->
           p.type is AccessPrincipal[type]
-        p.id or null
+        p?.id or null
 
       getUserId: ->
         @get 'USER'

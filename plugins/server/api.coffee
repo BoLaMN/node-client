@@ -2,7 +2,7 @@
 
 module.exports = ->
 
-  @factory 'api', (Section, Middleware, injector, Swagger, Utils, AccessHandler) ->
+  @factory 'api', (Section, Middleware, injector, Swagger, Utils) ->
     { extend } = Utils
 
     class Api extends Section
@@ -10,7 +10,6 @@ module.exports = ->
         super
 
         @use Middleware.defaults
-        @use AccessHandler
 
         @error Middleware.errorHandler
 

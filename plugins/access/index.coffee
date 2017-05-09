@@ -1,3 +1,4 @@
+debug = require('debug')('security:acl')
 
 module.exports = (app) ->
 
@@ -40,7 +41,7 @@ module.exports = (app) ->
       ACL::debug = ->
         if debug.enabled
           debug '---ACL---'
-          debug 'model %s', @model
+          debug 'model %s', @modelName
           debug 'methodName %s', @methodName
           debug 'principalType %s', @principalType
           debug 'principalId %s', @principalId
@@ -55,75 +56,61 @@ module.exports = (app) ->
     @factory 'AccessHandler', (OAuthError, ServerError, AccessDeniedError, InvalidArgumentError, AccessContext, AccessReq, AccessRes) ->
 
       class AccessHandler
-        constructor: (@context) ->
+        constructor: (req, res) ->
+          @request = new AccessReq req
+          @response = new AccessRes res
+
+          if not @request instanceof AccessReq
+            return Promise.reject new InvalidArgumentError 'REQUEST'
+
+          if not @response instanceof AccessRes
+            return Promise.reject new InvalidArgumentError 'RESPONSE'
+
+          { params, query, body, route } = req
+          { method, name, parent } = route
+
+          modelId = params.id or body.id or query.id
+
+          @context = new AccessContext
+            modelName: parent.name
+            modelId: modelId
+            methodName: name
+
+          @context.setAccessTypeForRoute route
 
           @authenticateHandler = handle: ->
             Promise.resolve userId: '1', roles: []
 
-        handle: (request, response) ->
-          if not request instanceof AccessReq
-            throw new InvalidArgumentError 'REQUEST'
+        @check: (req, res) ->
+          handler = new AccessHandler req, res
 
-          if not response instanceof AccessRes
-            throw new InvalidArgumentError 'RESPONSE'
+          handler.getAuth()
 
-          @getAuth request, response
-            .then (token) =>
-              @afterAuth token
-            .catch (e) ->
-              if not e instanceof OAuthError
-                e = new ServerError e
-              throw e
-
-        getAuth: (request, response) ->
+        getAuth: ->
 
           @context.checkAccess()
-            .then (@allowed) ->
+            .then (@allowed) =>
               if @allowed
                 return Promise.resolve @allowed
 
-              @authenticateHandler.handle request, response
+              @authenticateHandler.handle @request, @response
                 .then (token) ->
                   if not token.userId and not token.roles
-                    throw new ServerError 'USEROBJECT'
+                    return Promise.reject new ServerError 'USEROBJECT'
 
                   token
+            .then @afterAuth.bind @
 
         afterAuth: (token) ->
           if @allowed
             return Promise.resolve @allowed
 
           if not token
-            throw new AccessDeniedError 'NOACCESS'
+            return Promise.reject new AccessDeniedError 'NOACCESS'
 
           @context.setToken token
 
           @context.checkAccess()
             .then (allowed) ->
               if not allowed
-                throw new AccessDeniedError 'NOACCESS'
-
-              allowed
-
-      (req, res, next) ->
-
-        request = new AccessReq req
-        response = new AccessRes res
-
-        { params, query, body, route } = req
-        { method, name, parent } = route
-
-        modelId = params.id or body.id or query.id
-
-        context = new AccessContext
-          modelName: parent.name
-          modelId: modelId
-          methodName: name
-
-        context.setAccessTypeForRoute route
-
-        new AccessHandler context
-          .handle request, response
-          .tap ->
-            req.context = request.context
-          .asCallback next
+                return Promise.reject new AccessDeniedError 'NOACCESS'

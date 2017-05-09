@@ -10,15 +10,12 @@ throttle = (concurrency, fn) ->
     startJob job while numRunning < concurrency and job = queue.shift()
 
   startJob = (job) ->
-    rejectedHandler = makeRejectedHandler job
+    rejectedHandler = makeRejectedHandler(job)
 
     numRunning++
 
-    try promise = fn.apply job.context, job.arguments
-    catch error then return rejectedHandler error
-
-    try promise.then makeFulfilledHandler(job), rejectedHandler
-    catch error then return rejectedHandler error
+    promise = fn.apply job.context, job.arguments
+    promise.then makeFulfilledHandler(job), rejectedHandler
 
   makeFulfilledHandler = (job) ->
     (result) ->
@@ -83,10 +80,9 @@ asCallback = (cb = noop, options = {}) ->
   @
 
 tap = (handler) ->
-  promise = @constructor or Promise
 
   @then (v) ->
-    promise.resolve handler(v)
+    Promise.resolve handler(v)
     v
 
 Promise::asCallback ?= asCallback
@@ -123,14 +119,16 @@ Promise.each = (vals, iterator, { concurrency, handle, stopEarly, finish } = {})
           resolve finish?()
 
     for promise, i in promises
-      try promise resolver(i), reject
+      try promise.then resolver(i), reject
       catch error # there is no then method
         reject error
         stopped = true
 
+    return
+
 Promise.eachLimit = (vals, concurrency, iterator, options = {}) ->
   options.concurrency = concurrency
-  @each vals, iterator, options
+  Promise.each vals, iterator, options
 
 Promise.eachSeries = (vals, iterator, options = {}) ->
   new Promise (resolve, reject) ->
@@ -162,13 +160,13 @@ Promise.eachSeries = (vals, iterator, options = {}) ->
     iterate()
 
 Promise.series = (fns) ->
-  doBatch @mapSeries, fns
+  doBatch Promise.mapSeries, fns
 
 Promise.parallel = (fns) ->
-  doBatch @map, fns
+  doBatch Promise.map, fns
 
 Promise.parallelLimit = (fns, concurrency) ->
-  mapLimit = @mapLimit
+  mapLimit = Promise.mapLimit
 
   makeMapFn = (concurrency) ->
     (fns, iterator) ->
@@ -179,28 +177,28 @@ Promise.parallelLimit = (fns, concurrency) ->
 Promise.map = (vals, iterator) ->
   res = []
 
-  @each vals, iterator,
+  Promise.each vals, iterator,
     handle: (val, i) -> res[i] = val
     finish: -> res
 
 Promise.mapSeries = (inputs, iterator) ->
   res = []
 
-  @eachSeries inputs, iterator,
+  Promise.eachSeries inputs, iterator,
     handle: (result) -> res.push result
     finish: -> res
 
 Promise.mapLimit = (inputs, concurrency, iterator) ->
   res = []
 
-  @eachLimit inputs, concurrency, iterator,
+  Promise.eachLimit inputs, concurrency, iterator,
     handle: (result) -> res.push result
     finish: -> res
 
 Promise.reduce = (vals, iterator, reduction) ->
   iteratee = (val) -> iterator reduction, val
 
-  @eachSeries vals, iteratee,
+  Promise.eachSeries vals, iteratee,
     handle: (result) -> reduction = result
     finish: -> reduction
 
@@ -208,7 +206,7 @@ Promise.someSeries = (vals, iterator) ->
   found = false
   val = undefined
 
-  @eachSeries vals, iterator,
+  Promise.eachSeries vals, iterator,
     handle: (result, i) ->
       return unless result
       val = vals[i]
@@ -220,7 +218,7 @@ Promise.some = (vals, iterator) ->
   found = false
   val = undefined
 
-  @each vals, iterator,
+  Promise.each vals, iterator,
     handle: (result, i) ->
       return unless result
       val = vals[i]
@@ -231,7 +229,7 @@ Promise.some = (vals, iterator) ->
 Promise.filter = (vals, iterator) ->
   arr = []
 
-  @each vals, iterator,
+  Promise.each vals, iterator,
     handle: (result, i) ->
       arr.push vals[i] if result
     finish: -> arr
@@ -239,7 +237,7 @@ Promise.filter = (vals, iterator) ->
 Promise.filterSeries = (vals, iterator) ->
   arr = []
 
-  @eachSeries vals, iterator,
+  Promise.eachSeries vals, iterator,
     handle: (result, i) ->
       arr.push vals[i] if result
     finish: -> arr

@@ -5,7 +5,7 @@ module.exports = ->
 
   @factory 'OAuthError', (StandardHttpError) ->
     class OAuthError extends StandardHttpError
-      constructor: (messageOrError, properties) ->
+      constructor: (messageOrError, properties = {}) ->
         message = if messageOrError instanceof Error then messageOrError.message else messageOrError
         error = if messageOrError instanceof Error then messageOrError else null
 
@@ -16,10 +16,7 @@ module.exports = ->
 
   @factory 'InvalidArgumentError', (StandardHttpError) ->
     class InvalidArgumentError extends StandardHttpError
-      code: 500
-      name: 'invalid_argument'
-
-      constructor: (message, properties) ->
+      constructor: (message, properties = {}) ->
         messages =
           RESPONSE: 'Invalid argument: `response` must be an instance of Response'
           REQUEST: 'Invalid argument: `request` must be an instance of Request'
@@ -47,7 +44,10 @@ module.exports = ->
           REFRESHTOKENEXPIRESAT: 'Invalid parameter: `refreshTokenExpiresAt`'
           PROVIDER: 'Invalid parameter: `provider`'
 
-        super @code, messages[message], properties
+        properties.code ?= 500
+        properties.name ?= 'invalid_argument'
+
+        super properties.code, messages[message], properties
 
   ###*
   #
@@ -58,10 +58,7 @@ module.exports = ->
 
   @factory 'ServerError', (OAuthError) ->
     class ServerError extends OAuthError
-      code: 503
-      name: 'server_error'
-
-      constructor: (message, properties) ->
+      constructor: (message, properties = {}) ->
 
         messages =
           ACCESSTOKEN: 'Server error: `getAccessToken()` did not return a `user` object'
@@ -70,6 +67,9 @@ module.exports = ->
           MISSINGGRANTS: 'Server error: missing client `grants`'
           INVALIDGRANTS: 'Server error: `grants` must be an array'
           NOTIMPL: 'Not implemented.'
+
+        properties.code ?= 503
+        properties.name ?= 'server_error'
 
         super messages[message], properties
 
@@ -85,13 +85,13 @@ module.exports = ->
 
   @factory 'UnauthorizedRequestError', (OAuthError) ->
     class UnauthorizedRequestError extends OAuthError
-      code: 401
-      name: 'unauthorized_request'
-
-      constructor: (message, properties) ->
+      constructor: (message, properties = {}) ->
         messages =
           NOAUTH:  'Unauthorized request: no authentication given'
           NOACCESS: 'Access denied: user denied access to application'
+
+        properties.code ?= 401
+        properties.name ?= 'unauthorized_request'
 
         super messages[message], properties
 
@@ -104,11 +104,11 @@ module.exports = ->
 
   @factory 'AccessDeniedError', (OAuthError) ->
     class AccessDeniedError extends OAuthError
-      code: 400
-      name: 'access_denied'
-
-      constructor: (message, properties) ->
+      constructor: (message, properties = {}) ->
         messages =
           NOACCESS: 'Access denied: user denied access to application'
+
+        properties.code ?= 400
+        properties.name ?= 'access_denied'
 
         super messages[message], properties

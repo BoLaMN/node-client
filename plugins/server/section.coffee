@@ -100,7 +100,8 @@ module.exports = ->
           return next()
 
         new Request @middlewares, @errorHandlers, handler
-          .handle req, res, next
+          .handle req, res
+          .asCallback next
 
       match: (req, path, method) ->
 

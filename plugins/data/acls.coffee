@@ -16,6 +16,9 @@ module.exports = ->
           config.principalId = AccessContext.ALL
 
         config.accessType ?= AccessContext.ALL
+        config.methodName ?= AccessContext.ALL
+
+        config.modelName = @modelName
 
         Models.get 'ACL', (ACL) =>
           @acls.push new ACL config
