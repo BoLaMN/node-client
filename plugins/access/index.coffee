@@ -53,7 +53,7 @@ module.exports = (app) ->
 
       ACL
 
-    @factory 'AccessHandler', (OAuthError, ServerError, AccessDeniedError, InvalidArgumentError, AccessContext, AccessReq, AccessRes) ->
+    @factory 'accessHandler', (OAuthError, ServerError, AccessDeniedError, InvalidArgumentError, AccessContext, AccessReq, AccessRes) ->
 
       class AccessHandler
         constructor: (req, res) ->
@@ -114,3 +114,6 @@ module.exports = (app) ->
             .then (allowed) ->
               if not allowed
                 return Promise.reject new AccessDeniedError 'NOACCESS'
+
+      (req, res) ->
+        AccessHandler.check req, res
