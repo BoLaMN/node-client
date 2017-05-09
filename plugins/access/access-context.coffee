@@ -61,8 +61,6 @@ module.exports = ->
         new Promise (resolve) =>
           debug 'isInRole(): %s', acl.principalId
 
-          @debug()
-
           matchPrincipal = (acl) =>
             @principals.filter ({ type, id }) ->
               type is acl.principalType and id is acl.principalId
@@ -222,6 +220,8 @@ module.exports = ->
         if @permission is AccessContext.DEFAULT
           @permission = AccessContext.ALLOW
 
+        @debugRequest()
+
         @isAllowed()
 
       isAllowed: ->
@@ -260,6 +260,8 @@ module.exports = ->
         isInRole = @isInRole.bind @
         resolvePermission = @resolvePermission.bind @
 
+        @debugContext()
+
         Promise.filter @acls, isInRole
           .then resolvePermission
 
@@ -289,7 +291,7 @@ module.exports = ->
       toJSON: ->
         principals: @principals
         accessType: @accessType
-        accessToken: @accessToken
+        token: @token
         userId: @getUserId()
         appId: @getAppId()
         isAuthenticated: @isAuthenticated()
@@ -317,7 +319,7 @@ module.exports = ->
       isAuthenticated: ->
         not not (@getUserId() or @getAppId())
 
-      debug: ->
+      debugContext: ->
         if debug.enabled
           debug '---AccessContext---'
 
@@ -339,6 +341,16 @@ module.exports = ->
           debug 'getUserId() %s', @getUserId()
           debug 'isAuthenticated() %s', @isAuthenticated()
 
+          debug '---AccessRequest---'
+
+          debug ' permission %s', @permission
+          debug ' isWildcard() %s', @isWildcard()
+          debug ' isAllowed() %s', @isAllowed()
+
+        return
+
+      debugRequest: ->
+        if debug.enabled
           debug '---AccessRequest---'
 
           debug ' permission %s', @permission
