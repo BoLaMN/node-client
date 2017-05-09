@@ -340,12 +340,6 @@ module.exports = ->
           debug 'getUserId() %s', @getUserId()
           debug 'isAuthenticated() %s', @isAuthenticated()
 
-          debug '---AccessRequest---'
-
-          debug ' permission %s', @permission
-          debug ' isWildcard() %s', @isWildcard()
-          debug ' isAllowed() %s', @isAllowed()
-
         return
 
       debugRequest: ->
