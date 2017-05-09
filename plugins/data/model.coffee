@@ -1,12 +1,13 @@
 module.exports = ->
 
-  @factory 'Model', (Entity, Attribute, Events, Hooks, Models, Storage, Cast, Relations, Utils) ->
+  @factory 'Model', (Entity, Attribute, Events, Hooks, Models, ModelACL, Storage, Cast, Relations, Utils) ->
     { extend } = Utils
 
     class Model extends Entity
       @extend Events::
       @extend Hooks::
 
+      @extend ModelACL
       @extend Attribute
       @extend Cast
 
@@ -17,8 +18,11 @@ module.exports = ->
           value: new adapter @
         @
 
-      @configure: (@modelName, attributes) ->
+      @configure: (@modelName, attributes, acls) ->
         @primaryKey = 'id'
+
+        @property 'acls',
+          value: []
 
         @property 'attributes',
           value: new Storage
@@ -29,13 +33,16 @@ module.exports = ->
         Object.keys(attributes).forEach (key) =>
           @attribute key, attributes[key]
 
+        acls.forEach (acl) =>
+          @acl acl
+
         Models.define @modelName, @
 
         @
 
-      @define: (name, attributes = {}) ->
+      @define: (name, attributes = {}, acls = []) ->
         class Instance extends @
-        Instance.configure name, attributes
+        Instance.configure name, attributes, acls
 
         if @primaryKey
           Instance.primaryKey = @primaryKey

@@ -2,7 +2,8 @@ debug = require('debug')('security:acl')
 
 module.exports = ->
 
-  @factory 'AccessRequest', (AccessContext, injector) ->
+  @factory 'AccessRequest', (injector) ->
+    AccessContext = injector.get 'AccessContext'
 
     class AccessRequest
       constructor: (context) ->

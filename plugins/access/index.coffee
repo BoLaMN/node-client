@@ -56,32 +56,7 @@ module.exports = (app) ->
 
       ACL
 
-    @factory 'AccessHandler', (OAuthError, ServerError, AccessDeniedError, InvalidArgumentError, AccessContext, AccessPrincipal, AccessReq, AccessRes, resolvePermission, isInRole) ->
-
-      getAccessTypeForRoute = (route) ->
-        if route.accessType
-          assert route.accessType in [ "READ", "REPLICATE", "WRITE", "EXECUTE", "DELETE" ], 'invalid accessType ' + method.accessType + '. It must be "READ", "REPLICATE", "WRITE", or "EXECUTE"'
-          return route.accessType
-
-        verb = route.method
-
-        if typeof verb is 'string'
-          verb = verb.toUpperCase()
-
-        if verb in [ 'GET', 'HEAD' ]
-          return AccessContext.READ
-
-        switch method.name
-          when 'create', 'updateOrCreate', 'upsert'
-            return AccessContext.WRITE
-          when 'exists', 'findById', 'find', 'findOne', 'count'
-            return AccessContext.READ
-          when 'destroyById', 'deleteById', 'removeById'
-            return AccessContext.DELETE
-          else
-            return AccessContext.EXECUTE
-
-        return
+    @factory 'AccessHandler', (OAuthError, ServerError, AccessDeniedError, InvalidArgumentError, AccessContext, AccessReq, AccessRes) ->
 
       class AccessHandler
         constructor: (options) ->
@@ -89,7 +64,6 @@ module.exports = (app) ->
             @[key] = value
 
           @authenticateHandler = new AuthenticateHandler
-            tokenModel: @tokenModel
             addAcceptedScopesHeader: true
             addAuthorizedScopesHeader: true
             allowBearerTokensInQueryString: false
@@ -101,19 +75,13 @@ module.exports = (app) ->
           if not response instanceof Response
             throw new InvalidArgumentError 'RESPONSE'
 
-          acls = null
-          allowed = null
-
           Promise.bind this
             .then ->
-              @accessContext.getAcls()
-            .then (effectiveAcls) ->
-              acls = effectiveAcls
-              @checkAccessForContext acls, @accessContext
+              @accessContext.checkAccess
             .then (@allowed) ->
               @getAuth request, response
             .then (token) ->
-              @afterAuth request, acls, token
+              @afterAuth request, token
             .catch (e) ->
               if not e instanceof OAuthError
                 e = new ServerError e
@@ -121,36 +89,6 @@ module.exports = (app) ->
               throw e
 
               return
-
-        ###*
-        # Check if the request has the permission to access.
-        # @options {Object} context See below.
-        # @property {Object[]} principals An array of principals.
-        # @property {String|Model} model The model name or model class.
-        # @property {*} id The model instance ID.
-        # @property {String} property The property/method/relation name.
-        # @property {String} accessType The access type:
-        #   READ, REPLICATE, WRITE, or EXECUTE.
-        # @param {Function} callback Callback function
-        ###
-
-        checkAccessForContext: (acls, context) ->
-          ACL = @aclModel
-
-          new Promise (resolve, reject) ->
-            async.filter acls, (acl, cb) ->
-              isInRole acl, context, cb
-            , (effectiveAcls) ->
-              resolved = resolvePermission effectiveAcls, context
-
-              if resolved and resolved.permission == AccessContext.DEFAULT
-                resolved.permission = AccessContext.ALLOW
-
-              resolved.debug()
-
-              resolve resolved.isAllowed()
-
-            return
 
         getAuth: (request, response) ->
           if @allowed
@@ -163,32 +101,18 @@ module.exports = (app) ->
 
               token
 
-        afterAuth: (request, acls, token) ->
+        afterAuth: (request, token) ->
           if @allowed
             return Promise.resolve @allowed
 
           if not token
             throw new AccessDeniedError 'NOACCESS'
 
-          @accessContext.accessToken = token.accessToken
-
-          if token.userId
-            @accessContext.addPrincipal AccessPrincipal.USER, token.userId
-
-          if token.appId
-            @accessContext.addPrincipal AccessPrincipal.APP, token.appId
-
-          if token.roles and token.roles.length
-            for role in token.roles
-              @accessContext.addPrincipal AccessPrincipal.ROLE, role
-
-          if token.scopes and token.scopes.length
-            for scope in token.scopes
-              @accessContext.addPrincipal AccessPrincipal.SCOPE, scope
+          @accessContext.setToken token
 
           request.accessContext = @accessContext
 
-          @checkAccessForContext(acls, @accessContext)
+          @accessContext.checkAccess
             .then (allowed) ->
               if not allowed
                 throw new AccessDeniedError 'NOACCESS'
@@ -205,18 +129,19 @@ module.exports = (app) ->
 
         modelId = params.id or body.id or query.id
 
-        accessContext = new AccessContext
-          model: parent.name
+        context = new AccessContext
+          modelName: parent.name
           modelId: modelId
           property: method.name
           method: method
           methodName: name
-          accessType: getAccessTypeForRoute route
           context:
             req: req
             res: res
 
-        new AccessHandler accessContext
+        context.setAccessTypeForRoute route
+
+        new AccessHandler context
           .handle request, response
           .tap ->
             req.accessContext = request.accessContext

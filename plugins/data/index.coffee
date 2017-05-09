@@ -8,7 +8,7 @@ module.exports = (app) ->
 
   .initializer ->
 
-    buildModel = (name, { base, adapter, properties, relations }) =>
+    buildModel = (name, { base, adapter, properties, relations, acls }) =>
       base = base or 'Model'
 
       model = @injector.get base
@@ -16,7 +16,7 @@ module.exports = (app) ->
 
       connector = adptr.define 'db'
 
-      factory = model.define name, properties
+      factory = model.define name, properties, acls
       factory.adapter connector
 
       for as, config of relations

@@ -4,6 +4,7 @@ plural: "acls"
 base: "SharedModel"
 
 properties:
+
   model:
     type: "string"
 
