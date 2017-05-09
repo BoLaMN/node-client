@@ -5,6 +5,10 @@ base: "SharedModel"
 
 properties:
 
+  id:
+    type: 'objectid'
+    id: true
+
   modelName:
     type: "string"
 

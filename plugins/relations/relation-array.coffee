@@ -92,6 +92,9 @@ module.exports = ->
         if not id
           return
 
+        if not @$indexes
+          @property '$indexes', value: []
+
         idx = @$indexes.indexOf id
 
         if idx > -1

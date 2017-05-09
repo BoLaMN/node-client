@@ -90,7 +90,11 @@ module.exports = (app) ->
       base: 'MyModel'
       adapter: 'MongoDB'
 
-    @decorator 'MyModel', (MyModel) ->
+    @extension 'MyModelExt', (MyModel) ->
+
+      MyModel.observe 'before find', (ctx, callback) ->
+        console.log arguments
+        callback()
 
       MyModel.hasMany 'Picture'
 

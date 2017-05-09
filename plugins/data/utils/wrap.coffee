@@ -2,45 +2,53 @@ module.exports = ->
 
   @decorator 'Utils', (Utils) ->
 
-    promise = (done) ->
-      (value) ->
-        done null, value
-        value
-
     sync = (fn, done) ->
       ->
-
         try
-          ret = fn.apply @, arguments
+          ret = fn.apply(this, arguments)
         catch err
-          return done err
+          return done(err)
 
-        if pret and 'function' == typeof ret.then
-          end = promise done
-          ret.then end, end
+        if promise(ret)
+          ret.then (value) ->
+            done null, value
+            rvalue
+          , done
         else
-          if ret instanceof Error
-            done ret
-          else done null, ret
+          if ret instanceof Error then done(ret) else done(null, ret)
 
         return
 
-    Utils.wrap = (fn) ->
-      (args...) ->
-        last = args[args.length - 1]
-        ctx = @
+    promise = (value) ->
+      value and 'function' == typeof value.then
 
-        done = if typeof last == 'function' then args.pop() else ->
+    once = (fn) ->
+      ->
+        ret = fn.apply(this, arguments)
+        fn = noop
+        ret
+
+    Utils.wrap = (fn, done) ->
+      done = once(done or noop)
+
+      ->
+        i = arguments.length
+        args = new Array(i)
+
+        while i--
+          args[i] = arguments[i]
+
+        ctx = this
 
         if !fn
-          return done.apply(@, [ null ].concat(args))
+          return done.apply(ctx, [ null ].concat(args))
 
         if fn.length > args.length
           try
-            return fn.apply(@, args.concat(done))
+            return fn.apply(ctx, args.concat(done))
           catch e
             return done(e)
 
-        sync(fn, done).apply @, args
+        sync(fn, done).apply ctx, args
 
     Utils
