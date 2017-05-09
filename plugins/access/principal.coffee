@@ -19,5 +19,5 @@ module.exports = ->
 
       equals: (p) ->
         if p instanceof AccessPrincipal
-          return @type == p.type and String(@id) == String(p.id)
+          return @type is p.type and String(@id) is String(p.id)
         false

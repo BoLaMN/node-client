@@ -133,7 +133,6 @@ module.exports = (app) ->
           modelName: parent.name
           modelId: modelId
           property: method.name
-          method: method
           methodName: name
           context:
             req: req

@@ -2,13 +2,15 @@ debug = require('debug')('security:acl')
 
 module.exports = ->
 
-  @factory 'AccessContext', (AccessPrincipal, injector, AccessRequest, ACL) ->
+  @factory 'AccessContext', (AccessPrincipal, injector, ACL) ->
 
     class AccessContext
       constructor: (context = {}) ->
-        @accessType = @ALL
+        @model = AccessContext.ALL
+        @property = AccessContext.ALL
+        @accessType = AccessContext.ALL
+        @permission = AccessContext.DEFAULT
 
-        @methodNames = []
         @principals = []
 
         for own key, value of context
@@ -16,10 +18,6 @@ module.exports = ->
 
         @model = injector.get @modelName
         @acls = @model.acls
-
-        if @method
-          @class = @method.sharedClass
-          @methodNames = @method.aliases.concat [ @method.name ]
 
         AccessToken = injector.get 'AccessToken'
 
@@ -43,6 +41,26 @@ module.exports = ->
         ALARM: 2
         AUDIT: 3
         DENY: 4
+
+      isWildcard: ->
+        @model is AccessContext.ALL or
+        @property is AccessContext.ALL or
+        @accessType is AccessContext.ALL
+
+      exactlyMatches: ({ model, property, accessType }) ->
+        matchesModel = model is @modelName
+        matchesProperty = property is @property
+
+        matchesMethodName = @methodName is property
+        matchesAccessType = accessType is @accessType
+
+        if matchesModel and matchesAccessType
+          return matchesProperty or matchesMethodName
+
+        false
+
+      isAllowed: ->
+        @permission isnt AccessContext.DENY
 
       isInRole: (acl, callback) ->
         debug 'isInRole(): %s', acl.principalId
@@ -72,7 +90,7 @@ module.exports = ->
 
         callback false
 
-      getMatchingScore: (rule, req) ->
+      getMatchingScore: (rule) ->
         props = [
           'model'
           'property'
@@ -88,31 +106,31 @@ module.exports = ->
             score = score * 4
 
             ruleValue = rule[props[i]]
-            requestedValue = req[props[i]]
+            requestedValue = @[props[i]]
 
             if props[i] is 'accessType'
               ruleValue = ruleValue or AccessContext.ALL
               #requestedValue = requestedValue or AccessContext.ALL
 
-            isMatchingMethodName = props[i] == 'property' and req.methodNames.indexOf(ruleValue) != -1
-            isMatchingAccessType = ruleValue == requestedValue
+            isMatchingMethodName = props[i] is 'property' and @methodName is ruleValue
+            isMatchingAccessType = ruleValue is requestedValue
 
-            if props[i] == 'accessType' and !isMatchingAccessType
+            if props[i] is 'accessType' and not isMatchingAccessType
               switch ruleValue
                 when AccessContext.EXECUTE, AccessContext.READ, AccessContext.WRITE, AccessContext.REPLICATE
                   # EXECUTE should match READ, REPLICATE and WRITE
                   isMatchingAccessType = true
                 when AccessContext.WRITE
                   # WRITE should match REPLICATE too
-                  isMatchingAccessType = requestedValue == AccessContext.REPLICATE
+                  isMatchingAccessType = requestedValue is AccessContext.REPLICATE
 
             if isMatchingMethodName or isMatchingAccessType
               # Exact match
               score += 3
-            else if ruleValue == AccessContext.ALL
+            else if ruleValue is AccessContext.ALL
               # Wildcard match
               score += 2
-            else if requestedValue == AccessContext.ALL
+            else if requestedValue is AccessContext.ALL
               score += 1
 
           i++
@@ -138,7 +156,7 @@ module.exports = ->
 
         # Weigh against the roles
         # everyone < authenticated/unauthenticated < related < owner < ...
-        if rule.principalType == AccessPrincipal.ROLE
+        if rule.principalType is AccessPrincipal.ROLE
           score = score * 8
 
           ACL = injector.get 'ACL'
@@ -161,10 +179,8 @@ module.exports = ->
         score
 
       resolvePermission: (acls) ->
-        req = new AccessRequest @
-
         acls = acls.sort (rule1, rule2) =>
-          @getMatchingScore(rule2, req) - @getMatchingScore(rule1, req)
+          @getMatchingScore(rule2) - @getMatchingScore(rule1)
 
         permission = AccessContext.DEFAULT
 
@@ -175,7 +191,7 @@ module.exports = ->
           candidate = acls[i]
 
           if not acls[i].score
-            acls[i].score = @getMatchingScore(candidate, req)
+            acls[i].score = @getMatchingScore(candidate)
 
           score = acls[i].score
 
@@ -183,12 +199,12 @@ module.exports = ->
             # the highest scored ACL did not match
             break
 
-          if !req.isWildcard()
+          if not @isWildcard()
             # We should stop from the first match for non-wildcard
             permission = candidate.permission
             break
           else
-            if req.exactlyMatches(candidate)
+            if @exactlyMatches(candidate)
               permission = candidate.permission
               break
 
@@ -207,15 +223,15 @@ module.exports = ->
           acls.forEach (acl) ->
             acl.debug()
 
-        req.permission = permission
+        @permission = permission
 
-        req
+        @
 
       setAccessTypeForRoute: (route) ->
 
         getAccessType = ->
           if route.accessType
-            assert route.accessType in [ "READ", "REPLICATE", "WRITE", "EXECUTE", "DELETE" ], 'invalid accessType ' + method.accessType + '. It must be "READ", "REPLICATE", "WRITE", or "EXECUTE"'
+            assert route.accessType in [ "READ", "REPLICATE", "WRITE", "EXECUTE", "DELETE" ], 'invalid accessType ' + route.accessType + '. It must be "READ", "REPLICATE", "WRITE", or "EXECUTE"'
             return route.accessType
 
           verb = route.method
@@ -226,7 +242,7 @@ module.exports = ->
           if verb in [ 'GET', 'HEAD' ]
             return AccessContext.READ
 
-          switch method.name
+          switch route.name
             when 'create', 'updateOrCreate', 'upsert'
               return AccessContext.WRITE
             when 'exists', 'findById', 'find', 'findOne', 'count'
@@ -248,7 +264,7 @@ module.exports = ->
           , (acls) =>
             resolved = @resolvePermission acls
 
-            if resolved and resolved.permission == AccessContext.DEFAULT
+            if resolved and resolved.permission is AccessContext.DEFAULT
               resolved.permission = AccessContext.ALLOW
 
             resolved.debug()
@@ -333,5 +349,11 @@ module.exports = ->
 
           debug 'getUserId() %s', @getUserId()
           debug 'isAuthenticated() %s', @isAuthenticated()
+
+          debug '---AccessRequest---'
+
+          debug ' permission %s', @permission
+          debug ' isWildcard() %s', @isWildcard()
+          debug ' isAllowed() %s', @isAllowed()
 
         return
