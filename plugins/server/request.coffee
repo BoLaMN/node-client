@@ -30,14 +30,15 @@ module.exports = ->
             return response
           else deferred.promise
 
-      handle: (@req, @res) ->
+      handle: (@req, @res, next) ->
         fns = @middlewares.concat @handlers
-        err = @error.bind @
+        err = @error.bind @, next
 
         Promise.each fns, @run(@req, @res)
           .then null, err
 
-      error: (err) ->
+      error: (next, err) ->
         fns = @errorHandlers
 
         Promise.each fns, @run(err, @req, @res)
+          .then next
