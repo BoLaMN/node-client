@@ -93,9 +93,12 @@ Promise.each = (vals, iterator, { concurrency, handle, stopEarly, finish } = {})
     return resolve finish?() unless vals.length
 
     concurrency ?= 1024
-
     throttled = throttle concurrency, iterator
-    promises = (throttled val for val in vals)
+
+    try
+      promises = (throttled val for val in vals)
+    catch error
+      return reject error
 
     stopped = false
     remaining = promises.length
@@ -116,7 +119,10 @@ Promise.each = (vals, iterator, { concurrency, handle, stopEarly, finish } = {})
           resolve finish?()
 
     for promise, i in promises
-      promise.then resolver(i), reject
+      try promise.then resolver(i), reject
+      catch error # there is no then method
+        reject error
+        stopped = true
 
     return
 
@@ -137,9 +143,17 @@ Promise.eachSeries = (vals, iterator, options = {}) ->
       if (i >= vals.length) or options.stopEarly?()
         resolve options.finish?()
       else
-        iterator(vals[i]).then resolver(i)
-          .then null
-          .catch reject
+        try
+          promise = iterator vals[i]
+        catch err
+          return reject err
+
+        try
+          promise.then resolver(i)
+            .then null
+            .catch reject
+        catch error
+          reject error
 
         i++
 

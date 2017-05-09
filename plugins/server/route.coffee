@@ -7,7 +7,7 @@ module.exports = ->
 
   @include './param'
 
-  @factory 'Route', (Types, Utils, HttpError, RouteParam) ->
+  @factory 'Route', (Types, Utils, HttpError, RouteParam, AccessHandler) ->
 
     normalizePath = (path, keys, params) ->
       for name of params
@@ -107,23 +107,27 @@ module.exports = ->
 
         (req, res) ->
 
-          new Promise (resolve, reject) ->
-            arr = []
+          run = ->
+            new Promise (resolve, reject) ->
+              arr = []
 
-            for arg, idx in args
-              arr[idx] = req.params[arg]
+              for arg, idx in args
+                arr[idx] = req.params[arg]
 
-            idx = args.indexOf 'cb'
+              idx = args.indexOf 'cb'
 
-            arr[idx] = (err, json, headers, code) ->
-              if err
-                return reject err
+              arr[idx] = (err, json, headers, code) ->
+                if err
+                  return reject err
 
-              res.json json, headers, code
+                res.json json, headers, code
 
-              resolve()
+                resolve()
 
-            handler.apply null, arr
+              handler.apply null, arr
+
+          AccessHandler.check req, res
+            .then run
 
       toObject: ->
         route = @toJSON()
