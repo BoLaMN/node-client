@@ -36,8 +36,6 @@ module.exports = (app) ->
             relation.property '$args', value: args
             relation.property '$type', value: type
 
-            @relations.define relation.as, relation
-
           if not params.model and params.polymorphic and type not in [ 'HasOne', 'BelongsTo' ]
             attach()
           else

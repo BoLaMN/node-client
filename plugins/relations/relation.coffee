@@ -48,32 +48,31 @@ module.exports = ->
         for own key, val of params
           @[key] = val
 
-        if not @from.attributes[@from.primaryKey]
-          @from.attribute @from.primaryKey, id: true
-
-        if not @to.attributes[@to.primaryKey]
-          @to.attribute @to.primaryKey,
-            id: true
-            type: 'any'
-
         if not @through and @discriminator
           @from.attribute @discriminator,
             foreignKey: true
             type: 'any'
 
-        type = @idType or @from.attributes[@primaryKey].type
+        assign = (type) =>
+          if @multiple
+            @as = pluralize @as
 
-        if @multiple
-          @as = pluralize @as
+          options =
+            foreignKey: true
+            type: type or 'any'
 
-        options =
-          foreignKey: true
-          type: type or 'any'
+          if @belongs
+            @to.attribute @foreignKey, options
+          else if @polymorphic
+            @from.attribute @foreignKey, options
 
-        if @belongs
-          @to.attribute @foreignKey, options
-        else if @polymorphic
-          @from.attribute @foreignKey, options
+          @from.relations.define @as, @
+
+        if @idType
+          assign @idType
+        else
+          @from.attributes.get @primaryKey, (attr) ->
+            assign attr.type
 
         @
 
