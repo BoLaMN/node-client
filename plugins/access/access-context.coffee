@@ -8,13 +8,26 @@ module.exports = ->
       constructor: (context = {}) ->
         @model = AccessContext.ALL
         @methodName = AccessContext.ALL
-        @accessType = AccessContext.ALL
         @permission = AccessContext.DEFAULT
 
         @principals = []
 
         for own key, value of context
           @[key] = value
+
+        if not @accessType
+
+          @accessType = switch @name
+            when 'create', 'updateOrCreate', 'upsert'
+              AccessContext.WRITE
+            when 'exists', 'findById', 'find', 'findOne', 'count'
+              AccessContext.READ
+            when 'destroyById', 'deleteById', 'removeById'
+              AccessContext.DELETE
+            else
+              AccessContext.EXECUTE
+
+        assert @accessType in AccessContext.accessTypes, 'invalid accessType ' + @accessType + '. It must be ' + AccessContext.accessTypes.join ', '
 
         if @modelName
           @model = injector.get @modelName
@@ -35,6 +48,8 @@ module.exports = ->
       @ALARM: 'ALARM'
       @AUDIT: 'AUDIT'
       @DENY: 'DENY'
+
+      @accessTypes: [ "READ", "REPLICATE", "WRITE", "EXECUTE", "DELETE" ]
 
       @permissionOrder:
         DEFAULT: 0
@@ -226,35 +241,6 @@ module.exports = ->
 
       isAllowed: ->
         @permission isnt AccessContext.DENY
-
-      setAccessTypeForRoute: (route) ->
-
-        getAccessType = ->
-          if route.accessType
-            assert route.accessType in [ "READ", "REPLICATE", "WRITE", "EXECUTE", "DELETE" ], 'invalid accessType ' + route.accessType + '. It must be "READ", "REPLICATE", "WRITE", or "EXECUTE"'
-            return route.accessType
-
-          verb = route.method
-
-          if typeof verb is 'string'
-            verb = verb.toUpperCase()
-
-          if verb in [ 'GET', 'HEAD' ]
-            return AccessContext.READ
-
-          switch route.name
-            when 'create', 'updateOrCreate', 'upsert'
-              return AccessContext.WRITE
-            when 'exists', 'findById', 'find', 'findOne', 'count'
-              return AccessContext.READ
-            when 'destroyById', 'deleteById', 'removeById'
-              return AccessContext.DELETE
-            else
-              return AccessContext.EXECUTE
-
-        @accessType = getAccessType()
-
-        return
 
       checkAccess: ->
         isInRole = @isInRole.bind @

@@ -75,8 +75,7 @@ module.exports = (app) ->
             modelName: modelName
             modelId: modelId
             methodName: name
-
-          @context.setAccessTypeForRoute route
+            accessType: @getAccessType route
 
           @authenticateHandler = handle: ->
             Promise.resolve userId: '1', roles: []
@@ -85,6 +84,13 @@ module.exports = (app) ->
           handler = new AccessHandler req, res
 
           handler.getAuth()
+
+        getAccessType: (route) ->
+          if route.accessType
+            return route.accessType
+
+          if route.method in [ 'get', 'head' ]
+            return AccessContext.READ
 
         getAuth: ->
 
