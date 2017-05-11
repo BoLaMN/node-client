@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'Model', (Entity, Attribute, Events, Hooks, Models, ModelACL, Storage, Cast, Relations, Utils) ->
+  @factory 'Model', (Entity, Attribute, Events, Hooks, Models, ModelACL, AccessContext, Storage, Cast, Relations, Utils) ->
     { extend } = Utils
 
     class Model extends Entity
@@ -59,6 +59,16 @@ module.exports = ->
 
       @check: ->
         true
+
+      @checkAccess: (id, method, options) ->
+        context = new AccessContext
+          modelName: @modelName
+          modelId: id
+          methodName: method
+
+        context.setToken options.token
+
+        context.checkAccess()
 
       @swagger:
 
@@ -119,3 +129,17 @@ module.exports = ->
 
         for key, value of options when v?
           @$property '$' + key, value: value
+
+      checkAccess: (method, options) ->
+        @constructor.checkAccess @getId(), method, options
+
+      getId: ->
+        @[@constructor.primaryKey]
+
+      setId: (id) ->
+        if not id
+          delete @[@constructor.primaryKey]
+        else
+          @[@constructor.primaryKey] = id
+
+        @

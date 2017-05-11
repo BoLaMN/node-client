@@ -238,14 +238,3 @@ module.exports = ->
 
         @save options
           .asCallback cb
-
-      getId: ->
-        @[@constructor.primaryKey]
-
-      setId: (id) ->
-        if not id
-          delete @[@constructor.primaryKey]
-        else
-          @[@constructor.primaryKey] = id
-
-        @
