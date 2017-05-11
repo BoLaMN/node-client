@@ -36,6 +36,7 @@ module.exports = ->
           data:
             type: @to.modelName
             source: 'body'
+            root: true
           options:
             type: 'object'
             source: 'context'
@@ -54,6 +55,7 @@ module.exports = ->
           data:
             type: @to.modelName
             source: 'body'
+            root: true
           options:
             type: 'object'
             source: 'context'

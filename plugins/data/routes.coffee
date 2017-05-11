@@ -44,6 +44,7 @@ module.exports = ->
             description: "Model instance data"
             source: "body"
             type: "object"
+            root: true
             required: false
           options:
             type: 'object'
@@ -145,6 +146,7 @@ module.exports = ->
           data:
             description: "An object of model property name/value pairs"
             source: "body"
+            root: true
             type: "object"
           options:
             type: 'object'
@@ -168,6 +170,7 @@ module.exports = ->
             description: "An object of model property name/value pairs"
             source: "body"
             type: "object"
+            root: true
           options:
             type: 'object'
             source: 'context'
@@ -190,6 +193,7 @@ module.exports = ->
             description: "Model instance data"
             source: "body"
             type: "object"
+            root: true
           options:
             type: 'object'
             source: 'context'

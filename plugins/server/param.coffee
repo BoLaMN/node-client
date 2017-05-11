@@ -2,7 +2,7 @@
 
 module.exports = ->
 
-  @factory 'RouteParam', (Types, Swagger, Utils) ->
+  @factory 'RouteParam', (Types, Swagger, Utils, Models) ->
 
     class RouteParam
       constructor: (@name, param) ->
@@ -26,14 +26,15 @@ module.exports = ->
         if @type instanceof RegExp
           RegExpType = Types.get 'RegExp'
 
-          @type = RegExpType.construct @type
-        else
-          @type = Types.get @type
+          @fn = RegExpType.construct @type
 
       missing: ({ params, body, parsedUrl }) ->
         { query } = parsedUrl
 
         if not @required
+          return false
+
+        if @root
           return false
 
         exists =
@@ -50,14 +51,17 @@ module.exports = ->
         code: 'missing_field'
 
       check: (obj) ->
-        value = obj[@name]
+        value = if @root then obj else obj[@name]
+
+        @fn ?= Types.get @type
+        @fn ?= Models.get @type
 
         try
-          value = @type.parse value
+          value = @fn.parse value
         catch e
           return
 
-        if not @type.check value
+        if not @fn.check value
           return
 
         value
@@ -82,16 +86,16 @@ module.exports = ->
           return
         else
           field: @name
-          type_expected: @type.toString().toLowerCase()
+          type_expected: @type
           code: 'invalid'
 
       toObject: ->
 
-        if not @type?.toString()?.toLowerCase()
+        if not @type
           console.log 'missing type', @
 
         param =
-          type: @type?.toString()?.toLowerCase()
+          type: @type
           source: @source
           required: @required
 

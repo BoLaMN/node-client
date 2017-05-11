@@ -36,6 +36,7 @@ module.exports = ->
           data:
             type: @to.modelName
             source: 'body'
+            root: true
             required: false
           options:
             type: 'object'

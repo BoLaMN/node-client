@@ -20,6 +20,7 @@ module.exports = ->
             type: @through.modelName
             source: 'body'
             required: false
+            root: true
           options:
             type: 'object'
             source: 'context'
@@ -133,6 +134,7 @@ module.exports = ->
           data:
             type: @to.modelName
             source: 'body'
+            root: true
             required: false
           options:
             type: 'object'
@@ -158,6 +160,7 @@ module.exports = ->
           data:
             type: @to.modelName
             source: 'body'
+            root: true
             required: false
           options:
             type: 'object'
