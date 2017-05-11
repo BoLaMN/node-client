@@ -24,10 +24,10 @@ module.exports = (app) ->
         @check: (v) ->
           return false if @absent v
 
-          v._bsontype is 'ObjectID' or v instanceof ObjectId
+          v instanceof ObjectID
 
         @parse: (v) ->
-          if v._bsontype is 'ObjectID' or v instanceof ObjectId
+          if v instanceof ObjectID
             return v
 
           if v.match /^[a-fA-F0-9]{24}$/

@@ -75,11 +75,18 @@ module.exports = (app) ->
     @model 'Picture',
       base: 'SharedModel'
       adapter: 'MongoDB'
+      properties:
+        id:
+          type: 'objectid'
+          id: true
 
     @model 'MyModel',
       base: 'SharedModel'
       adapter: 'MongoDB'
       properties:
+        id:
+          type: 'objectid'
+          id: true
         items: [ 'string' ]
         orderDate:
           type: 'date'
@@ -89,6 +96,10 @@ module.exports = (app) ->
     @model 'MyModel2',
       base: 'MyModel'
       adapter: 'MongoDB'
+      properties:
+        id:
+          type: 'objectid'
+          id: true
 
     @extension 'MyModelExt', (MyModel) ->
 
