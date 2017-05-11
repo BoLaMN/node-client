@@ -36,6 +36,9 @@ class Injector
 
     @
 
+  has: (name) ->
+    not not @[dependencies][name]
+
   get: (name, context) ->
     factory = @require name
     args = @inject @parse factory

@@ -13,15 +13,12 @@ module.exports = ->
           @remoteMethod name, config
 
         @relations.on '*', (rel, config) =>
-          try
-            specific = injector.get config.$type + 'Routes'
-          catch e
-
           defaults = injector.get 'RelationRoutes'
 
           parent = api.section @modelName
 
           add = (routes) =>
+
             Object.keys(routes).forEach (name) =>
               route = routes[name]
 
@@ -57,8 +54,10 @@ module.exports = ->
 
           add defaults.bind(config)()
 
-          if specific
-            add specific.bind(config)()
+          specific = config.$type + 'Routes'
+
+          if injector.has specific
+            add injector.get(specific).bind(config)()
 
         @
 

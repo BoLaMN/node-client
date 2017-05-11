@@ -4,14 +4,14 @@ module.exports = ->
     ->
       link:
         method: 'put'
-        path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ @foreignKey }"
+        path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ relationId }"
         params:
           "#{ @primaryKey }":
             type: 'any'
             description: "Primary key for #{ @from.modelName }"
             required: true
             source: 'path'
-          "#{ @foreignKey }":
+          "#{ relationId }":
             type: 'any'
             description: "Foreign key for #{ @as }"
             required: true
@@ -30,14 +30,14 @@ module.exports = ->
 
       unlink:
         method: 'delete'
-        path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ @foreignKey }"
+        path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ relationId }"
         params:
           "#{ @primaryKey }":
             type: 'any'
             description: "Primary key for #{ @from.modelName }"
             required: true
             source: 'path'
-          "#{ @foreignKey }":
+          "#{ relationId }":
             type: 'any'
             description: "Foreign key for #{ @as }"
             required: true
@@ -51,14 +51,14 @@ module.exports = ->
 
       exists:
         method: 'head'
-        path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ @foreignKey }"
+        path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ relationId }"
         params:
           "#{ @primaryKey }":
             type: 'any'
             description: "Primary key for #{ @from.modelName }"
             required: true
             source: 'path'
-          "#{ @foreignKey }":
+          "#{ relationId }":
             type: 'any'
             description: "Foreign key for #{ @as }"
             required: true
@@ -70,21 +70,23 @@ module.exports = ->
         description: "Check the existence of #{ @as } relation to an item by id."
         accessType: 'READ'
 
-  @value 'HasManyRoutes', ->
+  @value 'HasManyRoutes', (inflector) ->
     ->
       primaryKeyType = @to.attributes[@foreignKey]?.type or 'string'
       foreignKeyType = @from.attributes[@primaryKey]?.type or 'string'
 
+      relationId = inflector.singularize(@as) + 'Id'
+
       find:
         method: 'get'
-        path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
+        path: "/:#{ @primaryKey }/#{ @as }/:#{ relationId }"
         params:
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
             required: true
             source: 'path'
-          "#{ @foreignKey }":
+          "#{ relationId }":
             type: foreignKeyType
             description: "Foreign key for #{ @as }"
             required: true
@@ -98,14 +100,14 @@ module.exports = ->
 
       destroy:
         method: 'delete'
-        path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
+        path: "/:#{ @primaryKey }/#{ @as }/:#{ relationId }"
         params:
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
             required: true
             source: 'path'
-          "#{ @foreignKey }":
+          "#{ relationId }":
             type: foreignKeyType
             description: "Foreign key for #{ @as }"
             required: true
@@ -119,14 +121,14 @@ module.exports = ->
 
       update:
         method: 'put'
-        path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
+        path: "/:#{ @primaryKey }/#{ @as }/:#{ relationId }"
         params:
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
             required: true
             source: 'path'
-          "#{ @foreignKey }":
+          "#{ relationId }":
             type: foreignKeyType
             description: "Foreign key for #{ @as }"
             required: true
@@ -145,14 +147,14 @@ module.exports = ->
 
       patch:
         method: 'patch'
-        path: "/:#{ @primaryKey }/#{ @as }/:#{ @foreignKey }"
+        path: "/:#{ @primaryKey }/#{ @as }/:#{ relationId }"
         params:
           "#{ @primaryKey }":
             type: primaryKeyType
             description: "Primary key for #{ @from.modelName }"
             required: true
             source: 'path'
-          "#{ @foreignKey }":
+          "#{ relationId }":
             type: foreignKeyType
             description: "Foreign key for #{ @as }"
             required: true

@@ -34,7 +34,6 @@ module.exports = (app) ->
             relation = injector.get(type).define @, modelTo, params
 
             relation.property '$args', value: args
-            relation.property '$type', value: type
 
           if not params.model and params.polymorphic and type not in [ 'HasOne', 'BelongsTo' ]
             attach()

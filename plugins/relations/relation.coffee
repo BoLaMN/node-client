@@ -11,6 +11,7 @@ module.exports = ->
       @define: (from, to, params = {}) ->
         class Instance extends @
 
+        Instance.property '$type', value: @name
         Instance.initialize from, to, params
         Instance
 
