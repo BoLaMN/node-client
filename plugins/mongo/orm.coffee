@@ -13,6 +13,11 @@ module.exports = ->
       constructor: (model) ->
         super
 
+        if not model.attributes[model.primaryKey]
+          model.attribute model.primaryKey,
+            id: true
+            type: 'objectid'
+
         @model = model
 
       ###*
