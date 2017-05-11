@@ -76,3 +76,5 @@ module.exports = ->
             source: 'context'
         description: "Deletes #{ @as } of this model."
         accessType: 'WRITE'
+
+  @alias 'EmbedManyRoutes', 'HasOneRoutes'

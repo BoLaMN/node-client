@@ -2,7 +2,7 @@
 
 module.exports = ->
 
-  @factory 'api', (Section, Middleware, injector, Swagger, Utils) ->
+  @factory 'api', (Section, Middleware, injector, Swagger, Utils, Models, Types) ->
     { extend } = Utils
 
     class Api extends Section
@@ -21,13 +21,14 @@ module.exports = ->
       toSwagger: ->
         tags = []
 
-        definitions =
-          'x-any': properties: {}
+        definitions = {}
+        for own name, type of Types
+          if typeof type.swagger.definition is 'function'
+            definitions[name] = type.swagger.definition()
 
-        for name of @sections
+        for own name, model of Models
           tags.push { name }
 
-          model = injector.get name
           attributes = model.attributes
 
           properties = {}

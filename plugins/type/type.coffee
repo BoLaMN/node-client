@@ -79,8 +79,29 @@ module.exports = ->
       @check: (value) ->
         true
 
+      @primitive: (v) ->
+        types = [
+          'array'
+          'boolean'
+          'integer'
+          'null'
+          'number'
+          'object'
+          'string'
+        ].indexOf(v) isnt -1
+
       @toString: ->
         @name
+
+      @swagger:
+
+        schema: (v) =>
+          type = v.type.toLowerCase()
+
+          if @primitive type
+            type: type
+          else
+            $ref: '#/definitions/' + type
 
       @inspect: ->
         @name

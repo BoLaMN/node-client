@@ -60,6 +60,14 @@ module.exports = ->
       @check: ->
         true
 
+      @swagger:
+
+        schema: (v) ->
+          $ref: '#/definitions/' + v.type
+
+        definition: (v) =>
+          properties: @attributes
+
       @parse: (data = {}) ->
         new @ data
 

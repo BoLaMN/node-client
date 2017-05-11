@@ -22,7 +22,7 @@ module.exports = (app) ->
     @include './settings'
     @include './swagger'
 
-    @run (server, api, settings, MyModel) ->
+    @run (server, api, settings) ->
 
       server.listen settings.port, settings.host, ->
         console.log ' server listening at: %s', settings.host + ':' + settings.port

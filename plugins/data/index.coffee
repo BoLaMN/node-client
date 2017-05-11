@@ -66,42 +66,4 @@ module.exports = (app) ->
 
       models
 
-    @model 'Picture',
-      base: 'SharedModel'
-      adapter: 'MongoDB'
-      properties:
-        id:
-          type: 'objectid'
-          id: true
-
-    @model 'MyModel',
-      base: 'SharedModel'
-      adapter: 'MongoDB'
-      properties:
-        id:
-          type: 'objectid'
-          id: true
-        items: [ 'string' ]
-        orderDate:
-          type: 'date'
-        qty:
-          type: 'number'
-
-    @model 'MyModel2',
-      base: 'MyModel'
-      adapter: 'MongoDB'
-      properties:
-        id:
-          type: 'objectid'
-          id: true
-
-    @extension 'MyModelExt', (MyModel) ->
-
-      MyModel.observe 'before find', (ctx, callback) ->
-        console.log arguments
-        callback()
-
-      MyModel.hasMany 'Picture'
-
-      MyModel::customMethod = (params, callback) ->
-        callback()
+    @model 'TransientModel', {}

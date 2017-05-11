@@ -72,8 +72,8 @@ module.exports = ->
 
   @value 'HasManyRoutes', ->
     ->
-      primaryKeyType = @from.attributes[@primaryKey]?.type or 'string'
-      foreignKeyType = @to.attributes[@foreignKey]?.type or 'string'
+      primaryKeyType = @to.attributes[@foreignKey]?.type or 'string'
+      foreignKeyType = @from.attributes[@primaryKey]?.type or 'string'
 
       find:
         method: 'get'
@@ -168,3 +168,5 @@ module.exports = ->
             required: false
         description: "Patch a related item by id for #{ @as }."
         accessType: 'WRITE'
+
+  @alias 'EmbedManyRoutes', 'HasManyRoutes'

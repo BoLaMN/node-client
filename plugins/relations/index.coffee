@@ -38,7 +38,7 @@ module.exports = (app) ->
 
             @relations.define relation.as, relation
 
-          if params.polymorphic and type not in [ 'HasOne', 'BelongsTo' ]
+          if not params.model and params.polymorphic and type not in [ 'HasOne', 'BelongsTo' ]
             attach()
           else
             Models.get model, attach

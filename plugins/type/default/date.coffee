@@ -3,6 +3,13 @@ module.exports = ->
 
   @type 'Date', (Type) ->
     class Date extends Type
+
+      @swagger:
+
+        schema: (v) ->
+          type: 'string'
+          format: 'date-time'
+
       @check: (v) ->
         return false if @absent v
 

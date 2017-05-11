@@ -60,6 +60,14 @@ class Plugin extends Emitter
 
     @
 
+  alias: (name, alias) ->
+    @provider name, ->
+      @$get = ->
+        injector.get alias
+    , 'alias'
+
+    @
+
   constant: (name, factory) ->
     @factory name, factory, 'constant'
 

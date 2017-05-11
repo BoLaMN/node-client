@@ -13,7 +13,10 @@ module.exports = ->
           @remoteMethod name, config
 
         @relations.on '*', (rel, config) =>
-          specific = injector.get config.$type + 'Routes'
+          try
+            specific = injector.get config.$type + 'Routes'
+          catch e
+
           defaults = injector.get 'RelationRoutes'
 
           parent = api.section @modelName

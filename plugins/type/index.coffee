@@ -32,3 +32,4 @@ module.exports = (app) ->
     @include './default/object'
     @include './default/regexp'
     @include './default/string'
+    @include './default/buffer'

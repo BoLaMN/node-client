@@ -21,6 +21,13 @@ module.exports = (app) ->
 
     @type 'ObjectID', (Types, Type, ObjectID) ->
       class ObjectId extends Type
+
+        @swagger:
+
+          schema: (v) ->
+            type: 'string'
+            pattern: '^[a-fA-F\\d]{24}$'
+
         @check: (v) ->
           return false if @absent v
 

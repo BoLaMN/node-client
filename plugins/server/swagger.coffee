@@ -1,19 +1,6 @@
 module.exports = ->
 
-  @factory 'Swagger', ->
-
-    types = [
-      'array'
-      'boolean'
-      'integer'
-      'null'
-      'number'
-      'object'
-      'string'
-    ]
-
-    isPrimitiveType = (typeName) ->
-      types.indexOf(typeName) isnt -1
+  @factory 'Swagger', (Types, TypeOf, Models) ->
 
     buildFromSchemaType: (def) ->
       if typeof def is 'string' or typeof def is 'function'
@@ -24,93 +11,35 @@ module.exports = ->
       if not def.type
         def = type: 'any'
 
-      schema = {}
-
       type = def.type
 
       if type is 'object' and def.model
         type = def.model
 
-      type = @getTypeName type
+      switch TypeOf type
+        when 'array'
+          item = type[0] or 'any'
 
-      if Array.isArray type
-        item = type[0] or 'any'
-        itemSchema = @buildFromSchemaType item
-
-        schema.type = 'array'
-        schema.items = itemSchema
-
-        return schema
-
-      if type is 'object' and typeof def.type is 'object'
-        obj = {}
-
-        for prop of def.type
-          obj[prop] = @buildFromSchemaType def.type[prop]
-
-        schema.type = 'object'
-        schema.properties = obj
-
-        return schema
-
-      typeLowerCase = type.toLowerCase()
-
-      switch typeLowerCase
-        when 'date'
-          schema.type = 'string'
-          schema.format = 'date-time'
-        when 'buffer'
-          schema.type = 'string'
-          schema.format = 'byte'
-        when 'number'
-          schema.type = 'number'
-          schema.format = schema.format or 'double'
+          type: 'array'
+          items: @buildFromSchemaType item
         when 'object'
-          if def.source is 'query'
-            schema.type = 'string'
-          else
-            schema.type = 'object'
-        when 'any'
-          if def.source is 'path'
-            schema.type = 'string'
-          else
-            schema.$ref = '#/definitions/x-any'
-        else
-          if isPrimitiveType typeLowerCase
-            schema.type = typeLowerCase
-          else
-            schema.$ref = '#/definitions/' + type
+          obj = {}
 
-      if def.source is 'body'
-        if schema.$ref
-          schema = schema:
-            $ref: schema.$ref
-        else
-          schema = schema:
-            type: schema.type
+          for prop, val of type
+            obj[prop] = @buildFromSchemaType val
 
+          type: 'object'
+          properties: obj
+        when 'string'
+          fn = Types.get type.toLowerCase()
+          fn ?= Models.get type
 
-      schema
+          if not fn?.swagger?.schema
+            console.log 'no swagger definition found for ', type
+            return
 
-    getTypeName: (type) ->
-      if type is 'array'
-        return [ 'any' ]
+          schema = fn.swagger.schema def
 
-      if typeof type is 'string'
-        arrayMatch = type.match /^\[(.*)\]$/
-
-        if arrayMatch
-          return [ arrayMatch[1] ]
-        else
-          return type
-
-      if typeof type is 'function'
-        return type.modelName or type.name
-
-      if Array.isArray type
-        return type
-
-      if typeof type is 'object'
-        return 'object'
-
-      'any'
+          if def.source is 'body'
+            schema: schema
+          else schema
