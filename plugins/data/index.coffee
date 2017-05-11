@@ -4,7 +4,7 @@ module.exports = (app) ->
 
   app
 
-  .module 'Data', [ 'Relations', 'Server', 'MongoDBAdapter', 'Access' ]
+  .module 'Data', [ 'Relations', 'Base', 'Server', 'MongoDBAdapter', 'Access', 'Type' ]
 
   .initializer ->
 
@@ -37,12 +37,8 @@ module.exports = (app) ->
       'glob'
     ]
 
-    @include './module'
-    @include './entity'
     @include './hooks'
     @include './attributes'
-    @include './emitter'
-    @include './storage'
     @include './models'
     @include './shared-model'
     @include './persisted-model'
@@ -50,11 +46,9 @@ module.exports = (app) ->
     @include './acls'
     @include './cast'
     @include './mixins'
-    @include './types'
     @include './object-proxy'
     @include './utils/build-options'
     @include './utils/wrap'
-    @include './utils/property'
 
     @assembler 'model', ->
       (name, config) ->

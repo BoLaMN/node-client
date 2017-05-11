@@ -2,7 +2,7 @@ module.exports = (app) ->
 
   app
 
-  .module 'Adapter', []
+  .module 'Adapter', [ 'Base' ]
 
   .initializer ->
 

@@ -4,7 +4,7 @@ module.exports = (app) ->
 
   app
 
-  .module 'Server', []
+  .module 'Server', [ 'Type' ]
 
   .initializer ->
 

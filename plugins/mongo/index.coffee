@@ -2,7 +2,7 @@ module.exports = (app) ->
 
   app
 
-  .module 'MongoDBAdapter', [ 'Adapter', 'MongoQuery' ]
+  .module 'MongoDBAdapter', [ 'Adapter', 'MongoQuery', 'Type' ]
 
   .initializer ->
 
@@ -19,7 +19,7 @@ module.exports = (app) ->
     @factory 'ObjectID', (mongo) ->
       mongo.ObjectID
 
-    @extension 'ObjectIdType', (Types, Type, ObjectID) ->
+    @type 'ObjectID', (Types, Type, ObjectID) ->
       class ObjectId extends Type
         @check: (v) ->
           return false if @absent v
@@ -32,8 +32,6 @@ module.exports = (app) ->
 
           if v.match /^[a-fA-F0-9]{24}$/
             return new ObjectID v
-
-      Types.define 'objectid', ObjectId
 
     @adapter 'MongoDB', (MongoORM, MongoClient) ->
       class MongoDB extends MongoORM
