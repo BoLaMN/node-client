@@ -25,10 +25,7 @@ module.exports = ->
 
         finishIncludeItems = (included) ->
           for obj in included
-            delete processed[obj[foreignKey]]
-
             for objfrom in targets[primaryKey][obj[foreignKey]]
-
               if multiple
                 if through
                   objfrom[as].push obj[through]
@@ -41,8 +38,6 @@ module.exports = ->
 
           included
 
-        filter = where: {}
-
         if not vals[primaryKey]
           targets[primaryKey] = {}
 
@@ -52,26 +47,33 @@ module.exports = ->
 
           vals[primaryKey] = Object.keys targets[primaryKey]
 
-        processed = {}
-        inq = []
+        inqs = [ [] ]
+        i = 0
 
-        for val in vals[primaryKey]
-          processed[val] = true
+        for val in vals[primaryKey] when val?
+          if inqs[i].length >= 256
+            i += 1
 
-          if val?
-            inq.push val
+          inqs[i] ?= []
+          inqs[i].push val
 
-        if not inq.length
+        if not inqs[0].length
           return Promise.resolve []
 
-        filter.where[foreignKey] = inq: inq
-
         if through
-          through.find(filter).then (included) ->
-            model.include(included, through).then finishIncludeItems
+          klass = through
         else
-          filter.include = sub
-          to.find(filter).then finishIncludeItems
+          klass = to
+
+        Promise.concat inqs, (inq) ->
+          filter = where: {}
+          filter.where[foreignKey] = inq: inq
+          klass.find filter
+        .then (included) ->
+          if through
+            model.include(included, klass).then finishIncludeItems
+          else
+            to.include(included, sub).then finishIncludeItems
 
     class Inclusion
 
