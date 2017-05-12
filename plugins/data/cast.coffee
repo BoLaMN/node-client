@@ -5,11 +5,9 @@ module.exports = ->
 
     class Cast
 
-      apply: (name, value, instance, index) ->
+      apply: (value, name, instance, index) ->
         if not value?
           return null
-
-        { models } = instance.constructor
 
         @fn ?= Models.get @type
         @fn ?= Types.get @type

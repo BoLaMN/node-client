@@ -68,9 +68,9 @@ module.exports = ->
         object[fk1] = where[fk1] = @instance[@primaryKey]
         object[fk2] = where[fk2] = instance[pk2]
 
-        query = where: where
+        filter = where: where
 
-        @through.findOrCreate query, object, options
+        @through.findOrCreate filter, object, options
 
       parent = undefined
 
@@ -103,12 +103,12 @@ module.exports = ->
         where[fk1] = data[fk1] = @instance[@primaryKey]
         where[fk2] = data[fk2] = if inst instanceof @to then inst[pk2] else inst
 
-        query = where: where
+        filter = where: where
 
         options.instance = @instance
         options.name = @as
 
-        @through.findOrCreate query, data, options
+        @through.findOrCreate filter, data, options
           .asCallback cb
 
       exists: (inst, options = {}, cb = ->) ->
@@ -126,12 +126,12 @@ module.exports = ->
         where[fk1] = @instance[@primaryKey]
         where[fk2] = if inst instanceof @to then inst[pk2] else inst
 
-        query = where: where
+        filter = where: where
 
         options.instance = @instance
         options.name = @as
 
-        @through.count query, options
+        @through.count filter, options
           .asCallback cb
 
       remove: (inst, options = {}, cb = ->) ->
@@ -146,10 +146,10 @@ module.exports = ->
         where[fk1] = @instance[@primaryKey]
         where[fk2] = if inst instanceof @to then inst[pk2] else inst
 
-        query = where: where
+        filter = where: where
 
         options.instance = @instance
         options.name = @as
 
-        @through.deleteAll query, options
+        @through.deleteAll filter, options
           .asCallback cb

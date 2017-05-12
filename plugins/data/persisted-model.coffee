@@ -12,24 +12,24 @@ module.exports = ->
         @execute 'create', data, options
           .asCallback cb
 
-      @count: (query = {}, options = {}, cb = ->) ->
+      @count: (filter = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @count query, {}, options
+          return @count filter, {}, options
 
-        if not query.where
-          query = where: query
+        if not filter.where
+          filter = where: filter
 
-        @execute 'count', query, options
+        @execute 'count', filter, options
           .asCallback cb
 
-      @destroy: (query = {}, options = {}, cb = ->) ->
+      @destroy: (filter = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @destroy query, {}, options
+          return @destroy filter, {}, options
 
-        if not query.where
-          query = where: query
+        if not filter.where
+          filter = where: filter
 
-        @execute 'destroy', query, options
+        @execute 'destroy', filter, options
           .asCallback cb
 
       @destroyById: (id, options = {}, cb = ->) ->
@@ -47,10 +47,10 @@ module.exports = ->
 
         assert id, 'The id argument is required'
 
-        query = where:
+        filter = where:
           id: id
 
-        @execute 'count', query, options
+        @execute 'count', filter, options
           .then (data) -> not not data
           .asCallback cb
 
@@ -83,24 +83,24 @@ module.exports = ->
           .then -> ctx.result
           .asCallback cb
 
-      @find: (query = {}, options = {}, cb = ->) ->
+      @find: (filter = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @find query, {}, options
+          return @find filter, {}, options
 
-        if typeof query is 'function'
-          return @find {}, {}, query
+        if typeof filter is 'function'
+          return @find {}, {}, filter
 
-        @execute 'find', query, options
+        @execute 'find', filter, options
           .asCallback cb
 
-      @findOne: (query = {}, options = {}, cb = ->) ->
+      @findOne: (filter = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @findOne query, {}, options
+          return @findOne filter, {}, options
 
-        if not query.where
-          query = where: query
+        if not filter.where
+          filter = where: filter
 
-        @execute 'findOne', query, options
+        @execute 'findOne', filter, options
           .asCallback cb
 
       @findById: (id, options = {}, cb = ->) ->
@@ -109,10 +109,10 @@ module.exports = ->
 
         assert id, 'The id argument is required'
 
-        query = where:
+        filter = where:
           id: id
 
-        @execute 'findOne', query, options
+        @execute 'findOne', filter, options
           .asCallback cb
 
       @findByIds: (ids = [], options = {}, cb = ->) ->
@@ -121,17 +121,17 @@ module.exports = ->
 
         assert ids.length, 'The ids argument is requires ids'
 
-        query = where:
+        filter = where:
           id: inq: ids
 
-        @find query, options
+        @find filter, options
           .asCallback cb
 
-      @update: (query = {}, data = {}, options = {}, cb = ->) ->
+      @update: (filter = {}, data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @updateAll query, data, {}, options
+          return @updateAll filter, data, {}, options
 
-        @execute 'update', query, data, options
+        @execute 'update', filter, data, options
           .asCallback cb
 
       @updateById: (id, data = {}, options = {}, cb = ->) ->
@@ -140,10 +140,10 @@ module.exports = ->
 
         assert id, 'The id argument is required'
 
-        query = where:
+        filter = where:
           id: id
 
-        @update query, data, options
+        @update filter, data, options
           .asCallback cb
 
       constructor: (data = {}, options = {}) ->

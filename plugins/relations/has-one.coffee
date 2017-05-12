@@ -19,22 +19,22 @@ module.exports = ->
 
         new @to data, @buildOptions()
 
-      query: (query) ->
-        query ?= where: {}
+      filter: (filter) ->
+        filter ?= where: {}
 
         where = @instance[@foreignKey]
 
         if not where
           return false
 
-        query.where[@foreignKey] = where
+        filter.where[@foreignKey] = where
 
         if @discriminator
           discriminator = @instance[@discriminator]
 
-          query.where[@discriminator] = discriminator
+          filter.where[@discriminator] = discriminator
 
-        query
+        filter
 
       create: (data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
@@ -48,13 +48,13 @@ module.exports = ->
         options.instance = @instance
         options.name = @as
 
-        query = @query()
+        filter = @filter()
 
-        if not query
+        if not filter
           cb()
           return Promise.reject()
 
-        @to.findOrCreate query, data, options
+        @to.findOrCreate filter, data, options
           .asCallback cb
 
       update: (data = {}, options = {}, cb = ->) ->
@@ -85,13 +85,13 @@ module.exports = ->
         options.instance = @instance
         options.name = @as
 
-        query = @query query
+        filter = @filter filter
 
-        if not query
+        if not filter
           cb()
           return Promise.reject()
 
-        @to.findOne query, options
+        @to.findOne filter, options
           .tap (data) =>
             @$property '$loaded', value: data
           .asCallback cb

@@ -60,7 +60,7 @@ module.exports = ->
 
   @factory 'isEmpty', (isArrayLike, isArguments, isPrototype) ->
     (value) ->
-      if value is null
+      if not value?
         return true
 
        hasValue = isArrayLike(value) and
@@ -168,7 +168,8 @@ module.exports = ->
       if not isObjectLike(value) or baseGetTag(value) isnt '[object Object]'
         return false
 
-      proto = Object.getPrototypeOf(value)
+      proto = Object.getPrototypeOf value
+      objectCtorString = objToString Object
 
       if proto is null
         return true

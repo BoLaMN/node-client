@@ -101,7 +101,7 @@ module.exports = ->
           attributes[name] = value
         else
           cast = @self.constructor.attributes[name]
-          coerced = cast?.apply?(name, value, @self)
+          coerced = cast?.apply?(value, name, @self)
 
           if cast?.foreignKey
             key = @append(name).replace /\.\d+/g, ''

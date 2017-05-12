@@ -189,9 +189,12 @@ module.exports = ->
 
         promise
           .then (cursor) =>
-            cursor.mapArray(@model, buildOptions(options))
-          .tap (results) ->
+            cursor.mapArray @model, buildOptions(options)
+          .then (data) =>
+            @model.include data, include, options
+          .tap (results) =>
             debug 'find.cb', inspect(
+              model: @model.modelName
               filter: filter
               options: options
               results: results
@@ -213,8 +216,9 @@ module.exports = ->
         @execute 'findOne', where, fields
           .then (results) =>
             new @model results, buildOptions(options)
-          .tap (results) ->
+          .tap (results) =>
             debug 'findOne.cb', inspect(
+              model: @model.modelName
               filter: filter
               options: options
               results: results
@@ -246,8 +250,9 @@ module.exports = ->
         @execute 'findOneAndUpdate', where, { $setOnInsert: data }, query
           .then (results) =>
             new @model results, buildOptions(options)
-          .tap (results) ->
+          .tap (results) =>
             debug 'findOrCreate.cb', inspect(
+              model: @model.modelName
               filter: filter
               options: options
               results: results
@@ -266,8 +271,9 @@ module.exports = ->
         debug 'replaceById', id, data
 
         @replaceWithOptions id, data, upsert: false
-          .tap (results) ->
+          .tap (results) =>
             debug 'replaceById.cb', inspect(
+              model: @model.modelName
               options: options
               results: results
             , false, null)
@@ -285,8 +291,9 @@ module.exports = ->
         debug 'replaceOrCreate', data
 
         @replaceWithOptions null, data, upsert: true
-          .tap (results) ->
+          .tap (results) =>
             debug 'replaceOrCreate.cb', inspect(
+              model: @model.modelName
               options: options
               results: results
             , false, null)
@@ -311,8 +318,9 @@ module.exports = ->
         @execute 'update', id, @normalizeId(data), options
           .then (results) =>
             new @model results, buildOptions(options)
-          .tap (results) ->
+          .tap (results) =>
             debug 'updateWithOptions.cb', inspect(
+              model: @model.modelName
               options: options
               results: results
             , false, null)
@@ -330,8 +338,9 @@ module.exports = ->
         @execute 'save', @normalizeId(data), options
           .then (results) =>
             new @model results, buildOptions(options)
-          .tap (results) ->
+          .tap (results) =>
             debug 'save.cb', inspect(
+              model: @model.modelName
               options: options
               results: results
             , false, null)
@@ -354,8 +363,9 @@ module.exports = ->
         { where, aggregate, fields } = filter
 
         @execute 'update', where, @normalizeId(data), options
-          .tap (results) ->
+          .tap (results) =>
             debug 'update.cb', inspect(
+              model: @model.modelName
               filter: filter
               options: options
               results: results
@@ -379,8 +389,9 @@ module.exports = ->
         sort = [ '_id', 'asc' ]
 
         @execute 'findAndModify', { _id: id }, @normalizeId(data), sort
-          .tap (results) ->
+          .tap (results) =>
             debug 'updateAttributes.cb', inspect(
+              model: @model.modelName
               options: options
               results: results
             , false, null)

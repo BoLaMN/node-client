@@ -38,10 +38,10 @@ module.exports = ->
           options.instance = @instance
           options.name = @as
 
-          query = @query()
-          query.where[@to.primaryKey] = fkId
+          filter = @filter()
+          filter.where[@to.primaryKey] = fkId
 
-          @to.findOne query, options
+          @to.findOne filter, options
             .tap (res) =>
               @push res
             .asCallback cb
@@ -78,22 +78,22 @@ module.exports = ->
             @push res
           .asCallback cb
 
-      query: (query = {}) ->
-        query.where ?= {}
-        query.where[@foreignKey] = @instance[@primaryKey]
-        query
+      filter: (filter = {}) ->
+        filter.where ?= {}
+        filter.where[@foreignKey] = @instance[@primaryKey]
+        filter
 
-      get: (query, options = {}, cb = ->) ->
+      get: (filter, options = {}, cb = ->) ->
         if typeof options is 'function'
-          return @get query, {}, options
+          return @get filter, {}, options
 
-        if typeof query is 'function'
-          return @get {}, {}, query
+        if typeof filter is 'function'
+          return @get {}, {}, filter
 
         options.instance = @instance
         options.name = @as
 
-        @to.find @query(query), options
+        @to.find @filter(filter), options
           .tap (res) =>
             @push res
           .asCallback cb
@@ -117,10 +117,10 @@ module.exports = ->
         if typeof data is 'function'
           return @patch fkId, {}, {}, data
 
-        query = @query()
-        query.where[@to.primaryKey] = fkId
+        filter = @filter()
+        filter.where[@to.primaryKey] = fkId
 
-        @to.update query, data, options
+        @to.update filter, data, options
           .asCallback cb
 
       destroy: (fkId, options = {}, cb = ->) ->

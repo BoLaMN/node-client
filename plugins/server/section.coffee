@@ -94,7 +94,7 @@ module.exports = ->
         if methods.indexOf(method) is -1
           return next()
 
-        handler = @match req, req.url, method
+        handler = @match req, path, method
 
         if not handler
           return next()

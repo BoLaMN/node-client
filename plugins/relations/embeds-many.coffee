@@ -86,10 +86,10 @@ module.exports = ->
           return cb()
 
         if conditions and Object.keys(conditions).length > 0
-          query = new Where conditions
+          filter = new Where conditions
 
           reject = (v) ->
-            not Filter v, query
+            not Filter v, filter
 
           list = list.filter reject
 
@@ -138,10 +138,10 @@ module.exports = ->
 
         inst = @build data
 
-        query = {}
-        query[fk2] = if instance instanceof belongsTo then instance[pk2] else instance
+        filter = {}
+        filter[fk2] = if instance instanceof belongsTo then instance[pk2] else instance
 
-        belongsTo.findOne { where: query }, options
+        belongsTo.findOne { where: filter }, options
           .then (ref) =>
             if ref instanceof belongsTo
               inst[options.belongsTo] ref
@@ -150,7 +150,7 @@ module.exports = ->
 
       remove: (instance, options = {}, cb = ->) ->
 
-        @instance[definition.name] query, options
+        @instance[definition.name] filter, options
           .then (items) =>
             items.forEach (item) =>
               @unset item
