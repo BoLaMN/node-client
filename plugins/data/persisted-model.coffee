@@ -149,16 +149,6 @@ module.exports = ->
       constructor: (data = {}, options = {}) ->
         super
 
-        @on '*', (event, path, value, id) =>
-          @$events[event] ?= {}
-
-          if event is '$index'
-            @$events[event][path] ?= {}
-            @$events[event][path][value] ?= []
-            @$events[event][path][value].push id
-          else
-            @$events[event][path] = value
-
         proxy = new ObjectProxy @, @$path, @$parent
 
         @setAttributes data, proxy

@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'Model', (Entity, Attribute, Events, Hooks, Models, ModelACL, AccessContext, Storage, Cast, Relations, Utils) ->
+  @factory 'Model', (Entity, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Cast, Relations, Utils) ->
     { extend } = Utils
 
     class Model extends Entity
@@ -10,6 +10,7 @@ module.exports = ->
       @extend ModelACL
       @extend Attribute
       @extend Cast
+      @extend Inclusion
 
       @mixin Relations
 
@@ -42,7 +43,9 @@ module.exports = ->
 
       @define: (name, attributes = {}, acls = []) ->
         class Instance extends @
-        Instance.configure name, attributes, acls
+
+        if name
+          Instance.configure name, attributes, acls
 
         if @primaryKey
           Instance.primaryKey = @primaryKey
@@ -108,10 +111,11 @@ module.exports = ->
         super
 
         @$property '$events', value: {}
+        @$property '$options', value: options
+
         @$property '$isNew',
           value: true
           writable: true
-        @$property '$options', value: options
 
         @$property '$path', ->
           arr = [ @$name ]
@@ -130,8 +134,18 @@ module.exports = ->
         for key, value of options when v?
           @$property '$' + key, value: value
 
-      checkAccess: (method, options) ->
-        @constructor.checkAccess @getId(), method, options
+        @on '*', (event, path, value, id) =>
+          @$events[event] ?= {}
+
+          if event is '$index'
+            @$events[event][path] ?= {}
+            @$events[event][path][value] ?= []
+            @$events[event][path][value].push id
+          else
+            @$events[event][path] = value
+
+      checkAccess: (method) ->
+        @constructor.checkAccess @getId(), method, @$options
 
       getId: ->
         @[@constructor.primaryKey]

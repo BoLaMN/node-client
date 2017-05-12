@@ -4,7 +4,7 @@ module.exports = (app) ->
 
   app
 
-  .module 'Data', [ 'Relations', 'Base', 'Server', 'MongoDBAdapter', 'Access', 'Type' ]
+  .module 'Data', [ 'Relations', 'Base', 'Server', 'MongoDBAdapter', 'Access', 'Type', 'Include' ]
 
   .initializer ->
 
@@ -49,6 +49,7 @@ module.exports = (app) ->
     @include './object-proxy'
     @include './utils/build-options'
     @include './utils/wrap'
+    @include './utils/merge-query'
 
     @assembler 'model', ->
       (name, config) ->

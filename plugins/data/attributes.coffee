@@ -5,7 +5,7 @@ module.exports = ->
     { clone, extend } = Utils
 
     class Attribute extends Module
-      @include Cast::
+      @inherit Cast::
 
       @attribute: (name, type, options) ->
         @attributes ?= new Storage

@@ -4,7 +4,7 @@ module.exports = ->
 
   @factory 'Relation', (Module, inflector, Utils) ->
     { camelize, pluralize } = inflector
-    { extend, buildOptions } = Utils
+    { extend, buildOptions, mergeQuery } = Utils
 
     class Relation extends Module
 
@@ -85,3 +85,24 @@ module.exports = ->
 
       buildOptions: ->
         buildOptions @instance, @as, @length + 1
+
+      applyScope: (instance, filter = {}) ->
+        filter.where ?= {}
+
+        if (@type isnt 'belongsTo' or @type is 'hasOne') and typeof @polymorphic is 'object'
+          discriminator = @polymorphic.discriminator
+
+          if @polymorphic.invert
+            filter.where[discriminator] = @to.modelName
+          else
+            filter.where[discriminator] = @from.modelName
+
+        if typeof @scope is 'function'
+          scope = @scope.call @, instance, filter
+        else
+          scope = @scope
+
+        if typeof scope is 'object'
+          mergeQuery filter, scope
+
+        return

@@ -7,9 +7,9 @@ module.exports = ->
 
       @mixin: (obj) ->
         @extend obj
-        @include obj::
+        @inherit obj::
 
-      @include: (obj) ->
+      @inherit: (obj) ->
         for key, value of obj when key isnt 'constructor'
           @::[key] = value
         @
