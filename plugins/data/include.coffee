@@ -6,14 +6,14 @@ module.exports = ->
   @factory 'Inclusion', (isString, isPlainObject, isObject) ->
 
     processIncludeItem = (cls, objs, vals, targets) ->
-      (include) ->
+      (filter) ->
         relations = cls.relations
 
-        if isObject include
-          as = Object.keys(include)[0]
-          sub = include[as]
+        if isObject filter
+          as = Object.keys(filter)[0]
+          { where, sub } = filter[as]
         else
-          as = include
+          as = filter
           sub = []
 
         relation = relations[as]
@@ -21,7 +21,7 @@ module.exports = ->
         if not relation
           return Promise.reject new Error "Relation '#{ as }' is not defined for '#{ cls.modelName }' model"
 
-        { primaryKey, foreignKey, through, to, multiple } = relation
+        { primaryKey, foreignKey, through, embedded, to, multiple } = relation
 
         finishIncludeItems = (included) ->
           for obj in included
@@ -67,11 +67,15 @@ module.exports = ->
 
         if through
           klass = through
+        else if embedded
+          klass = find: ->
+            Promise.resolve objs.map (o) ->
+              o[as]
         else
           klass = to
 
         Promise.concat inqs, (inq) ->
-          filter = where: {}
+          filter = where: where or {}
           filter.where[foreignKey] = inq: inq
           klass.find filter
         .then (included) ->
