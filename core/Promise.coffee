@@ -174,6 +174,20 @@ Promise.parallelLimit = (fns, concurrency) ->
 
   doBatch makeMapFn(concurrency), fns
 
+Promise.concat = (vals, iterator) ->
+  res = []
+
+  Promise.each vals, iterator,
+    handle: (val) -> res = res.concat val
+    finish: -> res
+
+Promise.concatSeries = (inputs, iterator) ->
+  res = []
+
+  Promise.eachSeries inputs, iterator,
+    handle: (result) -> res = res.concat result
+    finish: -> res
+
 Promise.map = (vals, iterator) ->
   res = []
 
