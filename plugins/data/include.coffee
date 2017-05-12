@@ -47,15 +47,20 @@ module.exports = ->
 
           vals[primaryKey] = Object.keys targets[primaryKey]
 
+        inq = {}
         inqs = [ [] ]
+
         i = 0
 
         for val in vals[primaryKey] when val?
           if inqs[i].length >= 256
             i += 1
 
-          inqs[i] ?= []
-          inqs[i].push val
+          if not inq[val]
+            inq[val] = true
+
+            inqs[i] ?= []
+            inqs[i].push val
 
         if not inqs[0].length
           return Promise.resolve []
