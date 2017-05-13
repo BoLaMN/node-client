@@ -9,18 +9,20 @@ Plugin = require './Plugin'
 PluginCollection = require './PluginCollection'
 
 plugins = Symbol()
+dir = path.join __dirname, '..', 'plugins'
 
 class Registry
 
   constructor: (options) ->
     @[plugins] = {}
 
-    @directories = [
-      path.join process.cwd(), 'plugins'
-    ]
+    @directories = []
 
     for key, value of options
       @[key] = value
+
+    if @directories.indexOf(dir) is -1
+      @directories.unshift dir
 
   inspect: ->
     @list()
