@@ -31,8 +31,15 @@ module.exports = ->
         for name, value of @
           define name, value
 
+        targets = {}
+        targets[key] = {}
+
+        ids = {}
+        ids[key] = new Map()
+
         define 'key', key
-        define 'ids', new Map()
+        define 'ids', ids
+        define 'targets', targets
 
         collection
 
@@ -56,11 +63,11 @@ module.exports = ->
 
         count = @length
 
-        added = added
-          .filter (obj) =>
-            not @ids.has obj[@key]
-          .forEach (add) =>
-            count = proto.push.apply @, [ add ]
+        added = added.filter (obj) =>
+          not @ids[@key].has obj[@key]
+
+        added.forEach (add) =>
+          count = proto.push.apply @, [ add ]
 
         i = 0
 
@@ -71,21 +78,29 @@ module.exports = ->
         count
 
       get: (key) ->
-        @[@ids.get(key)]
+        @[@ids[@key].get(key)]
 
       index: (obj) ->
         id = obj[@key]
 
-        if @ids.has id
-          return @ids.get id
+        if @ids[@key].has id
+          return @ids[@key].get id
 
-        @ids.set id, @length - 1
+        @targets[@key][id] ?= []
+        @targets[@key][id].push obj
+
+        @ids[@key].set id, @length - 1
 
       deindex: (obj) ->
         id = obj[@key]
 
-        if @ids.has id
-          @ids.delete id
+        if @ids[@key].has id
+          @ids[@key].delete id
+
+        idx = @targets[@key][id].indexOf obj
+
+        if idx > -1
+          @targets[@key][id].slice idx, 1
 
         @ids
 
@@ -114,7 +129,7 @@ module.exports = ->
           added = [ added ]
 
         added = added.filter (obj) =>
-          not @ids.has obj[@key]
+          not @ids[@key].has obj[@key]
 
         if added.length
           args.push added
@@ -141,11 +156,11 @@ module.exports = ->
 
         count = @length
 
-        added = added
-          .filter (obj) =>
-            not @ids.has obj[@key]
-          .forEach (add) =>
-            count = proto.unshift.apply @, [ add ]
+        added = added.filter (obj) =>
+          not @ids[@key].has obj[@key]
+
+        added.forEach (add) =>
+          count = proto.unshift.apply @, [ add ]
 
         i = 0
 

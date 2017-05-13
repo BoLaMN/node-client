@@ -3,9 +3,9 @@
 
 module.exports = ->
 
-  @factory 'Inclusion', (isString, isPlainObject, isObject, isEmpty) ->
+  @factory 'Inclusion', (isString, KeyArray, isPlainObject, isObject, isEmpty) ->
 
-    processIncludeItem = (cls, objs, vals, targets) ->
+    processIncludeItem = (cls, objs, ids, targets) ->
       (filter) ->
         relations = cls.relations
 
@@ -21,52 +21,46 @@ module.exports = ->
         if not relation
           return Promise.reject new Error "Relation '#{ as }' is not defined for '#{ cls.modelName }' model"
 
-        { primaryKey, foreignKey, through, embedded, to, multiple, type } = relation
+        { primaryKey, foreignKey, through, keyThrough, embedded, to, multiple, type } = relation
 
         finishIncludeItems = (included) ->
           for obj in included
             for objfrom in targets[primaryKey][obj[foreignKey]]
               if multiple
                 if through
-                  objfrom[as].push obj[through]
+                  objfrom[as].push obj[keyThrough]
                 else
                   objfrom[as].push obj
               else if through
-                objfrom[as] = obj[through]
+                objfrom[as] = obj[keyThrough]
               else
                 objfrom[as] = obj
 
           included
-
-        if not vals[primaryKey]
-          targets[primaryKey] = {}
-
-          objs.filter(Boolean).forEach (obj) ->
-            targets[primaryKey][obj[primaryKey]] ?= []
-            targets[primaryKey][obj[primaryKey]].push obj
-
-          vals[primaryKey] = Object.keys targets[primaryKey]
 
         inq = {}
         inqs = [ [] ]
 
         i = 0
 
-        if not embedded
+        if embedded
+          Promise.map(ids, (id) -> id[as]).then (included) ->
+            to.include(included, sub).then finishIncludeItems
+        else
 
           if type is 'referencesMany'
-            for val in vals when val[foreignKey]?
-              inqs[i] = inqs[i].concat val[foreignKey]
+            for id in ids when id[foreignKey]?
+              inqs[i] = inqs[i].concat id[foreignKey]
           else
-            for val in vals[primaryKey] when val?
+            for id in ids[primaryKey] when id?
               if inqs[i].length >= 256
                 i += 1
 
-              if not inq[val]
-                inq[val] = true
+              if not inq[id]
+                inq[id] = true
 
                 inqs[i] ?= []
-                inqs[i].push val
+                inqs[i].push id
 
           if not inqs[0].length
             return Promise.resolve []
@@ -76,25 +70,23 @@ module.exports = ->
           else
             klass = to
 
-        else
+          Promise.concat inqs, (inq) ->
+            filter = where: where or {}
+            filter.where[foreignKey] = inq: inq
+            klass.find filter
+          .then (included) ->
+            arr = new KeyArray included, klass.primaryKey
 
-          klass = find: ->
-            Promise.map vals, (val) ->
-              val[as]
-
-        Promise.concat inqs, (inq) ->
-          filter = where: where or {}
-          filter.where[foreignKey] = inq: inq
-          klass.find filter
-        .then (included) ->
-          if through
-            model.include(included, klass).then finishIncludeItems
-          else
-            to.include(included, sub).then finishIncludeItems
+            if through
+              model.include(arr, klass).then finishIncludeItems
+            else
+              to.include(arr, sub).then finishIncludeItems
 
     class Inclusion
 
       @include: (objects, include) ->
+        console.log 'object ids', objects.ids
+        console.log 'object targets', objects.targets
 
         processIncludeJoin = (ij) ->
           if isString ij
@@ -117,8 +109,8 @@ module.exports = ->
 
         includes = processIncludeJoin include
 
-        vals = {}
-        targets = {}
+        ids = objects.ids
+        targets = objects.targets
 
-        Promise.each includes, processIncludeItem @, objects, vals, targets
+        Promise.each includes, processIncludeItem @, objects, ids, targets
           .then -> objects
