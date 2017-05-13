@@ -1,7 +1,13 @@
 module.exports = ->
 
-  @value 'HasManyThroughRoutes', ->
+  @value 'ThroughRoutes', (inflector) ->
     ->
+
+      primaryKeyType = @to.attributes[@foreignKey]?.type or 'string'
+      foreignKeyType = @from.attributes[@primaryKey]?.type or 'string'
+
+      relationId = inflector.singularize(@as) + 'Id'
+
       link:
         method: 'put'
         path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ relationId }"
@@ -17,7 +23,7 @@ module.exports = ->
             required: true
             source: 'path'
           data:
-            type: @through.modelName
+            type: @through?.modelName or @to?.modelName
             source: 'body'
             required: false
             root: true

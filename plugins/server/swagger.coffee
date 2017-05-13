@@ -8,15 +8,17 @@ module.exports = ->
       else if Array.isArray def
         def = type: def
 
-      if not def.type
-        def = type: 'any'
-
-      type = def.type
+      type = def.type or def
 
       if type is 'object' and def.model
         type = def.model
 
-      switch TypeOf type
+      if typeof type is 'string'
+        kind = type
+      else
+        kind = TypeOf type
+
+      switch kind
         when 'array'
           item = type[0] or 'any'
 

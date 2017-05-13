@@ -34,13 +34,20 @@ module.exports = ->
           properties = {}
 
           for own attribute, field of attributes
-            properties[attribute] = {}
             schema = Swagger.buildFromSchemaType field
-            extend properties[attribute], field, schema
+
+            if schema.properties
+              properties[attribute] = schema
+            else
+              properties[attribute] = {}
+              extend properties[attribute], field, schema
+
+            delete properties[attribute].id
+            delete properties[attribute].foreignKey
+            delete properties[attribute].defaultFn
 
           definitions[name] =
             properties: properties
-            additionalProperties: false
 
         super
           swagger: "2.0"

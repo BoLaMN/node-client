@@ -157,7 +157,7 @@ module.exports = ->
           "patchAttributes"
         ]
         description: "Patch attributes for a model instance and persist it into the data source."
-        path: "/"
+        path: "/:#{ @primaryKey }"
         method: "patch"
 
       update:
@@ -201,7 +201,7 @@ module.exports = ->
         accessType: "WRITE"
         description: "Replace attributes for a model instance and persist it into the data source."
         path: "/:#{ @primaryKey }"
-        method: "patch"
+        method: "put"
 
       #patchOrCreate:
       #  params:

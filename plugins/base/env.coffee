@@ -1,0 +1,38 @@
+"use strict"
+
+module.exports = ->
+
+  @provider 'env', ->
+    settings = @settings
+
+    mode = (process.env.NODE_ENV or 'development').toLowerCase()
+
+    for own key, value of process.env
+      value = true if value is 'true'
+      value = false if value is 'false'
+
+      @settings[key] = value
+
+    equals = (anotherMode) ->
+      mode is anotherMode
+
+    @mode = (newMode) ->
+      if newMode
+        mode = newMode
+      else
+        mode
+
+    @is = equals
+
+    @load = (definition) ->
+      @settings = definition
+
+    @$get = (Utils) ->
+
+      get: (path, value) ->
+        Utils.get(settings, path) or value
+
+      has: (path) ->
+        not not Utils.get settings, path
+
+      is: equals

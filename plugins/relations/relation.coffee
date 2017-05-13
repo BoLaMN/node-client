@@ -2,7 +2,7 @@ module.exports = ->
 
   @include './relation-routes'
 
-  @factory 'Relation', (Module, inflector, Utils) ->
+  @factory 'Relation', (Module, inflector, Utils, Models) ->
     { camelize, pluralize } = inflector
     { extend, buildOptions, mergeQuery } = Utils
 
@@ -71,6 +71,10 @@ module.exports = ->
 
         if @idType
           assign @idType
+        else if through
+          Models.get through, (@through) =>
+            @from.attributes.get @primaryKey, (attr) ->
+              assign attr.type
         else
           @from.attributes.get @primaryKey, (attr) ->
             assign attr.type

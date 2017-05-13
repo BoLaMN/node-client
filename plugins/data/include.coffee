@@ -3,7 +3,7 @@
 
 module.exports = ->
 
-  @factory 'Inclusion', (isString, isPlainObject, isObject) ->
+  @factory 'Inclusion', (isString, isPlainObject, isObject, isEmpty) ->
 
     processIncludeItem = (cls, objs, vals, targets) ->
       (filter) ->
@@ -21,7 +21,7 @@ module.exports = ->
         if not relation
           return Promise.reject new Error "Relation '#{ as }' is not defined for '#{ cls.modelName }' model"
 
-        { primaryKey, foreignKey, through, embedded, to, multiple } = relation
+        { primaryKey, foreignKey, through, embedded, to, multiple, type } = relation
 
         finishIncludeItems = (included) ->
           for obj in included
@@ -52,27 +52,35 @@ module.exports = ->
 
         i = 0
 
-        for val in vals[primaryKey] when val?
-          if inqs[i].length >= 256
-            i += 1
+        if not embedded
 
-          if not inq[val]
-            inq[val] = true
+          if type is 'referencesMany'
+            for val in vals when val[foreignKey]?
+              inqs[i] = inqs[i].concat val[foreignKey]
+          else
+            for val in vals[primaryKey] when val?
+              if inqs[i].length >= 256
+                i += 1
 
-            inqs[i] ?= []
-            inqs[i].push val
+              if not inq[val]
+                inq[val] = true
 
-        if not inqs[0].length
-          return Promise.resolve []
+                inqs[i] ?= []
+                inqs[i].push val
 
-        if through
-          klass = through
-        else if embedded
-          klass = find: ->
-            Promise.resolve objs.map (o) ->
-              o[as]
+          if not inqs[0].length
+            return Promise.resolve []
+
+          if through
+            klass = through
+          else
+            klass = to
+
         else
-          klass = to
+
+          klass = find: ->
+            Promise.map vals, (val) ->
+              val[as]
 
         Promise.concat inqs, (inq) ->
           filter = where: where or {}
@@ -104,7 +112,7 @@ module.exports = ->
 
           ij
 
-        if not include or Array.isArray(include) and not include.length or isPlainObject include and not Object.keys(include).length
+        if isEmpty(include) or isEmpty objects
           return Promise.resolve objects
 
         includes = processIncludeJoin include

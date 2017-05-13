@@ -14,6 +14,7 @@ module.exports = ->
 
         @relations.on '*', (rel, config) =>
           defaults = injector.get 'RelationRoutes'
+          through = injector.get 'ThroughRoutes'
 
           parent = api.section @modelName
 
@@ -53,6 +54,9 @@ module.exports = ->
             return
 
           add defaults.bind(config)()
+
+          if config.through or config.type is 'referencesMany'
+            add through.bind(config)()
 
           specific = config.$type + 'Routes'
 
