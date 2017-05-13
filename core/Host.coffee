@@ -8,11 +8,11 @@ registry = Symbol()
 
 class Host
 
-  constructor: ->
-    @[registry] = new Registry()
+  constructor: (options) ->
+    @[registry] = new Registry options
 
-  @bootstrap: ->
-    host = new Host
+  @bootstrap: (options) ->
+    host = new Host options
 
     host[registry]
       .core()

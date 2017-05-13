@@ -12,12 +12,15 @@ plugins = Symbol()
 
 class Registry
 
-  constructor: ->
+  constructor: (options) ->
     @[plugins] = {}
 
     @directories = [
       path.join process.cwd(), 'plugins'
     ]
+
+    for key, value of options
+      @[key] = value
 
   inspect: ->
     @list()

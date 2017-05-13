@@ -2,9 +2,36 @@
 
 require 'require-cson'
 
-server = require('./core/Host').bootstrap()
+path = require 'path'
+server = require './core/Host'
 
-if !module.parent
-  server.run()
+if not module.parent
+  server.bootstrap
+    directories: [
+      path.join __dirname, 'plugins'
+      path.join process.cwd(), 'plugins'
+    ]
+  .run()
 else
-  module.exports = server
+
+  ###
+    require 'node-client'
+      directories: [
+        path.join __dirname, 'plugins'
+        path.join process.cwd(), 'plugins'
+      ]
+    .run()
+
+    or
+
+    app = require 'node-client'
+
+    options = directories: [
+      path.join __dirname, 'plugins'
+      path.join process.cwd(), 'plugins'
+    ]
+
+    app(options).run()
+  ###
+
+  module.exports = server.bootstrap
