@@ -124,6 +124,7 @@ class Registry
         inflector: './Inflector'
         Utils: './Utils'
 
+      @include './KeyArray'
       @include './Is'
       @include './helpers/assert'
 

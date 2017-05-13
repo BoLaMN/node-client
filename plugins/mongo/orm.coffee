@@ -5,7 +5,7 @@ debug = require('debug')('loopback:connector:mongodb-advanced')
 
 module.exports = ->
 
-  @factory 'MongoORM', (Adapter, MongoQuery, MongoCollection, Utils, ObjectID) ->
+  @factory 'MongoORM', (Adapter, MongoQuery, KeyArray, MongoCollection, Utils, ObjectID) ->
     { buildOptions } = Utils
 
     class MongoORM extends Adapter
@@ -190,7 +190,8 @@ module.exports = ->
         promise
           .then (cursor) =>
             cursor.mapArray @model, buildOptions(options)
-          .then (data) =>
+          .then (results) =>
+            data = new KeyArray results, @model.primaryKey
             @model.include data, include, options
           .tap (results) =>
             debug 'find.cb', inspect(
