@@ -16,27 +16,6 @@ module.exports = ->
       build: (data = {}) ->
         new @to data, @buildOptions()
 
-      create: (data = {}, options = {}, cb = ->) ->
-        if typeof options is 'function'
-          return @create data, {}, options
-
-        if typeof data is 'function'
-          return @create {}, {}, data
-
-        options.instance = @instance
-        options.name = @as
-
-        @to.create data, options
-          .then (instance) =>
-            @instance[@foreignKey] = instance[@primaryKey]
-
-            if @instance.$isNew
-              return instance
-
-            @instance.save options
-              .then => @instance
-          .asCallback cb
-
       get: (options = {}, cb = ->) ->
         if typeof options is 'function'
           return @get {}, options
@@ -59,21 +38,3 @@ module.exports = ->
           .then (data) =>
             @setAttributes data
           .asCallback cb
-
-      update: (data = {}, options = {}, cb = ->) ->
-        if typeof options is 'function'
-          return @update data, {}, options
-
-        @get(options).then (instance) =>
-          delete data[@primaryKey]
-          instance.updateAttributes data, options
-        .asCallback cb
-
-      destroy: (options = {}, cb = ->) ->
-        if typeof options is 'function'
-          return @destroy {}, options
-
-        @get(options).then (instance) =>
-          instance[@foreignKey] = null
-          instance.save options
-        .asCallback cb

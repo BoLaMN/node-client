@@ -83,7 +83,7 @@ module.exports = ->
 
       relationId = inflector.singularize(@as) + 'Id'
 
-      find:
+      findById:
         method: 'get'
         path: "/:#{ @primaryKey }/#{ @as }/:#{ relationId }"
         params:
@@ -104,7 +104,7 @@ module.exports = ->
         description: "Find a related item by id for #{ @as }."
         accessType: 'READ'
 
-      destroy:
+      destroyById:
         method: 'delete'
         path: "/:#{ @primaryKey }/#{ @as }/:#{ relationId }"
         params:
@@ -125,7 +125,7 @@ module.exports = ->
         description: "Delete a related item by id for #{ @as }."
         accessType: 'WRITE'
 
-      update:
+      updateById:
         method: 'put'
         path: "/:#{ @primaryKey }/#{ @as }/:#{ relationId }"
         params:
@@ -151,7 +151,7 @@ module.exports = ->
         description: "Update a related item by id for #{ @as }."
         accessType: 'WRITE'
 
-      patch:
+      patchById:
         method: 'patch'
         path: "/:#{ @primaryKey }/#{ @as }/:#{ relationId }"
         params:

@@ -26,8 +26,10 @@ module.exports = ->
           @foreignKey = camelize @from.modelName + '_id', true
 
         if @belongs
+          @modelName = @from.modelName
           @as = camelize @from.modelName, true
         else
+          @modelName = @to.modelName
           @as = camelize @to.modelName, true
 
         if through
@@ -94,16 +96,16 @@ module.exports = ->
         if not @multiple
 
           if @type is 'belongsTo'
-            @$property 'ctor', { value: @from }, true
             @[@primaryKey] = @instance[@foreignKey]
+            ctor = @from
           else
-            @$property 'ctor', { value: @to }, true
             @[@foreignKey] = @instance[@primaryKey]
+            ctor = @to
+
+          for key, fn of ctor::
+            @$property key, { value: fn.bind(@) }, true
 
           return new ObjectProxy @, @ctor, @as, @instance
-
-      setAttributes: (data = {}) ->
-        @ctor::setAttributes.apply @, [ data ]
 
       buildOptions: ->
         buildOptions @instance, @as, @length + 1

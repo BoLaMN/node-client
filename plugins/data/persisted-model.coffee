@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'PersistedModel', (Model, ObjectProxy, Utils, assert) ->
+  @factory 'PersistedModel', (Model, ObjectProxy, Utils, assert, Models) ->
     { getArgs } = Utils
 
     class PersistedModel extends Model
@@ -182,22 +182,27 @@ module.exports = ->
         @
 
       execute: (command, args...) ->
-        argNames = getArgs @constructor[command]
+        model = Models.get @constructor.modelName
+        fn = model[command]
+
+        newArgs = []
+        argNames = getArgs fn
 
         options = argNames.indexOf 'options'
 
         if options > -1
-          args[options - 1].instance = @
+          newArgs[options - 1] = args[options - 1] or {}
+          newArgs[options - 1].instance = @
 
         data = argNames.indexOf 'data'
 
         if data > -1
-          args.splice data - 1, 0, @
+          newArgs[data - 1] = @
 
         if argNames[0] is 'id'
-          args.unshift @getId()
+          newArgs.unshift @getId()
 
-        @constructor[command].apply @constructor, args
+        fn.apply model, newArgs
 
       create: (options = {}, cb = ->) ->
         @$isNew = false

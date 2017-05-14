@@ -63,6 +63,8 @@ doBatchObject = (map, obj) ->
 noop = ->
 
 asCallback = (cb = noop, options = {}) ->
+  if typeof cb isnt 'function'
+    return throw new Error "callback needs to be a function"
 
   success = (data) ->
     if options.spread and Array.isArray data

@@ -412,7 +412,7 @@ module.exports = ->
         id = @model.primaryKey
 
         if value[id] instanceof ObjectID
-          value._id = id
+          value._id = value[id]
         else if @matchMongoId value[id]
           value._id = ObjectID value[id]
         else
