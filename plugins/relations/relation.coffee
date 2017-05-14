@@ -92,10 +92,13 @@ module.exports = ->
           @$property key, { value }, true
 
         if not @multiple
-          model = @to
 
           if @type is 'belongsTo'
             model = @from
+            @[@primaryKey] = @instance[@foreignKey]
+          else
+            model = @to
+            @[@foreignKey] = @instance[@primaryKey]
 
           return new ObjectProxy @, model, @as, @instance
 

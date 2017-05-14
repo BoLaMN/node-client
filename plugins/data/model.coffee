@@ -128,11 +128,12 @@ module.exports = ->
 
           arr.filter((value) -> value).join '.'
 
-        for own name, relation of @constructor.relations
-          @$property name, value: new relation @
-
         for key, value of options when v?
           @$property '$' + key, value: value
+
+        @once '$setup', =>
+          for own name, relation of @constructor.relations
+            @$property name, value: new relation @
 
         @on '*', (event, path, value, id) =>
           @$events[event] ?= {}

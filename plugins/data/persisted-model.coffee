@@ -171,8 +171,13 @@ module.exports = ->
           else
             proxy[key] = value
 
-        if @$parent and @$path and not @$loaded
-          @$parent.emit '$loaded', @$path, @
+        if not @$loaded
+          @emit '$setup', @$path, @
+
+          if @$parent and @$path
+            @$parent.emit '$loaded', @$path, @
+
+          @$property '$loaded', { value: true }
 
         @
 
