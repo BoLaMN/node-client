@@ -10,8 +10,8 @@ module.exports = ->
 
         @
 
-      constructor: (@instance) ->
-        super
+      constructor: ->
+        return super
 
       build: (data = {}) ->
         new @to data, @buildOptions()
@@ -44,18 +44,22 @@ module.exports = ->
         if not @primaryKey
           return cb()
 
-        to = @to
+        from = @from
 
         if @discriminator
           modelToName = @instance[@discriminator]
-          to = Models[modelToName]
+          from = Models[modelToName]
 
         id = @instance[@foreignKey]
 
         options.instance = @instance
         options.name = @as
 
-        to.findById(id, options).asCallback cb
+        from.findById(id, options)
+          .then (data) =>
+            for own key, value of data
+              @[key] = value
+          .asCallback cb
 
       update: (data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'

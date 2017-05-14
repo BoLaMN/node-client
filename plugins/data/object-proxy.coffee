@@ -7,7 +7,7 @@ module.exports = ->
 
     class ObjectProxy
 
-      constructor: (@self, @path = '', @notifier = @self) ->
+      constructor: (@self, @model, @path = '', @notifier = @self) ->
         return new Proxy @self, @
 
       canModify: (attributes, name) ->
@@ -38,7 +38,7 @@ module.exports = ->
         if newVal is undefined
           type = '$unset'
 
-        @self.emit type, path, newVal
+        @model.emit type, path, newVal
 
         return
 
@@ -100,8 +100,10 @@ module.exports = ->
         if Array.isArray value
           attributes[name] = value
         else
-          cast = @self.constructor.attributes[name]
-          coerced = cast?.apply?(value, name, @self)
+          cast = @model.attributes[name]
+
+          if cast
+            value = cast?.apply?(value, name, @self)
 
           if cast?.foreignKey
             key = @append(name).replace /\.\d+/g, ''
@@ -111,18 +113,18 @@ module.exports = ->
 
             @notifier.emit '$index', key, value, @self
 
-          if coerced isnt undefined
-            value = coerced
+          if value is undefined and not oldVal
+            return false
 
-            if isObject value and not value?.constructor?.modelName
-              proxy = new ObjectProxy {}, @append(name), @notifier
+          if isObject value and not value?.constructor?.modelName
+            proxy = new ObjectProxy {}, @append(name), @notifier
 
-              for own name of value
-                descriptor = Object.getOwnPropertyDescriptor value, name
+            for own name of value
+              descriptor = Object.getOwnPropertyDescriptor value, name
 
-                Object.defineProperty proxy, name, descriptor
+              Object.defineProperty proxy, name, descriptor
 
-              value = proxy
+            value = proxy
 
           attributes[name] = value
 

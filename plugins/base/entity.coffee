@@ -1,8 +1,6 @@
 module.exports = ->
 
-  @factory 'Entity', (Module, Utils) ->
-    { property } = Utils
-
+  @factory 'Entity', (Module) ->
     class Entity extends Module
 
       @defer: (cb) ->
@@ -43,9 +41,6 @@ module.exports = ->
 
       constructor: ->
         super
-
-      $property: (key, accessor = {}) ->
-        property @, key, accessor
 
       $each: Entity.each
       $defer: Entity.defer

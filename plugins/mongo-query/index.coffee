@@ -115,7 +115,7 @@ module.exports = (app) ->
 
                   query[k][spec] = c
             else
-              if type.check cond
+              if attr
                 cond = attr.apply cond
 
               query[k] = cond

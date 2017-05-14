@@ -3,8 +3,8 @@ module.exports = ->
   @factory 'HasManyThrough', (HasMany) ->
 
     class HasManyThrough extends HasMany
-      constructor: (@instance) ->
-        super
+      constructor: ->
+        return super
 
       throughKeys: (definition) ->
         pk2 = @to.primaryKey

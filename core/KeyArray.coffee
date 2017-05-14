@@ -10,7 +10,7 @@ module.exports = ->
     proto = Array.prototype
 
     class KeyArray
-      constructor: (data, keys) ->
+      constructor: (data = [], keys = []) ->
         collection = []
 
         if not Array.isArray keys
@@ -34,12 +34,9 @@ module.exports = ->
         for name, value of @
           define name, value
 
-        targets = {}
-        ids = {}
-
         define 'keys', keys
-        define 'ids', ids
-        define 'targets', targets
+        define 'ids', {}
+        define 'targets', {}
 
         collection
 
@@ -94,7 +91,7 @@ module.exports = ->
             return @ids[key].get id
 
           @targets[key] ?= {}
-          @targets[key][id] ?= []
+          @targets[key][id] ?= new @constructor
           @targets[key][id].push obj
 
           @ids[key] ?= new Map()

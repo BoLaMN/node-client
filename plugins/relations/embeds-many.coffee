@@ -10,10 +10,8 @@ module.exports = ->
 
         @
 
-      constructor: (instance) ->
+      constructor: ->
         return super
-
-        @instance = instance
 
       get: (options = {}, cb = ->) ->
         if typeof options is 'function'

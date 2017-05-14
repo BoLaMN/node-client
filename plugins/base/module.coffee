@@ -19,11 +19,11 @@ module.exports = ->
           @[key] = value
         @
 
-      @property: (cls, key, accessor) ->
+      @property: (cls, key, accessor, hidden = false) ->
         if arguments.length is 2
           return @property @, cls, key
 
-        property cls, key, accessor
+        property cls, key, accessor, hidden
 
       @type: (val) ->
         if val is null
@@ -44,3 +44,6 @@ module.exports = ->
 
       constructor: ->
         super
+
+      $property: (key, accessor = {}, hidden = false) ->
+        property @, key, accessor, hidden

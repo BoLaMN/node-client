@@ -149,7 +149,7 @@ module.exports = ->
       constructor: (data = {}, options = {}) ->
         super
 
-        proxy = new ObjectProxy @, @$path, @$parent
+        proxy = new ObjectProxy @, @constructor, @$path, @$parent
 
         @setAttributes data, proxy
 

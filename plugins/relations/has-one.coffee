@@ -11,8 +11,8 @@ module.exports = ->
 
         @
 
-      constructor: (@instance) ->
-        super
+      constructor: ->
+        return super
 
       build: (data = {}) ->
         data[@foreignKey] = @instance[@primaryKey]

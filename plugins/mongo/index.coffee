@@ -34,11 +34,18 @@ module.exports = (app) ->
           v instanceof ObjectID
 
         @parse: (v) ->
+          return undefined if @absent v
+
           if v instanceof ObjectID
             return v
 
+          if @function v.toString
+            v = v.toString()
+
           if v.match /^[a-fA-F0-9]{24}$/
             return new ObjectID v
+
+          undefined
 
     @adapter 'MongoDB', (MongoORM, MongoClient) ->
       class MongoDB extends MongoORM

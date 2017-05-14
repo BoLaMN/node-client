@@ -27,5 +27,5 @@ module.exports = ->
 
         @
 
-      constructor: (@instance) ->
-        super
+      constructor: ->
+        return super

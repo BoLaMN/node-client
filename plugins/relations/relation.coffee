@@ -2,7 +2,7 @@ module.exports = ->
 
   @include './relation-routes'
 
-  @factory 'Relation', (Module, inflector, Utils, Models) ->
+  @factory 'Relation', (Module, inflector, Utils, Models, ObjectProxy) ->
     { camelize, pluralize } = inflector
     { extend, buildOptions, mergeQuery } = Utils
 
@@ -83,11 +83,21 @@ module.exports = ->
 
         @
 
-      constructor: (@instance) ->
+      constructor: (instance) ->
         super
 
+        @$property 'instance', { value: instance }, true
+
         for own key, value of @constructor
-          @[key] = value
+          @$property key, { value }, true
+
+        if not @multiple
+          model = @to
+
+          if @type is 'belongsTo'
+            model = @from
+
+          return new ObjectProxy @, model, @as, @instance
 
       buildOptions: ->
         buildOptions @instance, @as, @length + 1

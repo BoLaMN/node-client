@@ -2,7 +2,7 @@ module.exports = ->
 
   @decorator 'Utils', (Utils) ->
 
-    Utils.property = (cls, key, accessor = {}) ->
+    Utils.property = (cls, key, accessor = {}, hidden) ->
       if cls[key]
         return
 
@@ -16,7 +16,7 @@ module.exports = ->
         accessor.get = accessor.get or ->
           @[key]
 
-      if key.startsWith '$'
+      if key.startsWith '$' or hidden
         accessor.enumerable = false
 
       Object.defineProperty cls, key, accessor

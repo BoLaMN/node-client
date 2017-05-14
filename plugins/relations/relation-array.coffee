@@ -7,7 +7,7 @@ module.exports = ->
     class RelationArray extends Relation
       @multiple: true
 
-      constructor: (@instance) ->
+      constructor: ->
         super
 
         return @injectMethods []
