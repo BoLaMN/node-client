@@ -44,7 +44,7 @@ module.exports = ->
         i = 0
 
         if embedded
-          Promise.map(ids, (id) -> id[as]).then (included) ->
+          Promise.map(objs, (obj) -> obj[as]).then (included) ->
             to.include(included, sub).then finishIncludeItems
         else
 
@@ -75,18 +75,26 @@ module.exports = ->
             filter.where[foreignKey] = inq: inq
             klass.find filter
           .then (included) ->
-            arr = new KeyArray included, klass.primaryKey
-
             if through
-              model.include(arr, klass).then finishIncludeItems
+              model.include(included, klass).then finishIncludeItems
             else
-              to.include(arr, sub).then finishIncludeItems
+              to.include(included, sub).then finishIncludeItems
 
     class Inclusion
 
       @include: (objects, include) ->
-        console.log 'object ids', objects.ids
-        console.log 'object targets', objects.targets
+        if isEmpty(include) or isEmpty objects
+          return Promise.resolve objects
+
+        keys = []
+
+        for own name, value of @relations
+          keys.push value.primaryKey
+
+          if value.type is  'belongsTo'
+            keys.push value.foreignKey
+
+        data = new KeyArray objects, keys
 
         processIncludeJoin = (ij) ->
           if isString ij
@@ -104,13 +112,10 @@ module.exports = ->
 
           ij
 
-        if isEmpty(include) or isEmpty objects
-          return Promise.resolve objects
-
         includes = processIncludeJoin include
 
-        ids = objects.ids
-        targets = objects.targets
+        ids = data.ids
+        targets = data.targets
 
-        Promise.each includes, processIncludeItem @, objects, ids, targets
-          .then -> objects
+        Promise.each includes, processIncludeItem @, data, ids, targets
+          .then -> data

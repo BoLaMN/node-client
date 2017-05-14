@@ -190,8 +190,7 @@ module.exports = ->
         promise
           .then (cursor) =>
             cursor.mapArray @model, buildOptions(options)
-          .then (results) =>
-            data = new KeyArray results, @model.primaryKey
+          .then (data) =>
             @model.include data, include, options
           .tap (results) =>
             debug 'find.cb', inspect(

@@ -10,17 +10,20 @@ module.exports = ->
     proto = Array.prototype
 
     class KeyArray
-      constructor: (data, key) ->
+      constructor: (data, keys) ->
         collection = []
 
-        @injectClassMethods collection, key
+        if not Array.isArray keys
+          keys = [ keys ]
+
+        @injectClassMethods collection, keys
 
         data.forEach (item) ->
           collection.push item
 
         return collection
 
-      injectClassMethods: (collection, key) ->
+      injectClassMethods: (collection, keys) ->
 
         define = (prop, desc) ->
           Object.defineProperty collection, prop,
@@ -32,12 +35,9 @@ module.exports = ->
           define name, value
 
         targets = {}
-        targets[key] = {}
-
         ids = {}
-        ids[key] = new Map()
 
-        define 'key', key
+        define 'keys', keys
         define 'ids', ids
         define 'targets', targets
 
@@ -45,12 +45,12 @@ module.exports = ->
 
       concat: ->
         arr = proto.concat.apply @, arguments
-        new @constructor arr, @key
+        new @constructor arr, @keys
 
       filter: (predicate) ->
         fn = toFunction predicate
         arr = proto.filter.apply @, [ fn ]
-        new @constructor arr, @key
+        new @constructor arr, @keys
 
       pop: ->
         removed = proto.pop.apply @, arguments
@@ -64,7 +64,7 @@ module.exports = ->
         count = @length
 
         added = added.filter (obj) =>
-          not @ids[@key].has obj[@key]
+          not @has obj
 
         added.forEach (add) =>
           count = proto.push.apply @, [ add ]
@@ -77,30 +77,44 @@ module.exports = ->
 
         count
 
-      get: (key) ->
-        @[@ids[@key].get(key)]
+      has: (obj) ->
+        @keys.some (key) =>
+          @ids[key]?.has obj[key]
+
+      get: (fk, key) ->
+        @[@ids[fk].get(key)]
 
       index: (obj) ->
-        id = obj[@key]
+        for key in @keys
+          id = obj[key]
 
-        if @ids[@key].has id
-          return @ids[@key].get id
+          return unless id
 
-        @targets[@key][id] ?= []
-        @targets[@key][id].push obj
+          if @ids[key]?.has id
+            return @ids[key].get id
 
-        @ids[@key].set id, @length - 1
+          @targets[key] ?= {}
+          @targets[key][id] ?= []
+          @targets[key][id].push obj
+
+          @ids[key] ?= new Map()
+          @ids[key].set id, @length - 1
 
       deindex: (obj) ->
-        id = obj[@key]
+        for key in @keys
+          id = obj[key]
 
-        if @ids[@key].has id
-          @ids[@key].delete id
+          return unless id
 
-        idx = @targets[@key][id].indexOf obj
+          if @ids[key]?.has id
+            @ids[key].delete id
 
-        if idx > -1
-          @targets[@key][id].slice idx, 1
+          return unless @targets[key]
+
+          idx = @targets[key][id].indexOf obj
+
+          if idx > -1
+            @targets[key][id].slice idx, 1
 
         @ids
 
@@ -112,7 +126,7 @@ module.exports = ->
         i = 0
 
         while i < @length
-          chunks.push new @constructor @slice(i, i + size), @key
+          chunks.push new @constructor @slice(i, i + size), @keys
           i += size
 
         chunks
@@ -129,7 +143,7 @@ module.exports = ->
           added = [ added ]
 
         added = added.filter (obj) =>
-          not @ids[@key].has obj[@key]
+          not @has obj
 
         if added.length
           args.push added
@@ -157,7 +171,7 @@ module.exports = ->
         count = @length
 
         added = added.filter (obj) =>
-          not @ids[@key].has obj[@key]
+          not @has obj
 
         added.forEach (add) =>
           count = proto.unshift.apply @, [ add ]

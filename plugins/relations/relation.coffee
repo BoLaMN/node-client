@@ -64,10 +64,12 @@ module.exports = ->
 
           if @belongs
             @to.attribute @foreignKey, options
-          else if @polymorphic
-            @from.attribute @foreignKey, options
+            @to.relations.define @as, @
+          else
+            if @polymorphic
+              @from.attribute @foreignKey, options
 
-          @from.relations.define @as, @
+            @from.relations.define @as, @
 
         if @idType
           assign @idType
