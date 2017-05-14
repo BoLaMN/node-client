@@ -13,5 +13,5 @@ module.exports = ->
           return v
 
         if v?.toString?()
-          @check v.isString()
+          @check v.toString()
         else undefined
