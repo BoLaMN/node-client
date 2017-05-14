@@ -88,31 +88,41 @@ module.exports = ->
 
         keys = []
 
-        for own name, value of @relations
+        addKey = (key) =>
+          value = @relations[key]
+
+          return false unless value
+
           keys.push value.primaryKey
 
           if value.type is  'belongsTo'
             keys.push value.foreignKey
 
-        data = new KeyArray objects, keys
-
         processIncludeJoin = (ij) ->
           if isString ij
-            ij = [ ij ]
-
-          if isPlainObject ij
+            ij = [ ij ] if addKey ij
+          else if isPlainObject ij
             newIj = []
 
             Object.keys(ij).forEach (key) ->
+              return unless addKey key
+
               obj = {}
               obj[key] = ij[key]
+
               newIj.push obj
 
             return newIj
+          else
+            ij.forEach addKey
 
           ij
 
         includes = processIncludeJoin include
+
+        console.log 'keys', keys
+
+        data = new KeyArray objects, keys
 
         ids = data.ids
         targets = data.targets
