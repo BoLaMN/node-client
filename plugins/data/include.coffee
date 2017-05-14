@@ -36,7 +36,7 @@ module.exports = ->
 
         finishIncludeItems = (included) ->
           for obj in included
-            if type is 'belongsTo'
+            if type in [ 'belongsTo', 'embedOne', 'embedMany' ]
               target = targets[foreignKey][obj[primaryKey]]
             else
               target = targets[primaryKey][obj[foreignKey]]
@@ -54,12 +54,12 @@ module.exports = ->
         if embedded
           Promise.map(objs, (obj) -> obj[as]).then (included) ->
             model.include(included, sub).then finishIncludeItems
-        else
-
-          if type is 'referencesMany'
+        else if type is 'referencesMany'
             for id in ids when id[foreignKey]?
               inqs[i] = inqs[i].concat id[foreignKey]
-          else if type is 'belongsTo'
+        else
+
+          if type is 'belongsTo'
             ds = ids[foreignKey]
           else
             ds = ids[primaryKey]
