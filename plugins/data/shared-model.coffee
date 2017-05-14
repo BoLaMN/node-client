@@ -27,7 +27,7 @@ module.exports = ->
               route.args.push 'cb'
 
               route.path = '/' + @modelName + route.path
-              route.modelName = config.to.modelName or @modelName
+              route.modelName = config.model.modelName or @modelName
 
               fn = (args...) ->
                 data = {}
@@ -53,15 +53,15 @@ module.exports = ->
 
             return
 
-          add defaults.bind(config)()
+          add defaults.bind(config)(@)
 
           if config.through or config.type is 'referencesMany'
-            add through.bind(config)()
+            add through.bind(config)(@)
 
           specific = config.$type + 'Routes'
 
           if injector.has specific
-            add injector.get(specific).bind(config)()
+            add injector.get(specific).bind(config)(@)
 
         @
 

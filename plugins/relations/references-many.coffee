@@ -5,11 +5,6 @@ module.exports = ->
     class ReferencesMany extends RelationArray
       @embedded: true
 
-      @initialize: (@from, @to, params) ->
-        super
-
-        @
-
       constructor: ->
         return super
 
@@ -20,7 +15,7 @@ module.exports = ->
         options.instance = @instance
         options.name = @as
 
-        @to.findByIds @, options
+        @model.findByIds @, options
           .asCallback cb
 
       find: (fkId, options = {}, cb = ->) ->
@@ -32,7 +27,7 @@ module.exports = ->
         options.instance = @instance
         options.name = @as
 
-        @to.findById fkId, options
+        @model.findById fkId, options
           .asCallback cb
 
       exists: (fkId, options = {}, cb = ->) ->
@@ -98,10 +93,10 @@ module.exports = ->
           .asCallback cb
 
       build: (data = {}) ->
-        new @to data, @buildOptions()
+        new @model data, @buildOptions()
 
       insert: (obj, cb) ->
-        id = obj[@primaryKey]
+        id = obj.getId()
         ids = @instance[@foreignKey] or []
 
         if @options.prepend
@@ -116,16 +111,16 @@ module.exports = ->
         if typeof options is 'function'
           return @add data, {}, options
 
-        if data instanceof @to
+        if data instanceof @model
           return @insert null, data, cb
 
         filter = where: {}
-        filter.where[@primaryKey] = data
+        filter.where[@model.primaryKey] = data
 
         options.instance = @instance
         options.name = @as
 
-        @to.findOne filter, options
+        @model.findOne filter, options
           .then (instance) =>
             @insert instance
           .asCallback cb
@@ -134,8 +129,8 @@ module.exports = ->
         if typeof options is 'function'
           return @remove data, {}, options
 
-        if id instanceof @to
-          return @remove id[@primaryKey], options, cb
+        if id instanceof @model
+          return @remove id.getId(), options, cb
 
         ids = @instance[@foreignKey] or []
 

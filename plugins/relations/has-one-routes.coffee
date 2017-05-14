@@ -1,16 +1,20 @@
 module.exports = ->
 
   @value 'HasOneRoutes', ->
-    ->
-      primaryKeyType = @from.attributes[@primaryKey].type
+    (from) ->
+
+      primaryKey = from.primaryKey
+      primaryKeyType = from.getIdAttr()?.type or 'string'
+
+      foreignKeyType = @model.getIdAttr()?.type or 'string'
 
       get:
         method: 'get'
-        path: "/:#{ @primaryKey }/#{ @as }"
+        path: "/:#{ primaryKey }/#{ @as }"
         params:
-          "#{ @primaryKey }":
+          "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           refresh:
@@ -26,15 +30,15 @@ module.exports = ->
 
       create:
         method: 'post'
-        path: "/:#{ @primaryKey }/#{ @as }"
+        path: "/:#{ primaryKey }/#{ @as }"
         params:
-          "#{ @primaryKey }":
+          "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           data:
-            type: @to.modelName
+            type: @model.modelName
             source: 'body'
             root: true
           options:
@@ -45,15 +49,15 @@ module.exports = ->
 
       update:
         method: 'put'
-        path: "/:#{ @primaryKey }/#{ @as }"
+        path: "/:#{ primaryKey }/#{ @as }"
         params:
-          "#{ @primaryKey }":
+          "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           data:
-            type: @to.modelName
+            type: @model.modelName
             source: 'body'
             root: true
           options:
@@ -64,11 +68,11 @@ module.exports = ->
 
       destroy:
         method: 'delete'
-        path: "/:#{ @primaryKey }/#{ @as }"
+        path: "/:#{ primaryKey }/#{ @as }"
         params:
-          "#{ @primaryKey }":
+          "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           options:

@@ -6,11 +6,6 @@ module.exports = ->
 
     class HasOne extends Relation
 
-      @initialize: (@from, @to, params) ->
-        super
-
-        @
-
       constructor: ->
         return super
 
@@ -44,7 +39,7 @@ module.exports = ->
           cb()
           return Promise.reject()
 
-        @to.findOne filter, options
+        @model.findOne filter, options
           .then (data) =>
             @setAttributes data
           .asCallback cb

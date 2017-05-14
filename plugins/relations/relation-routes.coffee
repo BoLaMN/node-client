@@ -1,16 +1,18 @@
 module.exports = ->
 
   @value 'RelationRoutes', ->
-    ->
-      primaryKeyType = @from.attributes[@primaryKey].type or 'string'
+    (from) ->
+
+      primaryKey = from.primaryKey
+      primaryKeyType = from.getIdAttr()?.type or 'string'
 
       get:
         method: 'get'
-        path: "/:#{ @primaryKey }/#{ @as }"
+        path: "/:#{ primaryKey }/#{ @as }"
         params:
-          "#{ @primaryKey }":
+          "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           filter:
@@ -21,20 +23,20 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
-        description: "Queries #{ @as } of #{ @to.modelName }."
+        description: "Queries #{ @as } of #{ @model.modelName }."
         accessType: 'READ'
 
       create:
         method: 'post'
-        path: "/:#{ @primaryKey }/#{ @as }"
+        path: "/:#{ primaryKey }/#{ @as }"
         params:
-          "#{ @primaryKey }":
+          "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           data:
-            type: @to.modelName
+            type: @model.modelName
             source: 'body'
             root: true
             required: false
@@ -47,11 +49,11 @@ module.exports = ->
 
       delete:
         method: 'delete'
-        path: "/:#{ @primaryKey }/#{ @as }"
+        path: "/:#{ primaryKey }/#{ @as }"
         params:
-          "#{ @primaryKey }":
+          "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           where:
@@ -67,11 +69,11 @@ module.exports = ->
 
       count:
         method: 'get'
-        path: "/:#{ @primaryKey }/#{ @as }/count"
+        path: "/:#{ primaryKey }/#{ @as }/count"
         params:
-          "#{ @primaryKey }":
+          "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           where:
@@ -83,16 +85,16 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
-        description: "Counts #{ @as } of #{ @to.modelName }"
+        description: "Counts #{ @as } of #{ @model.modelName }"
         accessType: 'READ'
 
       exists:
         method: 'head'
-        path: "/:#{ @primaryKey }/#{ @as }"
+        path: "/:#{ primaryKey }/#{ @as }"
         params:
-          "#{ @primaryKey }":
+          "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           where:
@@ -104,5 +106,5 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
-        description: "#{ @as } exists of #{ @to.modelName }"
+        description: "#{ @as } exists of #{ @model.modelName }"
         accessType: 'READ'

@@ -5,11 +5,6 @@ module.exports = ->
     class EmbedOne extends Relation
       @embedded: true
 
-      @initialize: (@to, @from, params) ->
-        super
-
-        @
-
       constructor: ->
         return super
 
@@ -24,7 +19,7 @@ module.exports = ->
         instance
 
       build: (data = {}) ->
-        new @to data, @buildOptions()
+        new @model data, @buildOptions()
 
       create: (data = {}, options = {}, cb = ->) ->
         if typeof options is 'function'

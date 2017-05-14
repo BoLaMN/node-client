@@ -51,13 +51,13 @@ module.exports = ->
       ]
 
       build: (data = {}) ->
-        if data instanceof @to
+        if data instanceof @model
           for key, value of @buildOptions()
             data.$property '$' + key,
               value: value or null
           return data
         else
-          new @to data, @buildOptions()
+          new @model data, @buildOptions()
 
       deindex: (data) ->
         id = data.getId()
@@ -84,7 +84,7 @@ module.exports = ->
         false
 
       index: (data) ->
-        if not data instanceof @to
+        if not data instanceof @model
           data = @build data
 
         id = data.getId()
@@ -106,7 +106,7 @@ module.exports = ->
 
       indexOf: (a) ->
         a = a?.getId?() or
-            a?[@to.primaryKey] or
+            a?[@model.primaryKey] or
             a
 
         a = a?.toString?() or a

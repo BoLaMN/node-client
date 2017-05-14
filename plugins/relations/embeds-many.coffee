@@ -5,11 +5,6 @@ module.exports = ->
     class EmbedMany extends RelationArray
       @embedded: true
 
-      @initialize: (@to, @from, params) ->
-        super
-
-        @
-
       constructor: ->
         return super
 
@@ -116,7 +111,7 @@ module.exports = ->
             .asCallback cb
 
       build: (data) ->
-        inst = new @to data, @buildOptions()
+        inst = new @model data, @buildOptions()
 
         if @options.prepend
           @unshift inst
@@ -126,7 +121,7 @@ module.exports = ->
         inst
 
       add: (instance, data = {}, options = {}, cb = ->) ->
-        belongsTo = @to.relations[options.belongsTo]
+        belongsTo = @model.relations[options.belongsTo]
 
         if not belongsTo
           throw new Error('Invalid reference: ' + options.belongsTo or '(none)')

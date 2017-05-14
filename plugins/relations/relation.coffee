@@ -8,32 +8,28 @@ module.exports = ->
 
     class Relation extends Module
 
-      @define: (from, to, params = {}) ->
+      @define: (args...) ->
         class Instance extends @
 
         Instance.property '$type', value: @name
-        Instance.initialize from, to, params
+        Instance.initialize args...
         Instance
 
-      @initialize: (from, to, params) ->
+      @initialize: (from, model, params = {}) ->
         { polymorphic, through } = params
 
+        @model = model
+
         if @invert
-          @primaryKey = @to.primaryKey
-          @foreignKey = camelize @to.modelName + '_id', true
+          @foreignKey = camelize @model.modelName + '_id', true
         else
-          @primaryKey = @from.primaryKey
-          @foreignKey = camelize @from.modelName + '_id', true
+          @foreignKey = camelize from.modelName + '_id', true
 
-        if @belongs
-          @modelName = @from.modelName
-          @as = camelize @from.modelName, true
-        else
-          @modelName = @to.modelName
-          @as = camelize @to.modelName, true
+        @modelName = @model.modelName
+        @as = camelize @model.modelName, true
 
-        if through
-          @keyThrough = camelize @to.modelName + '_id', true
+        if through and not polymorphic
+          @keyThrough = camelize @model.modelName + '_id', true
 
         if polymorphic?
           @polymorphic = true
@@ -52,7 +48,7 @@ module.exports = ->
           @[key] = val
 
         if not @through and @discriminator
-          @from.attribute @discriminator,
+          from.attribute @discriminator,
             foreignKey: true
             type: 'any'
 
@@ -65,22 +61,22 @@ module.exports = ->
             type: type or 'any'
 
           if @belongs
-            @to.attribute @foreignKey, options
-            @to.relations.define @as, @
+            from.attribute @foreignKey, options
+            from.relations.define @as, @
           else
             if @polymorphic
-              @from.attribute @foreignKey, options
+              from.attribute @foreignKey, options
 
-            @from.relations.define @as, @
+            from.relations.define @as, @
 
         if @idType
           assign @idType
         else if through
           Models.get through, (@through) =>
-            @from.attributes.get @primaryKey, (attr) ->
+            from.getIdAttr (attr) ->
               assign attr.type
         else
-          @from.attributes.get @primaryKey, (attr) ->
+          from.getIdAttr (attr) ->
             assign attr.type
 
         @
@@ -89,6 +85,7 @@ module.exports = ->
         super
 
         @$property 'instance', { value: instance }, true
+        @$property 'from', { value: instance.constructor }, true
 
         for own key, value of @constructor
           @$property key, { value }, true
@@ -96,16 +93,14 @@ module.exports = ->
         if not @multiple
 
           if @type is 'belongsTo'
-            @[@primaryKey] = @instance[@foreignKey]
-            ctor = @from
+            @[@model.primaryKey] = @instance[@foreignKey]
           else
-            @[@foreignKey] = @instance[@primaryKey]
-            ctor = @to
+            @[@foreignKey] = @instance[@model.primaryKey]
 
-          for key, fn of ctor::
+          for key, fn of @model::
             @$property key, { value: fn.bind(@) }, true
 
-          return new ObjectProxy @, @ctor, @as, @instance
+          return new ObjectProxy @, @model, @as, @instance
 
       buildOptions: ->
         buildOptions @instance, @as, @length + 1
@@ -117,9 +112,9 @@ module.exports = ->
           discriminator = @polymorphic.discriminator
 
           if @polymorphic.invert
-            filter.where[discriminator] = @to.modelName
+            filter.where[discriminator] = @model.modelName
           else
-            filter.where[discriminator] = @from.modelName
+            filter.where[discriminator] = from.modelName
 
         if typeof @scope is 'function'
           scope = @scope.call @, instance, filter

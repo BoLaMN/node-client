@@ -4,7 +4,7 @@ module.exports = ->
 
     class HasAndBelongsToMany extends HasMany
 
-      @initialize: (@from, @to, params) ->
+      @initialize: (from, @model, params) ->
         super
 
         if not @through
@@ -14,8 +14,8 @@ module.exports = ->
           if @throughModel
             @through = @throughModel
           else
-            name1 = @from.modelName + @to.modelName
-            name2 = @to.modelName + @from.modelName
+            name1 = from.modelName + @model.modelName
+            name2 = @model.modelName + from.modelName
 
             @through = Models.get(name1) or Models.get(name2)
 
@@ -23,7 +23,7 @@ module.exports = ->
               @through = Model.define name1
 
         if @through
-          @through.belongsTo @to.modelName
+          @through.belongsTo @model.modelName
 
         @
 

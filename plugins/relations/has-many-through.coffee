@@ -7,7 +7,7 @@ module.exports = ->
         return super
 
       throughKeys: (definition) ->
-        pk2 = @to.primaryKey
+        pk2 = @model.primaryKey
 
         if typeof @polymorphic == 'object'
           fk1 = @foreignKey
@@ -16,12 +16,12 @@ module.exports = ->
             fk2 = @polymorphic.foreignKey
           else
             fk2 = @keyThrough
-        else if @from is @to
-          return findBelongsTo(@through, @to, pk2).sort (fk1, fk2) ->
+        else if @from is @model
+          return findBelongsTo(@through, @model, pk2).sort (fk1, fk2) ->
             if @foreignKey == fk1 then -1 else 1
         else
-          fk1 = findBelongsTo(@through, @from, @primaryKey)[0]
-          fk2 = findBelongsTo(@through, @to, pk2)[0]
+          fk1 = findBelongsTo(@through, @from, @from.primaryKey)[0]
+          fk2 = findBelongsTo(@through, @model, pk2)[0]
 
         [ fk1, fk2 ]
 
@@ -33,7 +33,7 @@ module.exports = ->
           .then (exists) =>
             if not exists
               return Promise.reject()
-            @to.findById fkId, options
+            @model.findById fkId, options
           .asCallback cb
 
       destroy: (fkId, options = {}, cb = ->) ->
@@ -46,7 +46,7 @@ module.exports = ->
               return Promise.reject()
             @remove fkId, options
           .then ->
-            @to.deleteById fkId, options
+            @model.deleteById fkId, options
           .asCallback cb
 
       create: (data = {}, options = {}, cb = ->) ->
@@ -63,9 +63,9 @@ module.exports = ->
         object = {}
         where  = {}
 
-        pk2 = @to.primaryKey
+        pk2 = @model.primaryKey
 
-        object[fk1] = where[fk1] = @instance[@primaryKey]
+        object[fk1] = where[fk1] = @instance.getId()
         object[fk2] = where[fk2] = instance[pk2]
 
         filter = where: where
@@ -74,7 +74,7 @@ module.exports = ->
 
       parent = undefined
 
-      @to.create data, options
+      @model.create data, options
         .then (parent) =>
           keys = @throughKeys()
           if Array.isArray parent
@@ -95,13 +95,13 @@ module.exports = ->
         if typeof data is 'function'
           return @add {}, {}, data
 
-        pk2 = @to.primaryKey
+        pk2 = @model.primaryKey
 
         [ fk1, fk2 ] = @throughKeys()
 
         where = {}
-        where[fk1] = data[fk1] = @instance[@primaryKey]
-        where[fk2] = data[fk2] = if inst instanceof @to then inst[pk2] else inst
+        where[fk1] = data[fk1] = @instance.getId()
+        where[fk2] = data[fk2] = if inst instanceof @model then inst[pk2] else inst
 
         filter = where: where
 
@@ -118,13 +118,13 @@ module.exports = ->
         if typeof inst is 'function'
           return @exists {}, {}, inst
 
-        pk2 = @to.primaryKey
+        pk2 = @model.primaryKey
 
         [ fk1, fk2 ] = @throughKeys()
 
         where = {}
-        where[fk1] = @instance[@primaryKey]
-        where[fk2] = if inst instanceof @to then inst[pk2] else inst
+        where[fk1] = @instance.getId()
+        where[fk2] = if inst instanceof @model then inst[pk2] else inst
 
         filter = where: where
 
@@ -138,13 +138,13 @@ module.exports = ->
         if typeof options is 'function'
           return @remove {}, {}, inst
 
-        pk2 = @to.primaryKey
+        pk2 = @model.primaryKey
 
         [ fk1, fk2 ] = @throughKeys()
 
         where = {}
-        where[fk1] = @instance[@primaryKey]
-        where[fk2] = if inst instanceof @to then inst[pk2] else inst
+        where[fk1] = @instance.getId()
+        where[fk2] = if inst instanceof @model then inst[pk2] else inst
 
         filter = where: where
 

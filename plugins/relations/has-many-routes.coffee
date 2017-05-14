@@ -1,20 +1,22 @@
 module.exports = ->
 
   @value 'ThroughRoutes', (inflector) ->
-    ->
+    (from) ->
 
-      primaryKeyType = @to.attributes[@foreignKey]?.type or 'string'
-      foreignKeyType = @from.attributes[@primaryKey]?.type or 'string'
+      primaryKey = from.primaryKey
+      primaryKeyType = from.getIdAttr()?.type or 'string'
+
+      foreignKeyType = @model.getIdAttr()?.type or 'string'
 
       relationId = inflector.singularize(@as) + 'Id'
 
       link:
         method: 'put'
-        path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ relationId }"
+        path: "/:#{ primaryKey }/#{ @as }/rel/:#{ relationId }"
         params:
-          "#{ @primaryKey }":
+          "#{ primaryKey }":
             type: 'any'
-            description: "Primary key for #{ @from.modelName }"
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           "#{ relationId }":
@@ -23,7 +25,7 @@ module.exports = ->
             required: true
             source: 'path'
           data:
-            type: @through?.modelName or @to?.modelName
+            type: @through?.modelName or @model?.modelName
             source: 'body'
             required: false
             root: true
@@ -36,11 +38,11 @@ module.exports = ->
 
       unlink:
         method: 'delete'
-        path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ relationId }"
+        path: "/:#{ primaryKey }/#{ @as }/rel/:#{ relationId }"
         params:
-          "#{ @primaryKey }":
+          "#{ primaryKey }":
             type: 'any'
-            description: "Primary key for #{ @from.modelName }"
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           "#{ relationId }":
@@ -57,11 +59,11 @@ module.exports = ->
 
       exists:
         method: 'head'
-        path: "/:#{ @primaryKey }/#{ @as }/rel/:#{ relationId }"
+        path: "/:#{ primaryKey }/#{ @as }/rel/:#{ relationId }"
         params:
-          "#{ @primaryKey }":
+          "#{ primaryKey }":
             type: 'any'
-            description: "Primary key for #{ @from.modelName }"
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           "#{ relationId }":
@@ -77,23 +79,26 @@ module.exports = ->
         accessType: 'READ'
 
   @value 'HasManyRoutes', (inflector) ->
-    ->
-      primaryKeyType = @to.attributes[@foreignKey]?.type or 'string'
-      foreignKeyType = @from.attributes[@primaryKey]?.type or 'string'
+    (from) ->
+
+      primaryKey = from.primaryKey
+      primaryKeyType = from.getIdAttr()?.type or 'string'
+
+      foreignKeyType = @model.getIdAttr()?.type or 'string'
 
       relationId = inflector.singularize(@as) + 'Id'
 
       findById:
         method: 'get'
-        path: "/:#{ @primaryKey }/#{ @as }/:#{ relationId }"
+        path: "/:#{ primaryKey }/#{ @as }/:#{ relationId }"
         params:
-          "#{ @primaryKey }":
-            type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+          "#{ primaryKey }":
+            type: foreignKeyType
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           "#{ relationId }":
-            type: foreignKeyType
+            type: primaryKeyType
             description: "Foreign key for #{ @as }"
             required: true
             source: 'path'
@@ -106,15 +111,15 @@ module.exports = ->
 
       destroyById:
         method: 'delete'
-        path: "/:#{ @primaryKey }/#{ @as }/:#{ relationId }"
+        path: "/:#{ primaryKey }/#{ @as }/:#{ relationId }"
         params:
-          "#{ @primaryKey }":
-            type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+          "#{ primaryKey }":
+            type: foreignKeyType
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           "#{ relationId }":
-            type: foreignKeyType
+            type: primaryKeyType
             description: "Foreign key for #{ @as }"
             required: true
             source: 'path'
@@ -127,20 +132,20 @@ module.exports = ->
 
       updateById:
         method: 'put'
-        path: "/:#{ @primaryKey }/#{ @as }/:#{ relationId }"
+        path: "/:#{ primaryKey }/#{ @as }/:#{ relationId }"
         params:
-          "#{ @primaryKey }":
-            type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+          "#{ primaryKey }":
+            type: foreignKeyType
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           "#{ relationId }":
-            type: foreignKeyType
+            type: primaryKeyType
             description: "Foreign key for #{ @as }"
             required: true
             source: 'path'
           data:
-            type: @to.modelName
+            type: @model.modelName
             source: 'body'
             root: true
             required: false
@@ -153,20 +158,20 @@ module.exports = ->
 
       patchById:
         method: 'patch'
-        path: "/:#{ @primaryKey }/#{ @as }/:#{ relationId }"
+        path: "/:#{ primaryKey }/#{ @as }/:#{ relationId }"
         params:
-          "#{ @primaryKey }":
-            type: primaryKeyType
-            description: "Primary key for #{ @from.modelName }"
+          "#{ primaryKey }":
+            type: foreignKeyType
+            description: "Primary key for #{ from.modelName }"
             required: true
             source: 'path'
           "#{ relationId }":
-            type: foreignKeyType
+            type: primaryKeyType
             description: "Foreign key for #{ @as }"
             required: true
             source: 'path'
           data:
-            type: @to.modelName
+            type: @model.modelName
             source: 'body'
             root: true
             required: false

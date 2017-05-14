@@ -6,18 +6,13 @@ module.exports = ->
 
     class HasMany extends RelationArray
 
-      @initialize: (@from, @to, params) ->
-        super
-
-        @
-
       constructor: ->
         return super
 
       build: (data = {}) ->
-        data[@foreignKey] = @instance[@primaryKey]
+        data[@foreignKey] = @instance.getId()
 
-        new @to data, @buildOptions()
+        new @model data, @buildOptions()
 
       findById: (fkId, options = {}, cb = ->) ->
         if typeof options is 'function'
@@ -39,9 +34,9 @@ module.exports = ->
           options.name = @as
 
           filter = @filter()
-          filter.where[@to.primaryKey] = fkId
+          filter.where[@model.primaryKey] = fkId
 
-          @to.findOne filter, options
+          @model.findOne filter, options
             .tap (res) =>
               @push res
             .asCallback cb
@@ -63,7 +58,7 @@ module.exports = ->
           return @create {}, {}, data
 
         fkAndProps = (item) =>
-          item[@foreignKey] = @instance[@primaryKey]
+          item[@foreignKey] = @instance.getId()
 
         if Array.isArray data
           data.forEach fkAndProps
@@ -73,14 +68,14 @@ module.exports = ->
         options.instance = @instance
         options.name = @as
 
-        @to.create data, options
+        @model.create data, options
           .tap (res) =>
             @push res
           .asCallback cb
 
       filter: (filter = {}) ->
         filter.where ?= {}
-        filter.where[@foreignKey] = @instance[@primaryKey]
+        filter.where[@foreignKey] = @instance.getId()
         filter
 
       get: (filter, options = {}, cb = ->) ->
@@ -93,7 +88,7 @@ module.exports = ->
         options.instance = @instance
         options.name = @as
 
-        @to.find @filter(filter), options
+        @model.find @filter(filter), options
           .tap (res) =>
             @push res
           .asCallback cb
@@ -118,9 +113,9 @@ module.exports = ->
           return @patch fkId, {}, {}, data
 
         filter = @filter()
-        filter.where[@to.primaryKey] = fkId
+        filter.where[@model.primaryKey] = fkId
 
-        @to.update filter, data, options
+        @model.update filter, data, options
           .asCallback cb
 
       destroyById: (fkId, options = {}, cb = ->) ->

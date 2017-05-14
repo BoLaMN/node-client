@@ -31,7 +31,10 @@ module.exports = (app) ->
             model = params.model
 
           attach = (modelTo = {}) =>
-            relation = injector.get(type).define @, modelTo, params
+            delete params.model
+
+            ctor = injector.get type
+            relation = ctor.define @, modelTo, params
 
             relation.property '$args', value: args
 

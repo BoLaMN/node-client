@@ -7,7 +7,7 @@ module.exports = ->
 
     processIncludeItem = (cls, objs, ids, targets) ->
       (filter) ->
-        relations = cls.relations
+        { primaryKey, relations } = cls
 
         if isObject filter
           as = Object.keys(filter)[0]
@@ -21,20 +21,28 @@ module.exports = ->
         if not relation
           return Promise.reject new Error "Relation '#{ as }' is not defined for '#{ cls.modelName }' model"
 
-        { primaryKey, foreignKey, through, keyThrough, embedded, to, multiple, type } = relation
+        { foreignKey, through, keyThrough, embedded, model, multiple, type } = relation
+
+        setData = (obj, objfrom) ->
+          if multiple
+            if through
+              objfrom[as].push obj[keyThrough]
+            else
+              objfrom[as].push obj
+          else if through
+            objfrom[as].setAttributes obj[keyThrough]
+          else
+            objfrom[as].setAttributes obj
 
         finishIncludeItems = (included) ->
           for obj in included
-            for objfrom in targets[primaryKey][obj[foreignKey]]
-              if multiple
-                if through
-                  objfrom[as].push obj[keyThrough]
-                else
-                  objfrom[as].push obj
-              else if through
-                objfrom[as] = obj[keyThrough]
-              else
-                objfrom[as] = obj
+            if type is 'belongsTo'
+              target = targets[foreignKey][obj[primaryKey]]
+            else
+              target = targets[primaryKey][obj[foreignKey]]
+
+            for objfrom in target
+              setData obj, objfrom
 
           included
 
@@ -45,40 +53,43 @@ module.exports = ->
 
         if embedded
           Promise.map(objs, (obj) -> obj[as]).then (included) ->
-            to.include(included, sub).then finishIncludeItems
+            model.include(included, sub).then finishIncludeItems
         else
 
           if type is 'referencesMany'
             for id in ids when id[foreignKey]?
               inqs[i] = inqs[i].concat id[foreignKey]
+          else if type is 'belongsTo'
+            ds = ids[foreignKey]
           else
-            for id in ids[primaryKey] when id?
-              if inqs[i].length >= 256
-                i += 1
+            ds = ids[primaryKey]
 
-              if not inq[id]
-                inq[id] = true
+          ds.forEach (key, id) ->
+            return unless id?
 
-                inqs[i] ?= []
-                inqs[i].push id
+            if inqs[i].length >= 256
+              i += 1
+
+            if not inq[id]
+              inq[id] = true
+
+              inqs[i] ?= []
+              inqs[i].push id
 
           if not inqs[0].length
             return Promise.resolve []
 
-          if through
-            klass = through
+          if type is 'belongsTo'
+            key = primaryKey
           else
-            klass = to
+            key = foreignKey
 
           Promise.concat inqs, (inq) ->
             filter = where: where or {}
-            filter.where[foreignKey] = inq: inq
-            klass.find filter
+            filter.where[key] = inq: inq
+            (through or model).find filter
           .then (included) ->
-            if through
-              model.include(included, klass).then finishIncludeItems
-            else
-              to.include(included, sub).then finishIncludeItems
+            model.include(included, sub).then finishIncludeItems
 
     class Inclusion
 
@@ -93,10 +104,12 @@ module.exports = ->
 
           return false unless value
 
-          keys.push value.primaryKey
-
-          if value.type is  'belongsTo'
+          if value.polymorphic
+            keys.push { key: value.foreignKey, discriminator: value.discriminator, }
+          else if value.type is 'belongsTo'
             keys.push value.foreignKey
+
+          keys.push @primaryKey
 
         processIncludeJoin = (ij) ->
           if isString ij

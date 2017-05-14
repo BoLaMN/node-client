@@ -4,7 +4,7 @@ toFunction = require './ToFunction'
 
 module.exports = ->
 
-  @factory 'KeyArray', (Utils) ->
+  @factory 'KeyArray', (Utils, isPlainObject) ->
     { values } = Utils
 
     proto = Array.prototype
@@ -83,7 +83,11 @@ module.exports = ->
 
       index: (obj) ->
         for key in @keys
-          id = obj[key]
+          if isPlainObject key
+            { key, descrimimator } = key
+            id = obj[descrimimator]
+          else
+            id = obj[key]
 
           return unless id
 

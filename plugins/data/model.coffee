@@ -81,6 +81,9 @@ module.exports = ->
         definition: (v) =>
           properties: @attributes
 
+      @getIdAttr: (cb) ->
+        @attributes.get @primaryKey, cb
+
       @parse: (data = {}) ->
         new @ data
 
@@ -149,12 +152,16 @@ module.exports = ->
         @constructor.checkAccess @getId(), method, @$options
 
       getId: ->
-        @[@constructor.primaryKey]
+        model = Models.get @constructor.modelName
+
+        @[model.primaryKey]
 
       setId: (id) ->
+        model = Models.get @constructor.modelName
+
         if not id
-          delete @[@constructor.primaryKey]
+          delete @[model.primaryKey]
         else
-          @[@constructor.primaryKey] = id
+          @[model.primaryKey] = id
 
         @
