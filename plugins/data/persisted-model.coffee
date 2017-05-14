@@ -164,7 +164,7 @@ module.exports = ->
           @setId data._id
           delete data._id
 
-        for key, value of data
+        for own key, value of data
           if typeof proxy[key] is 'function'
             continue if typeof value is 'function'
             proxy[key](value)

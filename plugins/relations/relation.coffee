@@ -94,13 +94,16 @@ module.exports = ->
         if not @multiple
 
           if @type is 'belongsTo'
-            model = @from
+            @$property 'ctor', { value: @from }, true
             @[@primaryKey] = @instance[@foreignKey]
           else
-            model = @to
+            @$property 'ctor', { value: @to }, true
             @[@foreignKey] = @instance[@primaryKey]
 
-          return new ObjectProxy @, model, @as, @instance
+          return new ObjectProxy @, @ctor, @as, @instance
+
+      setAttributes: (data = {}) ->
+        @ctor::setAttributes.apply @, [ data ]
 
       buildOptions: ->
         buildOptions @instance, @as, @length + 1

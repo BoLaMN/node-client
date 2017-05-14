@@ -57,8 +57,7 @@ module.exports = ->
 
         from.findById(id, options)
           .then (data) =>
-            for own key, value of data
-              @[key] = value
+            @setAttributes data
           .asCallback cb
 
       update: (data = {}, options = {}, cb = ->) ->
