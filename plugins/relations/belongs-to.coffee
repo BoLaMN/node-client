@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'BelongsTo', (Relation, Models) ->
+  @relation 'BelongsTo', (Relation, Models) ->
 
     class BelongsTo extends Relation
       @belongs: true

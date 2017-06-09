@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'EmbedOne', (Relation) ->
+  @relation 'EmbedOne', (Relation) ->
 
     class EmbedOne extends Relation
       @embedded: true

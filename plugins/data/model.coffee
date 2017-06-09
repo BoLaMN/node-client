@@ -163,3 +163,5 @@ module.exports = ->
           @[model.primaryKey] = id
 
         @
+
+  , 'model'

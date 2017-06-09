@@ -2,7 +2,7 @@ module.exports = ->
 
   @include './has-one-routes'
 
-  @factory 'HasOne', (Relation) ->
+  @relation 'HasOne', (Relation) ->
 
     class HasOne extends Relation
 

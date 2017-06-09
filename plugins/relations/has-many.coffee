@@ -2,7 +2,7 @@ module.exports = ->
 
   @include './has-many-routes'
 
-  @factory 'HasMany', (RelationArray) ->
+  @relation 'HasMany', (RelationArray) ->
 
     class HasMany extends RelationArray
 

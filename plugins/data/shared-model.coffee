@@ -80,3 +80,5 @@ module.exports = ->
         config.modelName = @name
 
         route[config.method] name, config, fn.bind @
+
+  , 'model'

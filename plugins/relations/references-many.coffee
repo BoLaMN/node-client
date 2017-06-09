@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'ReferencesMany', (RelationArray) ->
+  @relation 'ReferencesMany', (RelationArray) ->
 
     class ReferencesMany extends RelationArray
       @embedded: true

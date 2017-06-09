@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'HasAndBelongsToMany', (HasMany, Models, Model) ->
+  @relation 'HasAndBelongsToMany', (HasMany, Models, Model) ->
 
     class HasAndBelongsToMany extends HasMany
 

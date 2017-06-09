@@ -19,46 +19,50 @@ module.exports = ->
 
       index
 
-  @factory 'isArguments', (baseGetTag)->
+  @assembler 'is', ->
+    (name, factory) ->
+      @factory 'is' + name, factory, 'helper'
+
+  @is 'Arguments', (baseGetTag)->
     (value) -> typeof value is 'object' and
                value isnt null and
                baseGetTag(value) is '[object Arguments]'
 
-  @factory 'isNull', ->
+  @is 'Null', ->
     (value) -> value is null
 
-  @factory 'isNumber', (baseGetTag, isObjectLike) ->
+  @is 'Number', (baseGetTag, isObjectLike) ->
     (value) -> typeof value is 'number' or
                isObjectLike(value) and baseGetTag(value) is '[object Number]'
 
-  @factory 'isBoolean', (baseGetTag, isObjectLike) ->
+  @is 'Boolean', (baseGetTag, isObjectLike) ->
     (value) -> value is true or
                value is false or
                isObjectLike(value) and baseGetTag(value) is '[object Boolean]'
 
-  @factory 'isPrototype', ->
+  @is 'Prototype', ->
     (value) ->
       Ctor = value?.constructor
       value is typeof Ctor is 'function' and Ctor.prototype or Object.prototype
 
-  @factory 'isArrayLike', (isLength) ->
+  @is 'ArrayLike', (isLength) ->
     (value) ->
       value isnt null and
       typeof value isnt 'function' and
       isLength value.length
 
-  @factory 'isArrayLikeObject', (isObjectLike, isArrayLike) ->
+  @is 'ArrayLikeObject', (isObjectLike, isArrayLike) ->
     (value) ->
       isObjectLike(value) and isArrayLike(value)
 
-  @factory 'isLength', ->
+  @is 'Length', ->
     (value) ->
       typeof value is 'number' and
       value > -1 and
       value % 1 is 0 and
       value <= 9007199254740991
 
-  @factory 'isEmpty', (isArrayLike, isArguments, isPrototype) ->
+  @is 'Empty', (isArrayLike, isArguments, isPrototype) ->
     (value) ->
       if not value?
         return true
@@ -81,22 +85,22 @@ module.exports = ->
 
       true
 
-  @factory 'isUndefined', ->
+  @is 'Undefined', ->
     (value) -> value is undefined
 
-  @factory 'isDefined', ->
+  @is 'Defined', ->
     (value) -> value isnt undefined
 
-  @factory 'isObjectLike', ->
+  @is 'ObjectLike', ->
     (value) -> typeof value is 'object' and value isnt null
 
-  @factory 'isObject', ->
+  @is 'Object', ->
     (value) ->
       type = typeof value
 
       value isnt null and (type is 'object' or type is 'function')
 
-  @factory 'isObjectLike', ->
+  @is 'ObjectLike', ->
     (value) -> typeof value is 'object' and value isnt null
 
   @factory 'hasOwnProp', ->
@@ -135,13 +139,13 @@ module.exports = ->
 
       result
 
-  @factory 'isDate', (isObjectLike, baseGetTag) ->
+  @is 'Date', (isObjectLike, baseGetTag) ->
     (value) -> isObjectLike(value) and baseGetTag(value) is '[object Date]'
 
-  @factory 'isRegExp', (isObjectLike, baseGetTag) ->
+  @is 'RegExp', (isObjectLike, baseGetTag) ->
     (value) -> isObjectLike(value) and baseGetTag(value) is '[object RegExp]'
 
-  @factory 'isString', (baseGetTag) ->
+  @is 'String', (baseGetTag) ->
     (value) ->
       type = typeof value
 
@@ -151,7 +155,7 @@ module.exports = ->
       not Array.isArray(value) and
       baseGetTag(value) is '[object String]'
 
-  @factory 'isFunction', (isObject, baseGetTag) ->
+  @is 'Function', (isObject, baseGetTag) ->
     (value) ->
       if not isObject value
         return false
@@ -163,7 +167,7 @@ module.exports = ->
       tag is '[object GeneratorFunction]' or
       tag is '[object Proxy]'
 
-  @factory 'isPlainObject', (isObjectLike, baseGetTag, objToString, hasOwnProp) ->
+  @is 'PlainObject', (isObjectLike, baseGetTag, objToString, hasOwnProp) ->
     (value) ->
       if not isObjectLike(value) or baseGetTag(value) isnt '[object Object]'
         return false

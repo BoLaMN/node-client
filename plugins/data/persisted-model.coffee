@@ -238,3 +238,5 @@ module.exports = ->
 
         @save options
           .asCallback cb
+
+  , 'model'

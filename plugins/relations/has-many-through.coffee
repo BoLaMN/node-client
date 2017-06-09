@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'HasManyThrough', (HasMany) ->
+  @relation 'HasManyThrough', (HasMany) ->
 
     class HasManyThrough extends HasMany
       constructor: ->

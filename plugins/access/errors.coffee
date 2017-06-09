@@ -3,7 +3,11 @@ module.exports = ->
   @require
     StandardHttpError: 'standard-http-error'
 
-  @factory 'OAuthError', (StandardHttpError) ->
+  @assembler 'error', ->
+    (name, factory) ->
+      @factory name, factory, 'error'
+
+  @error 'OAuthError', (StandardHttpError) ->
     class OAuthError extends StandardHttpError
       constructor: (messageOrError, properties = {}) ->
         message = if messageOrError instanceof Error then messageOrError.message else messageOrError
@@ -14,7 +18,7 @@ module.exports = ->
 
         super properties.code, message, properties
 
-  @factory 'InvalidArgumentError', (StandardHttpError) ->
+  @error 'InvalidArgumentError', (StandardHttpError) ->
     class InvalidArgumentError extends StandardHttpError
       constructor: (message, properties = {}) ->
         messages =
@@ -56,7 +60,7 @@ module.exports = ->
   # @see https://tools.ietf.org/html/rfc6749#section-4.1.2.1
   ###
 
-  @factory 'ServerError', (OAuthError) ->
+  @error 'ServerError', (OAuthError) ->
     class ServerError extends OAuthError
       constructor: (message, properties = {}) ->
 
@@ -83,7 +87,7 @@ module.exports = ->
   # @see https://tools.ietf.org/html/rfc6750#section-3.1
   ###
 
-  @factory 'UnauthorizedRequestError', (OAuthError) ->
+  @error 'UnauthorizedRequestError', (OAuthError) ->
     class UnauthorizedRequestError extends OAuthError
       constructor: (message, properties = {}) ->
         messages =
@@ -102,7 +106,7 @@ module.exports = ->
   # @see https://tools.ietf.org/html/rfc6749#section-4.1.2.1
   ###
 
-  @factory 'AccessDeniedError', (OAuthError) ->
+  @error 'AccessDeniedError', (OAuthError) ->
     class AccessDeniedError extends OAuthError
       constructor: (message, properties = {}) ->
         messages =

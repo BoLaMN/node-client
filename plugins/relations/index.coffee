@@ -11,6 +11,10 @@ module.exports = (app) ->
     @include './relation'
     @include './relation-array'
 
+    @assembler 'relation', ->
+      (name, factory) ->
+        @factory name, factory, 'relation'
+
     @include './belongs-to'
     @include './has-many'
     @include './has-one'
