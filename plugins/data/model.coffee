@@ -82,8 +82,8 @@ module.exports = ->
       @getIdAttr: (cb) ->
         @attributes.get @primaryKey, cb
 
-      @parse: (data = {}) ->
-        new @ data
+      @parse: (data = {}, options) ->
+        new @ data, options
 
       fire: (event, options, fn = ->) ->
         options.instance = @
