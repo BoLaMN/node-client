@@ -1,30 +1,29 @@
-name: "ACL"
+name: "ProtocolProperty"
 
-base: "SharedModel"
+base: "TransientModel"
 
 properties:
-
-  id:
-    type: 'objectid'
-    id: true
-
-  modelName:
+  
+  name:
     type: "string"
+    require: true
 
-  methodName:
+  type:
     type: "string"
+    require: true
 
-  accessType:
-    type: "string"
+  required:
+    type: "boolean"
+    default: false
 
-  permission:
-    type: "string"
+  enum:
+    type: [ "string" ]
 
-  principalType:
-    type: "string"
+  visible:
+    type: "boolean"
+    default: false
 
-  principalId:
-    type: "string"
+relations: {}
 
 acls: [
   {
@@ -34,20 +33,23 @@ acls: [
   }
   {
     principalType: "Role"
-    principalId: "workflow:read"
+    principalId: "auth:read"
     permission: "ALLOW"
     accessType: "READ"
   }
   {
     principalType: "Role"
-    principalId: "workflow:write"
+    principalId: "auth:write"
     permission: "ALLOW"
     accessType: "WRITE"
   }
   {
     principalType: "Role"
-    principalId: "workflow:delete"
+    principalId: "auth:delete"
     permission: "ALLOW"
     accessType: "DELETE"
   }
 ]
+
+methods: []
+validations: []

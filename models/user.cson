@@ -1,0 +1,239 @@
+name: "User"
+
+base: "SharedModel"
+
+properties:
+
+  name:
+    type: 'string'
+
+  givenName:
+    type: 'string'
+    default: ''
+
+  familyName:
+    type: 'string'
+    default: ''
+
+  middleName:
+    type: 'string'
+
+  nickname:
+    type: 'string'
+
+  preferredUsername:
+    type: 'string'
+
+  profile:
+    type: 'string'
+
+  picture:
+    type: 'string'
+
+  website:
+    type: 'string'
+
+  gender:
+    type: 'string'
+
+  birthdate:
+    type: 'date'
+    required: false
+
+  zoneinfo:
+    type: 'string'
+
+  locale:
+    type: 'string'
+
+  faxNumber:
+    type: 'string'
+
+  phoneNumber:
+    type: 'string'
+
+  phoneNumberVerified:
+    type: 'boolean'
+    default: false
+
+  address:
+    type: 'object'
+
+  password:
+    type: 'string'
+    required: true
+
+  lastProvider:
+    type: 'string'
+
+mixins:
+  TimeStamp: true
+  Validate: true
+  Count:
+    methods: [ 'find' ]
+  Computed:
+    properties:
+      name: 'computedName'
+
+options:
+  caseSensitiveEmail: true
+
+hidden: [
+  "password"
+  "emailVerifyToken"
+]
+
+relations:
+
+  subscriptions:
+    type: 'embedMany'
+    model: "UserSubscription"
+
+  applications:
+    type: 'hasMany'
+    model: 'Application'
+    through: 'UserApplication'
+    foreignKey: 'userId'
+
+  identities:
+    model: 'UserIdentity'
+    type: 'hasMany'
+    foreignKey: "userId"
+
+  tokens:
+    type: "hasMany"
+    model: "AccessToken"
+    foreignKey: "userId"
+
+    options:
+      disableInclude: true
+
+  roles:
+    type: 'hasMany'
+    model: 'Role'
+    through: 'RoleMapping'
+    polymorphic: "principal"
+
+acls: [
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "DENY"
+  }
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "ALLOW"
+    property: "create"
+  }
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "ALLOW"
+    property: "callback"
+  }
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "ALLOW"
+    property: "login"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:info"
+    permission: "ALLOW"
+    accessType: "READ"
+    property: "info"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:read"
+    permission: "ALLOW"
+    accessType: "READ"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:write"
+    permission: "ALLOW"
+    accessType: "WRITE"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:delete"
+    permission: "ALLOW"
+    accessType: "DELETE"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:lookup"
+    permission: "ALLOW"
+    accessType: "READ"
+    property: "find"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:lookup"
+    permission: "ALLOW"
+    accessType: "READ"
+    property: "exists"
+  }
+  {
+    principalType: "Role"
+    principalId: "$authenticated"
+    permission: "ALLOW"
+    accessType: "WRITE"
+    property: "updateById"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:lookup"
+    permission: "ALLOW"
+    accessType: "READ"
+    property: "findById"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:lookup"
+    permission: "ALLOW"
+    accessType: "READ"
+    property: "findOne"
+  }
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "ALLOW"
+    property: "logout"
+  }
+  {
+    principalType: "Role"
+    principalId: "$owner"
+    permission: "ALLOW"
+    property: "findById"
+  }
+  {
+    principalType: "Role"
+    principalId: "$owner"
+    permission: "ALLOW"
+    property: "updateAttributes"
+  }
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "ALLOW"
+    property: "confirm"
+  }
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "ALLOW"
+    property: "resetPassword"
+    accessType: "EXECUTE"
+  }
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "ALLOW"
+    property: "completePasswordReset"
+    accessType: "EXECUTE"
+  }
+]

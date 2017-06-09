@@ -1,0 +1,66 @@
+name: "UserIdentity"
+
+base: "SharedModel"
+
+properties:
+  
+  provider:
+    type: "String"
+    comments: "facebook, google, twitter, linkedin"
+
+  protocol:
+    type: "String"
+    comments: "oAuth, oAuth 2.0, OpenID, OpenID Connect"
+
+  externalId:
+    type: "String"
+    comments: "The provider specific id"
+
+  profile:
+    type: "Object"
+
+  credentials:
+    type: "Object"
+
+mixins:
+  TimeStamp: true
+
+hidden: [ 'credentials' ]
+
+acls: [
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "DENY"
+  }
+  {
+    principalType: "Role"
+    principalId: "$owner"
+    permission: "ALLOW"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:read"
+    permission: "ALLOW"
+    accessType: "READ"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:write"
+    permission: "ALLOW"
+    accessType: "WRITE"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:delete"
+    permission: "ALLOW"
+    accessType: "DELETE"
+  }
+]
+
+relations:
+
+  user:
+    type: "belongsTo"
+    model: "User"
+    foreignKey: "userId"

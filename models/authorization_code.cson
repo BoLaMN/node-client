@@ -1,56 +1,50 @@
-name: "AccessToken"
+name: "AuthorizationCode"
 
 base: "SharedModel"
 
 properties:
 
-  accessToken:
+  id:
     type: "string"
-    required: true
     id: true
+    length: 300
+    generated: false
 
-  tokenType:
-    type: "string"
-    enum: ['Bearer', 'mac']
-    default: 'Bearer'
-
-  accessTokenExpiresAt:
+  issuedAt:
     type: "date"
+    index: true
+    defaultFn: 'now'
 
-  issuer:
-    type: "string"
+  expiresAt:
+    type: "date"
+    index: true
 
-  roles:
-    type: [ 'string' ]
+  scopes: [
+    "string"
+  ]
 
-  scope:
-    type: [ 'string' ]
+  parameters: [
+    {
+      name: "string"
+      value: "string"
+    }
+  ]
 
-  jwt:
-    type: "string"
-
-  refreshToken:
-    type: 'string'
-
-  refreshTokenExpiresAt:
-    type: 'date'
+  used: "boolean"
+  redirectURI: "string"
+  hash: "string"
 
 relations:
-
-  user:
-    type: "hasOne"
-    model: "User"
-    foreignKey: "userId"
-
+  
   client:
     type: "belongsTo"
-    model: "Application"
+    model: "Client"
     foreignKey: "clientId"
 
-  application:
+  user:
     type: "belongsTo"
-    model: "Application"
-    foreignKey: "appId"
+    model: "User"
+    foreignKey: "userId"
 
 acls: [
   {

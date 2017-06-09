@@ -1,56 +1,42 @@
-name: "AccessToken"
+name: "Provider"
 
 base: "SharedModel"
 
 properties:
 
-  accessToken:
+  id:
     type: "string"
-    required: true
     id: true
 
-  tokenType:
-    type: "string"
-    enum: ['Bearer', 'mac']
-    default: 'Bearer'
-
-  accessTokenExpiresAt:
-    type: "date"
-
-  issuer:
+  name:
     type: "string"
 
-  roles:
-    type: [ 'string' ]
-
-  scope:
-    type: [ 'string' ]
-
-  jwt:
+  url:
     type: "string"
 
-  refreshToken:
-    type: 'string'
+  redirect_uri:
+    type: "string"
 
-  refreshTokenExpiresAt:
-    type: 'date'
+  endpoints:
+    type: "object"
+
+  separator:
+    type: "string"
+
+  mapping:
+    type: "object"
 
 relations:
+  
+  protocol:
+    type: 'belongsTo'
+    model: 'Protocol'
+    foreignKey: 'protocolId'
 
-  user:
-    type: "hasOne"
-    model: "User"
-    foreignKey: "userId"
-
-  client:
-    type: "belongsTo"
-    model: "Application"
-    foreignKey: "clientId"
-
-  application:
-    type: "belongsTo"
-    model: "Application"
-    foreignKey: "appId"
+  applications:
+    type: "hasMany"
+    model: "ApplicationProvider"
+    foreignKey: "providerId"
 
 acls: [
   {
@@ -77,3 +63,6 @@ acls: [
     accessType: "DELETE"
   }
 ]
+
+validations: []
+methods: {}

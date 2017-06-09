@@ -1,0 +1,17 @@
+name: "RefreshToken"
+
+base: "AccessToken"
+
+properties: {}
+relations: {}
+
+acls: [
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "DENY"
+  }
+]
+
+methods: {}
+validations: []

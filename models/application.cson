@@ -1,0 +1,157 @@
+name: "Application"
+
+base: "SharedModel"
+
+properties:
+
+  applicationType:
+    default: 'web'
+    enum: [
+      'web'
+      'native'
+      'service'
+    ]
+    type: 'string'
+
+  name:
+    type: "string"
+
+  secret:
+    type: "string"
+
+  key:
+    type: "string"
+
+  uri:
+    type: "string"
+
+  contacts:
+    type: ["string" ]
+
+  grantTypes:
+    type: [ "string" ]
+    enum: [
+      "authorization_code"
+      "implicit"
+      "client_credentials"
+      "password"
+      "refresh_token"
+      "urn:ietf:params:oauth:grant-type:jwt-bearer"
+      "urn:ietf:params:oauth:grant-type:saml2-bearer"
+    ]
+
+  jwks:
+    type: "string"
+
+  jwksUri:
+    type: "string"
+
+  logoUri:
+    type: "string"
+
+  policyUri:
+    type: "string"
+
+  redirectUris:
+    type: [ "string" ]
+
+  responseTypes:
+    type: [ "string" ]
+    enum: [
+      "code"
+      "token"
+      "none"
+      "id_token"
+    ]
+
+  tokenType:
+    type: "string"
+    enum: [
+      "bearer"
+      "jwt"
+      "mac"
+    ]
+
+  tosURI:
+    type: "string"
+
+  trusted:
+    default: false
+    type: "boolean"
+
+mixins:
+  TimeStamp: true
+  Count:
+    methods: [ 'find' ]
+
+hidden: [ 'secret' ]
+
+relations:
+  
+  roles:
+    type: 'hasMany'
+    model: 'Role'
+    through: 'RoleMapping'
+    polymorphic: 'principal'
+
+  users:
+    type: 'hasMany'
+    model: 'User'
+    through: 'UserApplication'
+    foreignKey: 'applicationId'
+
+  providers:
+    type: 'hasMany'
+    model: 'ApplicationProvider'
+    foreignKey: "clientId"
+    scope:
+      include:
+        relation: 'provider'
+
+  owner:
+    type: 'hasOne'
+    model: 'User'
+    foreignKey: 'userId'
+
+  tokens:
+    model: 'AccessToken'
+    type: 'hasMany'
+    foreignKey: "clientId"
+
+  scopes:
+    type: 'hasMany'
+    model: 'Scope'
+    through: 'RoleMapping'
+    polymorphic: 'principal'
+
+acls: [
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "DENY"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:read"
+    permission: "ALLOW"
+    accessType: "READ"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:write"
+    permission: "ALLOW"
+    accessType: "WRITE"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:delete"
+    permission: "ALLOW"
+    accessType: "DELETE"
+  }
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "ALLOW"
+    property: "findById"
+  }
+]

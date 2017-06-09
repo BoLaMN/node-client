@@ -1,0 +1,81 @@
+name: "Invite"
+
+base: "SharedModel"
+
+properties:
+  
+  email:
+    type: "string"
+    required: true
+
+  role:
+    type: "string"
+    enum: [
+      "admin"
+      "operator"
+    ]
+    required: true
+    default: "author"
+
+  status:
+    type: "string"
+    required: true
+    enum: [
+      "pending"
+      "accepted"
+      "revoked"
+    ]
+    default: "pending"
+
+  expiresIn:
+    type: "number"
+    required: true
+    default: 7
+
+  token:
+    type: "string"
+    required: false
+
+  url:
+    type: "string"
+    required: false
+
+  expiresAt:
+    type: "date"
+    required: false
+
+  acceptedAt:
+    type: "date"
+    required: false
+
+mixins:
+  TimeStamp: true
+
+acls: [
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "DENY"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:read"
+    permission: "ALLOW"
+    accessType: "READ"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:write"
+    permission: "ALLOW"
+    accessType: "WRITE"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:delete"
+    permission: "ALLOW"
+    accessType: "DELETE"
+  }
+]
+
+methods: {}
+validations: []

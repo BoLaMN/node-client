@@ -1,0 +1,58 @@
+name: "Scope"
+ 
+base: "SharedModel"
+
+properties:
+
+  name:
+    type: "string"
+    required: true
+
+  description:
+    type: "string"
+
+  restricted:
+    type: "boolean"
+    default: true
+
+  attributes:
+    type: "object"
+
+relations:
+  
+  roles:
+    type: 'hasMany'
+    model: 'Role'
+    through: 'RoleMapping'
+    polymorphic: 'principal'
+
+  principals:
+    type: "hasMany"
+    model: "RoleMapping"
+    foreignKey: "linkId"
+
+acls: [
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "DENY"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:read"
+    permission: "ALLOW"
+    accessType: "READ"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:write"
+    permission: "ALLOW"
+    accessType: "WRITE"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:delete"
+    permission: "ALLOW"
+    accessType: "DELETE"
+  }
+]

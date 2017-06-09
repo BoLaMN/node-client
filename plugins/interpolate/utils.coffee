@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'InterpolateUtils', ($injector) ->
+  @factory 'InterpolateUtils', (injector) ->
 
     globals = /\b(this|Array|Date|Object|Math|JSON)\b/g
 
@@ -192,7 +192,7 @@ module.exports = ->
       regex = RegExp ' *\\| *'
       re = RegExp """{([^"|]*)}|"([^"|:]*)"|'([^'|]*)'|([^ \t(,|:)]+)""", 'g'
 
-      expression = $injector.get 'InterpolateExpression'
+      expression = injector.get 'InterpolateExpression'
 
       str.split(regex).map (call) ->
         parts = call.match re

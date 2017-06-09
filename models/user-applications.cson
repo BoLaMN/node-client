@@ -1,56 +1,20 @@
-name: "AccessToken"
+name: "UserApplication"
 
 base: "SharedModel"
 
-properties:
-
-  accessToken:
-    type: "string"
-    required: true
-    id: true
-
-  tokenType:
-    type: "string"
-    enum: ['Bearer', 'mac']
-    default: 'Bearer'
-
-  accessTokenExpiresAt:
-    type: "date"
-
-  issuer:
-    type: "string"
-
-  roles:
-    type: [ 'string' ]
-
-  scope:
-    type: [ 'string' ]
-
-  jwt:
-    type: "string"
-
-  refreshToken:
-    type: 'string'
-
-  refreshTokenExpiresAt:
-    type: 'date'
+properties: {}
 
 relations:
 
   user:
-    type: "hasOne"
+    type: "belongsTo"
     model: "User"
     foreignKey: "userId"
-
-  client:
-    type: "belongsTo"
-    model: "Application"
-    foreignKey: "clientId"
 
   application:
     type: "belongsTo"
     model: "Application"
-    foreignKey: "appId"
+    foreignKey: "applicationId"
 
 acls: [
   {

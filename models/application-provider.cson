@@ -1,0 +1,58 @@
+name: "ApplicationProvider"
+
+base: "SharedModel"
+
+properties:
+
+  enabled:
+    type: 'boolean'
+    default: true
+
+  properties:
+    type: "object"
+
+relations:
+  
+  application:
+    type: 'belongsTo'
+    model: 'Application'
+    foreignKey: 'clientId'
+
+  provider:
+    type: 'belongsTo'
+    model: 'Provider'
+    foreignKey: 'providerId'
+    scope:
+      include:
+        relation: 'protocol'
+
+hidden: [ 'properties' ]
+validations: []
+
+acls: [
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "DENY"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:read"
+    permission: "ALLOW"
+    accessType: "READ"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:write"
+    permission: "ALLOW"
+    accessType: "WRITE"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:delete"
+    permission: "ALLOW"
+    accessType: "DELETE"
+  }
+]
+
+methods: {}
