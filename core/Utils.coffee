@@ -100,39 +100,20 @@ class Utils
 
     fns.forEach run
 
-  @get: (obj, path) ->
-    if !obj or !path
-      return obj
+  @get: (obj, path = '') ->
+    attrs = path.split '.'
+    attrs.reduce((acc, attr) ->
+      acc[attr] if acc[attr]?
+    , obj) or undefined
 
-    current = obj
-    split = path.split '.'
-
-    if not split.length
-      return current
-
-    i = 0
-
-    while i < split.length
-      if current[split[i]] is undefined
-        current = ''
-        break
-      current = current[split[i]]
-      i++
-
-    current
-
-  @set: (target, chain, value) ->
+  @set: (obj, path = '', value) ->
+    attrs = path.split '.'
     key = chain.shift()
 
-    if chain.length is 0 and value isnt undefined
-      target[key] = value
-    else if chain.length != 0
-      if !target[key]
-        target[key] = {}
-
-      Utils.set target[key], chain, value
-
-    return
+    attrs.reduce((acc, attr) ->
+      acc[attr] ?= {}
+      acc[attr] 
+    , obj)[key] = value
 
   @flatten: (arr, ret) ->
     if !Array.isArray(arr)
