@@ -7,8 +7,6 @@ module.exports = (app) ->
     @include './errors'
     @include './access-context'
     @include './principal'
-    @include './utils/request'
-    @include './utils/response'
 
     @decorator 'ACL', (ACL, debug) ->
       ACL.resolvers = {}
@@ -51,20 +49,11 @@ module.exports = (app) ->
 
       ACL
 
-    @factory 'AccessHandler', (OAuthError, ServerError, AccessDeniedError, InvalidArgumentError, AccessContext, AccessReq, AccessRes) ->
+    @factory 'AccessHandler', (OAuthError, ServerError, AccessDeniedError, InvalidArgumentError, AccessContext) ->
 
       class AccessHandler
-        constructor: (req, res) ->
-          @request = new AccessReq req
-          @response = new AccessRes res
-
-          if not @request instanceof AccessReq
-            return Promise.reject new InvalidArgumentError 'REQUEST'
-
-          if not @response instanceof AccessRes
-            return Promise.reject new InvalidArgumentError 'RESPONSE'
-
-          { params, query, body, route } = req
+        constructor: (@request, @response) ->
+          { params, query, body, route } = @request
           { method, name, modelName } = route
 
           modelId = params.id or body.id or query.id

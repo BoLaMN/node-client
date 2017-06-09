@@ -7,6 +7,19 @@ module.exports = ->
     (name, factory) ->
       @factory name, factory, 'error'
 
+  @error 'ValidationError', (StandardHttpError) ->
+    class ValidationError extends Error
+      constructor: (obj) ->
+        @name = 'ValidationError'
+        @message = 'Validation error'
+        
+        @statusCode = 400
+
+        @codes = obj.errors?.__codes
+        @context = obj?.constructor?.name
+
+        @captureStackTrace @
+
   @error 'OAuthError', (StandardHttpError) ->
     class OAuthError extends StandardHttpError
       constructor: (messageOrError, properties = {}) ->

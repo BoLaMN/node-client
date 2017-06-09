@@ -45,6 +45,7 @@ module.exports = (app) ->
     @include './model'
     @include './acls'
     @include './cast'
+    @include './context'
     @include './include'
     @include './mixins'
     @include './object-proxy'

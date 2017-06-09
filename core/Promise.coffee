@@ -90,7 +90,7 @@ tap = (handler) ->
 Promise::asCallback ?= asCallback
 Promise::tap ?= tap
 
-Promise.each = (vals, iterator, { concurrency, handle, stopEarly, finish } = {}) ->
+Promise.each = (vals, iterator, { concurrency, handle, fail, stopEarly, finish } = {}) ->
   new Promise (resolve, reject) ->
     return resolve finish?() unless vals.length
 
@@ -105,14 +105,21 @@ Promise.each = (vals, iterator, { concurrency, handle, stopEarly, finish } = {})
     stopped = false
     remaining = promises.length
 
+    rejector = (index) ->
+      (err) ->
+        if not fail 
+          stopped = true
+          reject err 
+        else
+          fail? err, index 
+
     resolver = (index) ->
       return (val) ->
         return if stopped
 
         try handle? val, index
         catch error
-          stopped = true
-          return reject error
+          return rejector(index)(error)
 
         remaining--
 
@@ -121,10 +128,9 @@ Promise.each = (vals, iterator, { concurrency, handle, stopEarly, finish } = {})
           resolve finish?()
 
     for promise, i in promises
-      try promise.then resolver(i), reject
-      catch error # there is no then method
-        reject error
-        stopped = true
+      try promise.then resolver(i), rejector(i)
+      catch error
+        rejector(i)(error)
 
     return
 
@@ -196,6 +202,15 @@ Promise.map = (vals, iterator) ->
   Promise.each vals, iterator,
     handle: (val, i) -> res[i] = val
     finish: -> res
+
+Promise.settle = (vals, iterator) ->
+  res = []
+  err = [] 
+
+  Promise.each vals, iterator,
+    handle: (result) -> res.push result
+    fail: (error) -> err.push error
+    finish: -> [ err, res ]
 
 Promise.mapSeries = (inputs, iterator) ->
   res = []

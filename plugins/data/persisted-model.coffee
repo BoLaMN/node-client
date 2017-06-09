@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'PersistedModel', (Model, ObjectProxy, Utils, assert, Models) ->
+  @factory 'PersistedModel', (Model, Context, ObjectProxy, Utils, assert, Models) ->
     { getArgs } = Utils
 
     class PersistedModel extends Model
@@ -55,33 +55,7 @@ module.exports = ->
           .asCallback cb
 
       @execute: (command, args...) ->
-        argNames = getArgs @dao[command]
-
-        ctx = {}
-
-        for arg, idx in argNames
-          ctx[arg] = args[idx]
-
-        fns = [
-          => @fire 'before ' + command, ctx
-          => @dao[command].apply @dao, args
-          (res) =>
-            ctx.result = res
-            @fire 'after ' + command, ctx
-        ]
-
-        current = Promise.resolve()
-
-        promises = fns.map (fn, i) ->
-          current = current.then (res) ->
-            fn res
-          current
-
-        cb = ctx.cb or ->
-
-        Promise.all promises
-          .then -> ctx.result
-          .asCallback cb
+        new Context @, command, args
 
       @find: (filter = {}, options = {}, cb = ->) ->
         if typeof options is 'function'
