@@ -43,4 +43,4 @@ module.exports = (app) ->
           super
 
           @model = model
-          @constructor.models.define @model.modelName, @model
+          @constructor.models.define @model.name, @model

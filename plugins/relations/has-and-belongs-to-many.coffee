@@ -14,8 +14,8 @@ module.exports = ->
           if @throughModel
             @through = @throughModel
           else
-            name1 = from.modelName + @model.modelName
-            name2 = @model.modelName + from.modelName
+            name1 = from.name + @model.name
+            name2 = @model.name + from.name
 
             @through = Models.get(name1) or Models.get(name2)
 
@@ -23,7 +23,7 @@ module.exports = ->
               @through = Model.define name1
 
         if @through
-          @through.belongsTo @model.modelName
+          @through.belongsTo @model.name
 
         @
 

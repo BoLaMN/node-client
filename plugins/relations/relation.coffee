@@ -8,10 +8,12 @@ module.exports = ->
 
     class Relation extends Module
 
-      @define: (args...) ->
-        ctor = @extends @name, @
+      @define: (from, model) ->
+        name = if @belongs then model.name else from.name 
+             
+        ctor = @extends name, @
         ctor.property '$type', value: @name
-        ctor.initialize args...
+        ctor.initialize arguments...
         ctor
 
       @initialize: (from, model, params = {}) ->
@@ -20,15 +22,14 @@ module.exports = ->
         @model = model
 
         if @invert
-          @foreignKey = camelize @model.modelName + '_id', true
+          @foreignKey = camelize @model.name + '_id', true
         else
-          @foreignKey = camelize from.modelName + '_id', true
+          @foreignKey = camelize from.name + '_id', true
 
-        @modelName = @model.modelName
-        @as = camelize @model.modelName, true
+        @as = camelize @model.name, true
 
         if through and not polymorphic
-          @keyThrough = camelize @model.modelName + '_id', true
+          @keyThrough = camelize @model.name + '_id', true
 
         if polymorphic?
           @polymorphic = true
@@ -111,9 +112,9 @@ module.exports = ->
           discriminator = @polymorphic.discriminator
 
           if @polymorphic.invert
-            filter.where[discriminator] = @model.modelName
+            filter.where[discriminator] = @model.name
           else
-            filter.where[discriminator] = from.modelName
+            filter.where[discriminator] = from.name
 
         if typeof @scope is 'function'
           scope = @scope.call @, instance, filter

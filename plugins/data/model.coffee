@@ -19,7 +19,7 @@ module.exports = ->
           value: new adapter @
         @
 
-      @configure: (@modelName, attributes, acls) ->
+      @configure: (attributes, acls) ->
         @primaryKey = 'id'
 
         @property 'acls',
@@ -37,15 +37,13 @@ module.exports = ->
         acls.forEach (acl) =>
           @acl acl
 
-        Models.define @modelName, @
+        Models.define @name, @
 
         @
 
       @define: (name, attributes = {}, acls = []) ->
         ctor = @extends name, @
-
-        if name
-          ctor.configure name, attributes, acls
+        ctor.configure attributes, acls
 
         if @primaryKey
           ctor.primaryKey = @primaryKey
@@ -65,7 +63,7 @@ module.exports = ->
 
       @checkAccess: (id, method, options) ->
         context = new AccessContext
-          modelName: @modelName
+          modelName: @name
           modelId: id
           methodName: method
 
@@ -152,12 +150,12 @@ module.exports = ->
         @constructor.checkAccess @getId(), method, @$options
 
       getId: ->
-        model = Models.get @constructor.modelName
+        model = Models.get @constructor.name
 
         @[model.primaryKey]
 
       setId: (id) ->
-        model = Models.get @constructor.modelName
+        model = Models.get @constructor.name
 
         if not id
           delete @[model.primaryKey]

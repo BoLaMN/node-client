@@ -5,7 +5,8 @@ module.exports = ->
   @factory 'Mixins', (Storage) ->
 
     class Mixins extends Storage
-
+      @debug: true 
+      
     new Mixins
 
   ###*
@@ -29,7 +30,7 @@ module.exports = ->
         debug 'Mixin is resolved to a model: %s', name
         @mixin model, options
       else
-        throw new Error 'Model "' + @modelName + '" uses unknown mixin: ' + name
+        throw new Error 'Model "' + @name + '" uses unknown mixin: ' + name
 
       return
 

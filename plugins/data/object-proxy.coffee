@@ -116,7 +116,7 @@ module.exports = ->
           if value is undefined and not oldVal
             return false
 
-          if isObject value and not value?.constructor?.modelName
+          if isObject value and not value?.constructor?.name
             proxy = new ObjectProxy {}, @append(name), @notifier
 
             for own name of value
@@ -131,7 +131,7 @@ module.exports = ->
         if Array.isArray(@self) and name is 'length'
           return true
 
-        if name[0] is '$' or value?.constructor?.modelName
+        if name[0] is '$' or value?.constructor?.name
           return true
 
         @changed name, oldVal, value

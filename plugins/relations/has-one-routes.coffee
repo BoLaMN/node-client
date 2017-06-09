@@ -14,7 +14,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           refresh:
@@ -34,11 +34,11 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           data:
-            type: @model.modelName
+            type: @model.name
             source: 'body'
             root: true
           options:
@@ -53,11 +53,11 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           data:
-            type: @model.modelName
+            type: @model.name
             source: 'body'
             root: true
           options:
@@ -72,7 +72,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           options:

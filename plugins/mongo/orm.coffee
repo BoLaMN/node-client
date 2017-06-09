@@ -25,7 +25,7 @@ module.exports = ->
       ###
       execute: (command, args...) ->
         @constructor.connect().then (db) =>
-          @collection ?= new MongoCollection db.collection @model.modelName
+          @collection ?= new MongoCollection db.collection @model.name
 
           context =
             hookState: {}
@@ -191,7 +191,7 @@ module.exports = ->
             @model.include data, include, options
           .tap (results) =>
             debug 'find.cb', inspect(
-              model: @model.modelName
+              model: @model.name
               filter: filter
               options: options
               results: results
@@ -215,7 +215,7 @@ module.exports = ->
             new @model results, buildOptions(options)
           .tap (results) =>
             debug 'findOne.cb', inspect(
-              model: @model.modelName
+              model: @model.name
               filter: filter
               options: options
               results: results
@@ -249,7 +249,7 @@ module.exports = ->
             new @model results, buildOptions(options)
           .tap (results) =>
             debug 'findOrCreate.cb', inspect(
-              model: @model.modelName
+              model: @model.name
               filter: filter
               options: options
               results: results
@@ -270,7 +270,7 @@ module.exports = ->
         @replaceWithOptions id, data, upsert: false
           .tap (results) =>
             debug 'replaceById.cb', inspect(
-              model: @model.modelName
+              model: @model.name
               options: options
               results: results
             , false, null)
@@ -290,7 +290,7 @@ module.exports = ->
         @replaceWithOptions null, data, upsert: true
           .tap (results) =>
             debug 'replaceOrCreate.cb', inspect(
-              model: @model.modelName
+              model: @model.name
               options: options
               results: results
             , false, null)
@@ -317,7 +317,7 @@ module.exports = ->
             new @model results, buildOptions(options)
           .tap (results) =>
             debug 'updateWithOptions.cb', inspect(
-              model: @model.modelName
+              model: @model.name
               options: options
               results: results
             , false, null)
@@ -337,7 +337,7 @@ module.exports = ->
             new @model results, buildOptions(options)
           .tap (results) =>
             debug 'save.cb', inspect(
-              model: @model.modelName
+              model: @model.name
               options: options
               results: results
             , false, null)
@@ -362,7 +362,7 @@ module.exports = ->
         @execute 'update', where, @normalizeId(data), options
           .tap (results) =>
             debug 'update.cb', inspect(
-              model: @model.modelName
+              model: @model.name
               filter: filter
               options: options
               results: results
@@ -388,7 +388,7 @@ module.exports = ->
         @execute 'findAndModify', { _id: id }, @normalizeId(data), sort
           .tap (results) =>
             debug 'updateAttributes.cb', inspect(
-              model: @model.modelName
+              model: @model.name
               options: options
               results: results
             , false, null)

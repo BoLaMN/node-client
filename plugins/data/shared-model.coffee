@@ -6,7 +6,7 @@ module.exports = ->
 
     class SharedModel extends PersistedModel
 
-      @configure: (@modelName, attributes) ->
+      @configure: (attributes) ->
         super
 
         for name, config of Routes.bind(@)()
@@ -16,7 +16,7 @@ module.exports = ->
           defaults = injector.get 'RelationRoutes'
           through = injector.get 'ThroughRoutes'
 
-          parent = api.section @modelName
+          parent = api.section @name
 
           add = (routes) =>
 
@@ -26,8 +26,8 @@ module.exports = ->
               route.args = Object.keys route.params
               route.args.push 'cb'
 
-              route.path = '/' + @modelName + route.path
-              route.modelName = config.model.modelName or @modelName
+              route.path = '/' + @name + route.path
+              route.modelName = config.model.name or @name
 
               fn = (args...) ->
                 data = {}
@@ -66,17 +66,17 @@ module.exports = ->
         @
 
       @remoteMethod: (name, config, section, fn) ->
-        route = section or api.section @modelName
+        route = section or api.section @name
 
         fn ?= Utils.get @, name
 
         if not fn
-          console.error "method #{name} not found on #{ @modelName }"
+          console.error "method #{name} not found on #{ @name }"
           return
 
         config.args ?= Utils.getArgs fn
-        config.path = '/' + @modelName + config.path
+        config.path = '/' + @name + config.path
 
-        config.modelName = @modelName
+        config.modelName = @name
 
         route[config.method] name, config, fn.bind @

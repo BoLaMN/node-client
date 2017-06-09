@@ -16,7 +16,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: 'any'
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           "#{ relationId }":
@@ -25,7 +25,7 @@ module.exports = ->
             required: true
             source: 'path'
           data:
-            type: @through?.modelName or @model?.modelName
+            type: @through?.name or @model?.name
             source: 'body'
             required: false
             root: true
@@ -42,7 +42,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: 'any'
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           "#{ relationId }":
@@ -63,7 +63,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: 'any'
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           "#{ relationId }":
@@ -94,7 +94,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: foreignKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           "#{ relationId }":
@@ -115,7 +115,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: foreignKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           "#{ relationId }":
@@ -136,7 +136,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: foreignKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           "#{ relationId }":
@@ -145,7 +145,7 @@ module.exports = ->
             required: true
             source: 'path'
           data:
-            type: @model.modelName
+            type: @model.name
             source: 'body'
             root: true
             required: false
@@ -162,7 +162,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: foreignKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           "#{ relationId }":
@@ -171,7 +171,7 @@ module.exports = ->
             required: true
             source: 'path'
           data:
-            type: @model.modelName
+            type: @model.name
             source: 'body'
             root: true
             required: false

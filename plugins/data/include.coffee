@@ -19,7 +19,7 @@ module.exports = ->
         relation = relations[as]
 
         if not relation
-          return Promise.reject new Error "Relation '#{ as }' is not defined for '#{ cls.modelName }' model"
+          return Promise.reject new Error "Relation '#{ as }' is not defined for '#{ cls.name }' model"
 
         { foreignKey, through, keyThrough, embedded, model, multiple, type } = relation
 

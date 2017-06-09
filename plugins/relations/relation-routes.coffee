@@ -12,7 +12,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           filter:
@@ -23,7 +23,7 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
-        description: "Queries #{ @as } of #{ @model.modelName }."
+        description: "Queries #{ @as } of #{ @model.name }."
         accessType: 'READ'
 
       create:
@@ -32,11 +32,11 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           data:
-            type: @model.modelName
+            type: @model.name
             source: 'body'
             root: true
             required: false
@@ -53,7 +53,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           where:
@@ -73,7 +73,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           where:
@@ -85,7 +85,7 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
-        description: "Counts #{ @as } of #{ @model.modelName }"
+        description: "Counts #{ @as } of #{ @model.name }"
         accessType: 'READ'
 
       exists:
@@ -94,7 +94,7 @@ module.exports = ->
         params:
           "#{ primaryKey }":
             type: primaryKeyType
-            description: "Primary key for #{ from.modelName }"
+            description: "Primary key for #{ from.name }"
             required: true
             source: 'path'
           where:
@@ -106,5 +106,5 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
-        description: "#{ @as } exists of #{ @model.modelName }"
+        description: "#{ @as } exists of #{ @model.name }"
         accessType: 'READ'

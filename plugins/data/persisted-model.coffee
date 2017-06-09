@@ -182,7 +182,7 @@ module.exports = ->
         @
 
       execute: (command, args...) ->
-        model = Models.get @constructor.modelName
+        model = Models.get @constructor.name
         fn = model[command]
 
         newArgs = []

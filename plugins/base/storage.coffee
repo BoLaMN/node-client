@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'Storage', (Entity) ->
+  @factory 'Storage', (Entity, debug) ->
 
     class Storage extends Entity
       constructor: (obj = {}) ->
@@ -31,6 +31,9 @@ module.exports = ->
           return true
 
         @[name] = obj
+
+        if @constructor.debug
+          debug @constructor.name + ': ' + name + ' defined ' 
 
         @emit name, obj
 

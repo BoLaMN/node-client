@@ -36,7 +36,7 @@ module.exports = ->
     isOwner = (modelClass, modelId, userId, callback = ->) ->
       assert modelClass, 'Model class is required'
 
-      debug 'isOwner(): %s %s userId: %s', modelClass and modelClass.modelName, modelId, userId
+      debug 'isOwner(): %s %s userId: %s', modelClass and modelClass.name, modelId, userId
 
       if not userId
         return callback false
@@ -70,7 +70,7 @@ module.exports = ->
           rel = modelClass.relations[r]
 
           if rel.type == 'belongsTo' and isUserClass(rel.modelTo)
-            debug 'Checking relation %s to %s: %j', r, rel.modelTo.modelName, rel
+            debug 'Checking relation %s to %s: %j', r, rel.modelTo.name, rel
             inst[r] processRelatedUser
 
             return

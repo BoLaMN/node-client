@@ -15,7 +15,7 @@ module.exports = ->
         if Array.isArray @type
           return new Type.Array(value).map (val, i) =>
             @apply name, val, instance, i
-        else if @fn?.modelName
+        else if @fn?.name and @fn?.constructor
           options = buildOptions instance, name, index
           return new @fn value, options
         else if typeof @fn?.parse is 'function'
