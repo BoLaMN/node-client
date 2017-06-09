@@ -19,6 +19,27 @@ module.exports = ->
           @[key] = value
         @
 
+      @extends: (name, parent) ->
+
+        child = new Function(
+          'return function ' + name + '() {\n' +
+          '  return ' + name + '.__super__.constructor.apply(this, arguments);\n' +
+          '};'
+        )()
+
+        ctor = ->
+          @constructor = child
+          return
+
+        for own key, value of parent
+          child[key] = value
+        
+        ctor.prototype = parent.prototype
+        
+        child.prototype = new ctor
+        child.__super__ = parent.prototype
+        child
+
       @property: (cls, key, accessor, hidden = false) ->
         if arguments.length is 2
           return @property @, cls, key

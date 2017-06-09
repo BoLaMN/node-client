@@ -21,16 +21,14 @@ module.exports = (app) ->
           if typeof settings is 'function'
             return @define name, {}, settings
 
-          class Instance extends @
+          ctor = @extends name, @
+          ctor.initialize settings, fn
+          ctor
 
-          Instance.name = name
-          Instance.initialize name, settings, fn
-          Instance
-
-        @initialize: (name, @settings, fn = ->) ->
+        @initialize: (@settings, fn = ->) ->
           @models = new Storage
 
-          Adapters.define name, @
+          Adapters.define @name, @
 
         @connect: (cb = ->) ->
           process.nextTick cb

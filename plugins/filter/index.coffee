@@ -1,9 +1,3 @@
-###*
-# Module dependencies.
-###
-
-debug = require('debug')('filter')
-
 'use strict'
 
 module.exports = (app) ->
@@ -22,7 +16,7 @@ module.exports = (app) ->
     @include './type-of'
     @include './where'
 
-    @factory 'Query', (Modifiers, Filter, Dot, Where) ->
+    @factory 'Query', (Modifiers, Filter, Dot, Where, debug) ->
       (obj = {}, query = {}, update = {}, opts = {}) ->
         strict = not not opts.strict
 

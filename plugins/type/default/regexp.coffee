@@ -4,10 +4,9 @@ module.exports = ->
   @type 'RegExp', (Type) ->
     class RegExp extends Type
       @construct: (re) ->
-        class Instance extends @
-
-        Instance.re = re
-        Instance
+        ctor = @extends @name, @
+        ctor.re = re
+        ctor
 
       @parse: (value) ->
         value.toString()

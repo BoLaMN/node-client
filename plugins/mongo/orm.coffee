@@ -1,11 +1,8 @@
-debug = require('debug')('loopback:connector:mongodb-advanced')
-
-{ inspect } = require 'util'
 { parseUpdateData } = require './utils'
 
 module.exports = ->
 
-  @factory 'MongoORM', (Adapter, MongoQuery, KeyArray, MongoCollection, Utils, ObjectID) ->
+  @factory 'MongoORM', (Adapter, MongoQuery, KeyArray, MongoCollection, Utils, ObjectID, debug, inspect) ->
     { buildOptions } = Utils
 
     class MongoORM extends Adapter

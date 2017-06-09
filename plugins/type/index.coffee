@@ -15,7 +15,7 @@ module.exports = (app) ->
       types = @injector.get 'Types'
 
       types.define name.toLowerCase(),
-        @injector.exec factory
+        @injector.exec 'Type' + name, factory
 
     @assembler 'type', ->
       (name, factory) ->

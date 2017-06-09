@@ -4,10 +4,9 @@ module.exports = ->
   @type 'Array', (Type) ->
     class Array extends Type
       @construct: (itemType) ->
-        class Instance extends @
-
-        Instance.itemType = itemType
-        Instance
+        ctor = @extends @name, @
+        ctor.itemType = itemType
+        ctor
 
       @check: (v) ->
         return false if @absent v

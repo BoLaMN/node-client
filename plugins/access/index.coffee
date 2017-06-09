@@ -1,5 +1,3 @@
-debug = require('debug')('security:acl')
-
 module.exports = (app) ->
 
   app.module 'Access', [ ]
@@ -12,7 +10,7 @@ module.exports = (app) ->
     @include './utils/request'
     @include './utils/response'
 
-    @decorator 'ACL', (ACL) ->
+    @decorator 'ACL', (ACL, debug) ->
       ACL.resolvers = {}
 
       ###*

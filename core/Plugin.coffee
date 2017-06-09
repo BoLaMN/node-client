@@ -41,23 +41,24 @@ class Plugin extends Emitter
 
   config: (configurator) ->
     @on 'config', =>
-      injector.exec configurator, @
+      injector.exec 'config', configurator, @
     @
 
   run: (configurator) ->
     @on 'run', =>
-      injector.exec configurator, @
+      injector.exec 'run', configurator, @
     @
 
   provider: (name, factory, type = 'provider') ->
     provider = new Provider
 
-    injector.exec factory, provider
+    injector.exec name, factory, provider
 
     injector.register name,
       factory: provider
       type: type
-
+      plugin: @name 
+      
     @
 
   alias: (name, alias) ->
@@ -78,7 +79,7 @@ class Plugin extends Emitter
       @$get = ->
         if value
           return value
-        value = injector.exec factory, @
+        value = injector.exec name, factory, @
         value
     , 'value'
 
@@ -89,14 +90,14 @@ class Plugin extends Emitter
       @$get = ->
         if instance
           return instance
-        instance = injector.exec factory
+        instance = injector.exec name, factory
         instance
     , type
 
   controller: (name, factory) ->
     @factory name, ->
       instance = new Emitter
-      injector.exec factory, instance
+      injector.exec name, factory, instance
       instance
     , 'controller'
 
@@ -109,6 +110,7 @@ class Plugin extends Emitter
     injector.register name,
       factory: factory
       type: 'decorator'
+      plugin: @name 
     @
 
   start: ->

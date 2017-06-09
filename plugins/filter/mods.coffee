@@ -1,8 +1,6 @@
-debug = require('debug')('filter:mods')
-
 module.exports = ->
 
-  @factory 'Modifiers', (TypeOf, Dot, Eql) ->
+  @factory 'Modifiers', (TypeOf, Dot, Eql, debug) ->
 
     ###*
     # Helper for determining if an array has the given value.

@@ -19,7 +19,6 @@ module.exports = (app) ->
     @include './middleware'
     @include './api'
     @include './server'
-    @include './settings'
     @include './swagger'
 
     @run (server, api, settings) ->

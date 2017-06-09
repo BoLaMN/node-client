@@ -42,23 +42,23 @@ module.exports = ->
         @
 
       @define: (name, attributes = {}, acls = []) ->
-        class Instance extends @
+        ctor = @extends name, @
 
         if name
-          Instance.configure name, attributes, acls
+          ctor.configure name, attributes, acls
 
         if @primaryKey
-          Instance.primaryKey = @primaryKey
+          ctor.primaryKey = @primaryKey
 
         if @attributes
-          extend Instance.attributes, @attributes
+          extend ctor.attributes, @attributes
 
         if @relations
           Object.keys(@relations).forEach (relation) =>
             args = @relations[relation].$args
-            Instance.defineRelation.apply Instance, args
+            ctor.defineRelation.apply ctor, args
 
-        Instance
+        ctor
 
       @check: ->
         true

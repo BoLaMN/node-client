@@ -106,6 +106,12 @@ class Inflector
       .replace(underscore_rx2, '$1_$2')
       .replace('-', '_').toLowerCase()
 
+  @debug: (string) ->
+    Inflector.underscore(string).replace /_/g, ':'
+
+  @dasheize: (string) ->
+    Inflector.underscore(string).replace /_/g, '-'
+
   @titleize: (string) ->
     string.replace titleize_rx, (m, p1, p2) ->
       p1 + p2.toUpperCase()

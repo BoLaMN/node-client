@@ -20,6 +20,7 @@
     "glob": "^6.0.4",
     "http-error": "0.0.6",
     "mongodb": "^2.2.26",
+    "require-cson": "^0.1.0",
     "standard-http-error": "^2.0.0"
   },
   "devDependencies": {

@@ -122,6 +122,7 @@ class Registry
 
       @require
         inflector: './Inflector'
+        util: 'util'
         Utils: './Utils'
 
       @include './KeyArray'

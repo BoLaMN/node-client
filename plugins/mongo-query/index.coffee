@@ -26,25 +26,14 @@ module.exports = (app) ->
               @[key] value
             else
               console.warn 'query filter ' + key + ' not found, value: '
-        ###*
-        # set where query
-        #
-        # @param {String} key
-        # @api public
-        ###
 
         getPropertyDefinition: (prop) ->
           current = @model
+
           split = prop.replace(/\.\d+/g, '').split '.'
 
-          if split.length is 1
-            return current.attributes[split[0]]
-
-          i = 0
-
-          while i < split.length
-            current = current.relations[split[i]]?.to or current.attributes[split[i]]
-            i++
+          for key in split
+            current = current.relations[key]?.to or current.attributes[key]
 
           current
 
@@ -54,17 +43,13 @@ module.exports = (app) ->
           if conditions is null or not isObject conditions
             return conditions
 
-          idName = @model.primaryKey
-
-          Object.keys(conditions).forEach (k) =>
-            cond = conditions[k]
+          for own k, cond of conditions
 
             if k in [ 'and', 'or', 'nor' ]
               if Array.isArray cond
                 cond = cond.map (c) => @where c
 
               query['$' + k] = cond
-              delete query[k]
 
               return
 
@@ -86,11 +71,8 @@ module.exports = (app) ->
               query[k].$type = 10
             else if isPlainObject cond
               options = cond.options
-              specs = Object.keys cond
 
-              specs.forEach (spec) ->
-                c = cond[spec]
-
+              for own spec, c of cond
                 if spec is 'between'
                   query[k].$gte = c[0]
                   query[k].$lte = c[1]
@@ -105,8 +87,6 @@ module.exports = (app) ->
                 else if spec is 'neq'
                   query[k].$ne = c
                 else if spec is 'regexp'
-                  if c.global
-                    console.warn 'MongoDB regex syntax does not respect the `g` flag'
                   query[k].$regex = c
                 else
 
@@ -147,13 +127,12 @@ module.exports = (app) ->
 
         fields: (fields, value = 1) ->
           if Array.isArray fields
-            fields.forEach (key) =>
+            for key in fields 
               @fields key
 
           if typeof fields is 'object'
-            keys = Object.keys fields
-            keys.forEach (key) =>
-              @fields key, fields[key]
+            for own key, value of fields
+              @fields key, value
 
           if typeof fields is 'string'
             @filter.fields[fields] = value
@@ -212,18 +191,6 @@ module.exports = (app) ->
           @skip offset
 
         ###*
-        # Search using text index
-        #
-        # @param {String} text
-        # @api public
-        ###
-
-        search: (text) ->
-          @where '$text': '$search': text
-
-          this
-
-        ###*
         # Sort query results
         #
         # @param {Object} sort - sort params
@@ -232,7 +199,7 @@ module.exports = (app) ->
 
         sort: (sorts, value) ->
           if Array.isArray sorts
-            sorts.forEach (sort) =>
+            for sort in sorts
               @sort.apply this, sort.split ' '
 
           if typeof value is 'string'
@@ -241,7 +208,7 @@ module.exports = (app) ->
             if matches
               return @sort matches
 
-            if sorts is 'id'
+            if sorts is @model.primaryKey
               sorts = '_id'
 
             @filter.options.sort ?= {}

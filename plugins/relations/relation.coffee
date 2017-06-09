@@ -9,11 +9,10 @@ module.exports = ->
     class Relation extends Module
 
       @define: (args...) ->
-        class Instance extends @
-
-        Instance.property '$type', value: @name
-        Instance.initialize args...
-        Instance
+        ctor = @extends @name, @
+        ctor.property '$type', value: @name
+        ctor.initialize args...
+        ctor
 
       @initialize: (from, model, params = {}) ->
         { polymorphic, through } = params

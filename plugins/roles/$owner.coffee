@@ -1,8 +1,6 @@
-debug = require('debug')('security:acl')
-
 module.exports = ->
 
-  @decorator 'ACL', (ACL) ->
+  @decorator 'ACL', (ACL, debug) ->
 
     ACL.OWNER = '$owner'
 

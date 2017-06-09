@@ -1,7 +1,5 @@
 'use strict'
 
-debug = require('debug') 'model:mixin'
-
 module.exports = ->
 
   @factory 'Mixins', (Storage) ->
@@ -17,7 +15,7 @@ module.exports = ->
   # @param {Object} options
   ###
 
-  @decorator 'Model', (Model, Mixins, injector) ->
+  @decorator 'Model', (Model, Mixins, injector, debug) ->
 
     Model.mixin = (name, options = {}) ->
       fn = Mixins[name]

@@ -13,4 +13,22 @@ module.exports = (app) ->
     @include './storage'
     @include './emitter'
     @include './env'
-    @include './utils/property'
+    @include './property'
+    @include './settings'
+    
+    @factory 'debug', (env, inspect) ->
+      debug = require 'debug'
+
+      (name) -> 
+        if env.DEBUG 
+          return -> 
+
+        debug name
+
+    @factory 'inspect', (util, env) ->
+      { inspect } = util 
+
+      (args...) -> 
+        return args unless env.DEBUG
+
+        inspect args... 

@@ -1,8 +1,7 @@
-debug = require('debug')('filter:match')
 
 module.exports = ->
 
-  @factory 'Filter', (TypeOf, Eql, Ops) ->
+  @factory 'Filter', (TypeOf, Eql, Ops, debug) ->
 
     filter = (target = {}, query) ->
       ret = {}

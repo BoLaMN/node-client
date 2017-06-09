@@ -1,8 +1,8 @@
 
 module.exports = ->
 
-  @factory 'Type', ->
-    class Type
+  @factory 'Type', (Module) ->
+    class Type extends Module
 
       @undefined: (v) ->
         typeof v is 'undefined' or

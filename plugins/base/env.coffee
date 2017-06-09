@@ -3,7 +3,7 @@
 module.exports = ->
 
   @provider 'env', ->
-    settings = @settings
+    settings = @settings = {}
 
     mode = (process.env.NODE_ENV or 'development').toLowerCase()
 
@@ -15,6 +15,9 @@ module.exports = ->
 
     equals = (anotherMode) ->
       mode is anotherMode
+
+    @set = (key, value) ->
+      Utils.set settings, key, value 
 
     @mode = (newMode) ->
       if newMode
