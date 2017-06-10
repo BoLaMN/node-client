@@ -29,16 +29,20 @@ module.exports = ->
         @property 'acls',
           value: []
 
+        acls.forEach (acl) =>
+          @acl acl
+
         @property 'attributes',
           value: new Attributes
+
+        Object.keys(properties).forEach (key) =>
+          @attribute key, properties[key]
 
         @property 'relations',
           value: new Storage
 
         Object.keys(relations).forEach (key) =>
-          relation = relations[key]
-          relation.as = key
-          @[relation.type] relation
+          @relation key, relations[key]
 
         @observe 'validate', (ctx, next) =>
 
@@ -54,12 +58,6 @@ module.exports = ->
 
         Object.keys(mixins).forEach (key) =>
           @mixin key, mixins[key]
-
-        Object.keys(properties).forEach (key) =>
-          @attribute key, properties[key]
-
-        acls.forEach (acl) =>
-          @acl acl
 
         Models.define @name, @
 
@@ -78,7 +76,7 @@ module.exports = ->
         if @relations
           Object.keys(@relations).forEach (relation) =>
             args = @relations[relation].$args
-            ctor.defineRelation.apply ctor, args
+            ctor.relation.apply ctor, args
 
         ctor
 

@@ -23,53 +23,50 @@ module.exports = (app) ->
     @include './has-and-belongs-to-many'
     @include './references-many'
 
-    @factory 'Relations', (Models, injector) ->
+    @factory 'Relations', (Models, inflector, injector) ->
+      { camelize } = inflector
 
       class Relations
 
-        @defineRelation: (type, model, params = {}) ->
+        @relation: (name, config, type) ->
           args = arguments
+          type = camelize config.type or type
 
-          if model.model or model.as
-            params = model
-            model = params.model
+          { polymorphic, model } = config
+        
+          config.as = name 
 
           attach = (modelTo = {}) =>
-            delete params.model
-
+            delete config.model
             ctor = injector.get type
-            relation = ctor.define @, modelTo, params
-
+            
+            relation = ctor.define @, modelTo, config
             relation.property '$args', value: args
 
-          if not params.model and params.polymorphic and type not in [ 'HasOne', 'BelongsTo' ]
+          if not model and polymorphic and type not in [ 'HasOne', 'BelongsTo' ]
             attach()
           else
             Models.get model, attach
 
-        @hasMany: (args...) ->
-          @defineRelation 'HasMany', args...
           @
+
+        @hasMany: (args...) ->
+          @relation args..., 'hasMany'
 
         @belongsTo: (args...) ->
-          @defineRelation 'BelongsTo', args...
-          @
+          @relation args..., 'belongsTo'
 
         @hasAndBelongsToMany: (args...) ->
-          @defineRelation 'HasAndBelongsToMany', args...
+          @relation args..., 'hasAndBelongsToMany'
 
         @hasOne: (args...) ->
-          @defineRelation 'HasOne', args...
-          @
+          @relation args..., 'hasOne'
 
         @referencesMany: (args...) ->
-          @defineRelation 'ReferencesMany', args...
-          @
+          @relation args..., 'referencesMany'
 
         @embedMany: (args...) ->
-          @defineRelation 'EmbedMany', args...
-          @
+          @relation args..., 'embedMany',
 
         @embedOne: (args...) ->
-          @defineRelation 'EmbedOne', args...
-          @
+          @relation args..., 'embedOne'
