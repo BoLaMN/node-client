@@ -1,51 +1,34 @@
 
 module.exports = ->
 
-  @factory 'Validator', (Type) ->
+  @factory 'Validator', (Type, ValidatorFormats) ->
     
     class Validator extends Type
 
-      @conform: (a, e, o) ->
-        e a, o
+      @conform: (value, options, object) ->
+        options value, object
 
-      @format: ->
+      @format: (value, options, object) ->
 
-        if typeof value is 'string'
-          formts = if Array.isArray(@format) then @format else [ @format ]
-          valid = false
+        if typeof value isnt 'string'
+          return false 
 
-          i = 0
-          l = formts.length
+        if not Array.isArray options 
+          options = [ options ]
 
-          while i < l
-            format = formts[i].toLowerCase().trim()
-            spec = formats[format]
+        options.every (format) ->
+          ValidatorFormats[format].test valuw
 
-            if not spec
-              valid = false
-              break
+      @enum: (value, options, object) ->
+        value in options
 
-            i++
+      @dependacies: (value, options, object) ->
 
-          if not valid
-            return @error('format', property, value, errors)
+        if typeof options is 'string' and object[options] is undefined
+          return false
+        
+        if not Array.isArray options 
+          return false 
 
-      @enum: ->
-
-        if value is null and Array.isArray(@type) and 'null' in @type
-          # is allowed
-        else if @type is 'array' and Array.isArray(value)
-          for item in value when item not in @enum
-            @error 'enum', property, value, errors
-        else if value not in @enum
-          @error 'enum', property, value, errors
-
-      @dependacies: ->
-
-        if typeof @dependencies is 'string' and object[@dependencies] is undefined
-          @error 'dependencies', property, null, errors
-        else if Array.isArray @dependencies 
-          for dependacy in @dependencies when object[dependacy] is undefined
-            @error 'dependencies', property, null, errors
-        else if typeof @dependencies is 'object'
-          @validateObject object, @dependencies, errors
+        options.some (dependacy) ->
+          object[dependacy] is undefined

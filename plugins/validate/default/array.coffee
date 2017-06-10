@@ -5,53 +5,32 @@ module.exports = ->
     
     class Array extends Validator
 
-      @items: (a, e) ->
-        i = 0
-        l = a.length
+      @enum: (value, options, object) ->
 
-        while i < l
-          nestedErrors = []
-          @validateProperty object, a[i], property, e, nestedErrors
+        if not Array.isArray value
+          return false 
 
-          nestedErrors.forEach (err) ->
-            if Array.isArray(e) and err.property == property
-              err.property = (if property then property + '.' else '') + i
-            else
-              err.property = (if property then property + '.' else '') + i + (if err.property then '.' + err.property.replace(property + '.', '') else '')
+        value.filter (item) ->
+          item not in options
 
-            return
+      @minItems: (value, options) ->
+        value.length >= options
 
-          nestedErrors.unshift errors.length, 0
+      @maxItems: (value, options) ->
+        value.length <= options
 
-          Array::splice.apply errors, nestedErrors
-
-          i++
-
-        true
-
-      @minItems: (a, e) ->
-        a.length >= e
-
-      @maxItems: (a, e) ->
-        a.length <= e
-
-      @uniqueItems: (a, e) ->
-        if !e
+      @unique: (value, options) ->
+        if not options
           return true
 
-        h = {}
+        items = {}
+ 
+        for item in value
+          id = item.getId()
 
-        i = 0
-        l = a.length
+          if items[id] 
+            return false 
 
-        while i < l
-          key = JSON.stringify(a[i])
-
-          if h[key]
-            return false
-
-          h[key] = true
-
-          i++
+          items[id] = item 
 
         true

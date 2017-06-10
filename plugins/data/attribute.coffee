@@ -46,9 +46,6 @@ module.exports = ->
           @type = @type.map (f) ->
             f if typeof f is 'string'
 
-        Validators.get @type, (validator) =>
-          @validator = validator   
-        
         @emit 'define', @, name, options
 
-        @
+
