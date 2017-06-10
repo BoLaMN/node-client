@@ -32,10 +32,12 @@ module.exports = ->
 
     @$get = (Utils) ->
 
-      get: (path, value) ->
+      settings.get = (path, value) ->
         Utils.get(settings, path) or value
 
-      has: (path) ->
+      settings.has = (path) ->
         not not Utils.get settings, path
 
-      is: equals
+      settings.is = equals
+
+      settings

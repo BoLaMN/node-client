@@ -45,7 +45,7 @@ module.exports = ->
           @relation key, relations[key]
 
         @observe 'validate', (ctx, next) =>
-
+ 
           finish = (err) ->
             if err?.length 
               next new ValidationError err
@@ -82,6 +82,9 @@ module.exports = ->
 
       @check: ->
         true
+
+      @inspect: ->
+        @name
 
       @checkAccess: (id, method, options) ->
         context = new AccessContext

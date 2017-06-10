@@ -20,7 +20,7 @@ module.exports = (app) ->
       debug = require 'debug'
 
       (name) -> 
-        if env.DEBUG 
+        if not env.DEBUG 
           return -> 
 
         debug name
@@ -29,6 +29,7 @@ module.exports = (app) ->
       { inspect } = util 
 
       (args...) -> 
-        return args unless env.DEBUG
+        if not env.DEBUG 
+          return args
 
         inspect args... 

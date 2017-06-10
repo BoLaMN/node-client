@@ -78,6 +78,7 @@ module.exports = ->
         @instance
         
       loaded: (res) ->
+        @results = res 
         @notify 'loaded'
 
       persist: ->

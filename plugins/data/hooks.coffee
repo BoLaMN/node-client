@@ -47,7 +47,7 @@ module.exports = ->
 
         @
 
-  @factory 'Hooks', (Hook) ->
+  @factory 'Hooks', (Hook, debug) ->
 
     class Hooks
       constructor: (event, fn) ->
@@ -55,6 +55,8 @@ module.exports = ->
           @observe event, fn
 
       fire: (event, ctx = {}, fn = ->) ->
+        debug event, ctx 
+        
         if typeof ctx is 'function'
           return @fire event, {}, ctx
 
