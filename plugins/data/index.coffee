@@ -8,20 +8,14 @@ module.exports = (app) ->
 
   .initializer ->
 
-    buildModel = (name, { base, adapter, properties, relations, acls }) =>
-      base = base or 'Model'
-
-      model = @injector.get base
-      adptr = @injector.get adapter or 'MongoDB'
+    buildModel = (name, config) =>
+      model = @injector.get config.base or 'Model'
+      adptr = @injector.get config.adapter or 'MongoDB'
 
       connector = adptr.define 'db'
 
-      factory = model.define name, properties, acls
+      factory = model.define name, config
       factory.adapter connector
-
-      for as, config of relations
-        config.as = as
-        factory[config.type] config
 
       service = ->
         factory

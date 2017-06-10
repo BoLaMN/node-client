@@ -19,8 +19,11 @@ module.exports = ->
           value: new adapter @
         @
 
-      @configure: (attributes, acls) ->
+      @configure: ({ adapter, properties = {}, relations = {}, acls = [] }) ->
         @primaryKey = 'id'
+
+        @property 'strict',
+          value: false
 
         @property 'acls',
           value: []
@@ -34,14 +37,23 @@ module.exports = ->
         @observe 'validate', (ctx, next) =>
 
           finish = (err) ->
-            if err.length 
+            if err?.length 
               next new ValidationError err
             else next()
 
+          if not @strict 
+            return finish()
+
           @attributes.validate ctx.instance, finish
 
-        Object.keys(attributes).forEach (key) =>
-          @attribute key, attributes[key]
+        Object.keys(properties).forEach (key) =>
+          @attribute key, properties[key]
+
+        Object.keys(relations).forEach (key) =>
+          relation = relations[key]
+          relation.as = key
+
+          @[relation.type] relation
 
         acls.forEach (acl) =>
           @acl acl
@@ -50,9 +62,9 @@ module.exports = ->
 
         @
 
-      @define: (name, attributes = {}, acls = []) ->
+      @define: (name, config) ->
         ctor = @extends name, @
-        ctor.configure attributes, acls
+        ctor.configure config
 
         if @primaryKey
           ctor.primaryKey = @primaryKey
