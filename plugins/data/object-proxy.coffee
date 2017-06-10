@@ -97,36 +97,33 @@ module.exports = ->
         if @compare oldVal, value
           return true
 
-        if Array.isArray value
-          attributes[name] = value
-        else
-          cast = @model.attributes[name]
+        cast = @model.attributes[name]
 
-          if cast
-            value = cast?.apply?(value, name, @self)
+        if cast
+          value = cast?.apply?(value, name, @self)
 
-          if cast?.foreignKey
-            key = @append(name).replace /\.\d+/g, ''
+        if cast?.foreignKey
+          key = @append(name).replace /\.\d+/g, ''
 
-            if oldVal
-              @notifier.emit '$deindex', key, oldVal, @self
+          if oldVal
+            @notifier.emit '$deindex', key, oldVal, @self
 
-            @notifier.emit '$index', key, value, @self
+          @notifier.emit '$index', key, value, @self
 
-          if value is undefined and not oldVal
-            return false
+        if value is undefined and not oldVal
+          return false
 
-          if isObject value and not value?.constructor?.name
-            proxy = new ObjectProxy {}, @append(name), @notifier
+        if isObject value and not value?.constructor?.name
+          proxy = new ObjectProxy {}, @append(name), @notifier
 
-            for own name of value
-              descriptor = Object.getOwnPropertyDescriptor value, name
+          for own name of value
+            descriptor = Object.getOwnPropertyDescriptor value, name
 
-              Object.defineProperty proxy, name, descriptor
+            Object.defineProperty proxy, name, descriptor
 
-            value = proxy
+          value = proxy
 
-          attributes[name] = value
+        attributes[name] = value
 
         if Array.isArray(@self) and name is 'length'
           return true

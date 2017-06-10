@@ -25,11 +25,11 @@ module.exports = ->
     once = (fn) ->
       ->
         ret = fn.apply(this, arguments)
-        fn = noop
+        fn = ->
         ret
 
-    Utils.wrap = (fn, done) ->
-      done = once(done or noop)
+    Utils.wrap = (fn, done = ->) ->
+      done = once done
 
       ->
         i = arguments.length

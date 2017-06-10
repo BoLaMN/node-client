@@ -133,8 +133,6 @@ module.exports = ->
 
         includes = processIncludeJoin include
 
-        console.log 'keys', keys
-
         data = new KeyArray objects, keys
 
         ids = data.ids

@@ -56,13 +56,15 @@ module.exports = (app) ->
             attr = @getPropertyDefinition k
 
             parse = (c) ->
+              return c unless attr 
+              
               c.reduce (prev, x) ->
                 b = attr.apply x
                 prev.push b if b?
                 prev
               , []
 
-            if attr.id
+            if attr?.id
               k = '_id'
 
             query[k] ?= {}

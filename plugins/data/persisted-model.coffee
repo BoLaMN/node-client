@@ -55,7 +55,7 @@ module.exports = ->
           .asCallback cb
 
       @execute: (command, args...) ->
-        new Context @, command, args
+        new Context @, command, args...
 
       @find: (filter = {}, options = {}, cb = ->) ->
         if typeof options is 'function'

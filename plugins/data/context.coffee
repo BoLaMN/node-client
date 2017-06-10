@@ -4,15 +4,16 @@ module.exports = ->
     { getArgs } = Utils 
 
     class Context
-      constructor: (@model, @cmd, args) ->
+      constructor: (@model, @cmd, args...) ->
         @hookState = {}
         
-        { @dao, @dataSource } = @model 
-        { @connector } = @dataSource
+        { @dao } = @model 
 
         @args = getArgs @dao[@cmd]
 
         @setup args
+
+        return @execute()
 
       setup: (args) ->
 
@@ -37,28 +38,21 @@ module.exports = ->
 
         fns = [
           'before'
-          'setup'
           'validate'
           'persist'
-          'setup'
           'run'
-          'loaded '
-          'setup'
+          'loaded'
           'after'
-          'setup'
-          'finish'
         ]
 
         current = Promise.resolve()
 
         promises = fns.map (fn) =>
           current = current.then (res) =>
-            fn(res).bind @
+            @[fn] res
           current
 
-        Promise
-          .all promises
-          .asCallback @cb
+        Promise.all(promises).then @finish
 
       run: ->
         args = []
@@ -80,10 +74,10 @@ module.exports = ->
       after: ->
         @notify 'after ' + @cmd
 
-      finish: ->
+      finish: (res) ->
         @instance
         
-      loaded: ->
+      loaded: (res) ->
         @notify 'loaded'
 
       persist: ->
