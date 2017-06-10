@@ -1,29 +1,30 @@
 module.exports = ->
 
-  @factory 'Model', (Entity, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Cast, Relations, Utils, ValidationError) ->
+  @factory 'Model', (Entity, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Cast, Relations, Utils, ValidationError, Mixin) ->
     { extend, wrap } = Utils
 
     class Model extends Entity
+      @mixin Relations
+
       @extend Events::
       @extend Hooks::
 
       @extend ModelACL
       @extend Attribute
+      @extend Mixin
       @extend Cast
       @extend Inclusion
-
-      @mixin Relations
 
       @adapter: (adapter) ->
         @property 'dao',
           value: new adapter @
         @
 
-      @configure: ({ adapter, properties = {}, relations = {}, acls = [] }) ->
+      @configure: ({ adapter, strict, mixins = {}, properties = {}, relations = {}, acls = [] }) ->
         @primaryKey = 'id'
 
         @property 'strict',
-          value: false
+          value: strict or false
 
         @property 'acls',
           value: []
@@ -33,6 +34,11 @@ module.exports = ->
 
         @property 'relations',
           value: new Storage
+
+        Object.keys(relations).forEach (key) =>
+          relation = relations[key]
+          relation.as = key
+          @[relation.type] relation
 
         @observe 'validate', (ctx, next) =>
 
@@ -46,14 +52,11 @@ module.exports = ->
 
           @attributes.validate ctx.instance, finish
 
+        Object.keys(mixins).forEach (key) =>
+          @mixin key, mixins[key]
+
         Object.keys(properties).forEach (key) =>
           @attribute key, properties[key]
-
-        Object.keys(relations).forEach (key) =>
-          relation = relations[key]
-          relation.as = key
-
-          @[relation.type] relation
 
         acls.forEach (acl) =>
           @acl acl

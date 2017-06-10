@@ -42,6 +42,7 @@ module.exports = (app) ->
     @include './cast'
     @include './context'
     @include './include'
+    @include './mixin'
     @include './mixins'
     @include './object-proxy'
     @include './utils/build-options'
