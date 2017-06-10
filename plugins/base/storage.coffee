@@ -6,6 +6,9 @@ module.exports = ->
       constructor: (obj = {}) ->
         super
 
+        @$property 'keys',
+          value: []
+
         for key, value of obj
           @define key, value
 
@@ -30,6 +33,8 @@ module.exports = ->
         if @[name]
           return true
 
+        @keys.push name
+        
         @[name] = obj
 
         if @constructor.debug

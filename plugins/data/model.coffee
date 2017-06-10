@@ -1,7 +1,7 @@
 module.exports = ->
 
-  @factory 'Model', (Entity, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Cast, Relations, Utils) ->
-    { extend } = Utils
+  @factory 'Model', (Entity, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Cast, Relations, Utils, ValidationError) ->
+    { extend, wrap } = Utils
 
     class Model extends Entity
       @extend Events::
@@ -26,10 +26,19 @@ module.exports = ->
           value: []
 
         @property 'attributes',
-          value: new Storage
+          value: new Attributes
 
         @property 'relations',
           value: new Storage
+
+        @observe 'validate', (ctx, next) =>
+
+          finish = (err) ->
+            if err.length 
+              next new ValidationError err
+            else next()
+
+          @attributes.validate ctx.instance, finish
 
         Object.keys(attributes).forEach (key) =>
           @attribute key, attributes[key]
@@ -89,6 +98,23 @@ module.exports = ->
         options.instance = @
 
         @constructor.fire event, options, fn
+
+      isValid: (errors = [], callback) ->
+        if typeof errors is 'function'
+          return @isValid {}, errors
+
+        isValid = (v) ->
+          v.isValid?(errors) or 
+          Promise.resolve()
+
+        promises = [] 
+
+        for own k, v of @ when v?
+          promises.push isValid(v).then (err) ->
+            errors.push err
+
+        Promise.all(promises).then ->
+          error
 
       toObject: ->
         obj = {}
