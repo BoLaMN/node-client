@@ -1,7 +1,6 @@
 module.exports = ->
 
-  @factory 'ObjectProxy', (Model, isPlainObject, Utils) ->
-    { get } = Utils
+  @factory 'ObjectProxy', (isPlainObject) ->
 
     class ObjectProxy
 
@@ -36,7 +35,7 @@ module.exports = ->
         if newVal is undefined
           type = '$unset'
 
-        @model.emit type, path, newVal
+        @instance.emit type, path, newVal
 
         return
 
@@ -115,7 +114,7 @@ module.exports = ->
               proxy.push item 
 
           value = proxy 
-        else if isPlainObject value
+        else 
 
           if Array.isArray attributes
             cast = @model.attributes[@as]

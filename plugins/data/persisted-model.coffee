@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'PersistedModel', (Model, Context, ObjectProxy, Utils, assert, Models) ->
+  @factory 'PersistedModel', (Model, Context, Utils, ObjectProxy, assert, Models) ->
     { getArgs } = Utils
 
     class PersistedModel extends Model
@@ -154,7 +154,7 @@ module.exports = ->
           @$property '$loaded', { value: true }
 
         @
-
+        
       execute: (command, args...) ->
         model = Models.get @constructor.name
         fn = model[command]

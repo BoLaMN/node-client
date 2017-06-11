@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'Model', (Entity, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Cast, Relations, Utils, ValidationError, Mixin) ->
+  @factory 'Model', (Entity, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Relations, Utils, ValidationError, Mixin) ->
     { extend, wrap } = Utils
 
     class Model extends Entity
@@ -12,7 +12,6 @@ module.exports = ->
       @extend ModelACL
       @extend Attribute
       @extend Mixin
-      @extend Cast
       @extend Inclusion
 
       @adapter: (adapter) ->
@@ -150,9 +149,9 @@ module.exports = ->
         @constructor.emit arguments...
         true
 
-      constructor: (obj = {}, options = {}) ->
-        if obj instanceof @constructor 
-          return obj 
+      constructor: (data = {}, options = {}) ->
+        if data instanceof @constructor 
+          return data 
           
         super
 

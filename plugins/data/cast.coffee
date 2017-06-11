@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'Cast', (Types, Models, Utils) ->
+  @factory 'Cast', (Types, Models, injector, Utils) ->
     { buildOptions } = Utils
 
     class Cast
@@ -16,11 +16,14 @@ module.exports = ->
 
         fn = Models.get type
         fn ?= Types.get type
-        
-        if typeof fn?.parse is 'function'
+
+        if fn.prototype instanceof injector.get 'Model' 
           options = buildOptions ctx.instance, name, index
+
+        if typeof fn?.parse is 'function'
           return fn.parse value, options
-        else if fn
+        
+        if fn
           return fn value
-        else
-          return value
+        
+        return value
