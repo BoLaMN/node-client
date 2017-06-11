@@ -9,21 +9,14 @@ module.exports = ->
         if not value?
           return null
 
+        type = @type 
+
         if index 
-          @fn ?= []
-          
           type = @type[index] or @type[0]
 
-          fn = Models.get type
-          fn ?= Types.get type
-
-          @fn[index] ?= fn
-        else
-          fn = Models.get @type
-          fn ?= Types.get @type
-
-          @fn = fn 
-
+        fn = Models.get type
+        fn ?= Types.get type
+        
         if typeof fn?.parse is 'function'
           options = buildOptions ctx.instance, name, index
           return fn.parse value, options
