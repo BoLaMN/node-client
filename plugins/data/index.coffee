@@ -66,4 +66,4 @@ module.exports = (app) ->
 
       models
 
-    @model 'TransientModel', { base: 'PersistedModel' }
+    @model 'TransientModel', { }
