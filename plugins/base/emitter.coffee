@@ -4,10 +4,10 @@ module.exports = ->
     { property } = Utils
 
     iterate = (ev, fn) ->
-      if not @events
+      if not @$events
         return
 
-      e = @events[ev] or []
+      e = @$events[ev] or []
       i = e.length - 1
 
       while i >= 0 and e
@@ -21,34 +21,34 @@ module.exports = ->
         return
 
       add: (ev, cb) ->
-        if not @events
-          property @, 'events',
+        if not @$events
+          property @, '$events',
             writable: true
             value: {}
 
         cb.id = id++
 
-        @events[ev] ?= []
-        @events[ev].push cb
+        @$events[ev] ?= []
+        @$events[ev].push cb
 
-        @events[ev].length
+        @$events[ev].length
 
       on: (ev, cb) ->
         @add ev, cb
         @
 
       off: (ev, cb) ->
-        if not @events?[ev]
+        if not @$events?[ev]
           return
 
         itr = iterate.bind @
 
         itr ev, (e, i) =>
           if e is cb
-            @events[ev].splice i, 1
+            @$events[ev].splice i, 1
 
-        if not @events[ev]?.length
-          delete @events[ev]
+        if not @$events[ev]?.length
+          delete @$events[ev]
 
       broadcast: (args...) ->
         itr = iterate.bind @
@@ -72,7 +72,7 @@ module.exports = ->
         return @ if not cb
 
         c = =>
-          @events[ev].splice idx, 1
+          @$events[ev].splice idx, 1
           cb.apply @, arguments
 
         idx = @add ev, c

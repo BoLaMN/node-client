@@ -5,20 +5,29 @@ module.exports = ->
 
     class Cast
 
-      apply: (value, name, instance, index) ->
+      apply: (value, name, ctx, index) ->
         if not value?
           return null
 
-        @fn ?= Models.get @type
-        @fn ?= Types.get @type
+        if index 
+          @fn ?= []
+          
+          type = @type[index] or @type[0]
 
-        if Array.isArray @type
-          return new Type.Array(value).map (val, i) =>
-            @apply name, val, instance, i
-        else if typeof @fn?.parse is 'function'
-          options = buildOptions instance, name, index
-          return @fn.parse value, options
-        else if @fn
-          return @fn value
+          fn = Models.get type
+          fn ?= Types.get type
+
+          @fn[index] ?= fn
+        else
+          fn = Models.get @type
+          fn ?= Types.get @type
+
+          @fn = fn 
+
+        if typeof fn?.parse is 'function'
+          options = buildOptions ctx.instance, name, index
+          return fn.parse value, options
+        else if fn
+          return fn value
         else
           return value

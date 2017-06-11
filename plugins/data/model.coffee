@@ -151,6 +151,9 @@ module.exports = ->
         true
 
       constructor: (obj = {}, options = {}) ->
+        if obj instanceof @constructor 
+          return obj 
+          
         super
 
         @$property '$events', value: {}
@@ -167,11 +170,11 @@ module.exports = ->
             arr.unshift @$parent.$path
 
           if @$index isnt undefined
-            arr.push (@$index - 1).toString()
+            arr.push @$index.toString()
 
           arr.filter((value) -> value).join '.'
 
-        for key, value of options when v?
+        for key, value of options when value?
           @$property '$' + key, value: value
 
         @once '$setup', =>
