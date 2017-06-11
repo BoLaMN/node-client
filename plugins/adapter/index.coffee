@@ -17,6 +17,9 @@ module.exports = (app) ->
       class Adapter extends Entity
         @extend Events::
 
+        @inspect: ->
+          @name 
+          
         @define: (name, settings = {}, fn = ->) ->
           if typeof settings is 'function'
             return @define name, {}, settings

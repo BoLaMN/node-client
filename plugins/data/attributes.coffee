@@ -3,8 +3,7 @@ module.exports = ->
   @factory 'Attributes', (Storage, Validators) ->
 
     class Attributes extends Storage
-      @debug: true 
-      
+
       validate: (object) ->
 
         validate = (attr, cb) =>
