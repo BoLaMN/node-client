@@ -1,9 +1,9 @@
 module.exports = ->
 
-  @factory 'Model', (Entity, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Relations, Utils, ValidationError, Mixin) ->
+  @factory 'Model', (Base, ObjectProxy, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Relations, Utils, ValidationError, Mixin) ->
     { extend, wrap } = Utils
 
-    class Model extends Entity
+    class Model extends Base
       @mixin Relations
 
       @extend Events::
@@ -149,47 +149,41 @@ module.exports = ->
         @constructor.emit arguments...
         true
 
-      constructor: (data = {}, options = {}) ->
-        if data instanceof @constructor 
-          return data 
-          
+      constructor: (data = {}, options = {}) ->      
         super
 
-        @$property '$events', value: {}
-        @$property '$options', value: options
+        proxy = new ObjectProxy @, @constructor, @$path, @
 
-        @$property '$isNew',
-          value: true
-          writable: true
+        @setAttributes data, proxy
 
-        @$property '$path', ->
-          arr = [ @$name ]
+        return proxy
 
-          if @$parent?.$path
-            arr.unshift @$parent.$path
+      setAttributes: (data = {}, proxy = @) ->
+        if data.id and @constructor.primaryKey isnt 'id'
+          @setId data.id
+          delete data.id
 
-          if @$index isnt undefined
-            arr.push @$index.toString()
+        if data._id
+          @setId data._id
+          delete data._id
 
-          arr.filter((value) -> value).join '.'
-
-        for key, value of options when value?
-          @$property '$' + key, value: value
-
-        @once '$setup', =>
-          for own name, relation of @constructor.relations
-            @$property name, value: new relation @
-
-        @on '*', (event, path, value, id) =>
-          @$events[event] ?= {}
-
-          if event is '$index'
-            @$events[event][path] ?= {}
-            @$events[event][path][value] ?= []
-            @$events[event][path][value].push id
+        for own key, value of data when key?
+          if typeof proxy[key] is 'function'
+            continue if typeof value is 'function'
+            proxy[key](value)
           else
-            @$events[event][path] = value
+            proxy[key] = value
 
+        if not @$loaded
+          @emit '$setup', @$path, @
+
+          if @$parent and @$path
+            @$parent.emit '$loaded', @$path, @
+
+          @$property '$loaded', { value: true }
+
+        @
+        
       checkAccess: (method) ->
         @constructor.checkAccess @getId(), method, @$options
 

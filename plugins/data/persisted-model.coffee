@@ -121,40 +121,8 @@ module.exports = ->
           .asCallback cb
 
       constructor: (data = {}, options = {}) ->
-        super
+        return super
 
-        proxy = new ObjectProxy @, @constructor, @$path, @
-
-        @setAttributes data, proxy
-
-        return proxy
-
-      setAttributes: (data = {}, proxy = @) ->
-        if data.id and @constructor.primaryKey isnt 'id'
-          @setId data.id
-          delete data.id
-
-        if data._id
-          @setId data._id
-          delete data._id
-
-        for own key, value of data when key?
-          if typeof proxy[key] is 'function'
-            continue if typeof value is 'function'
-            proxy[key](value)
-          else
-            proxy[key] = value
-
-        if not @$loaded
-          @emit '$setup', @$path, @
-
-          if @$parent and @$path
-            @$parent.emit '$loaded', @$path, @
-
-          @$property '$loaded', { value: true }
-
-        @
-        
       execute: (command, args...) ->
         model = Models.get @constructor.name
         fn = model[command]

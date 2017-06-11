@@ -31,6 +31,7 @@ module.exports = (app) ->
       'glob'
     ]
 
+    @include './base'
     @include './hooks'
     @include './attribute'
     @include './attributes'
