@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'Model', (Base, ObjectProxy, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Relations, Utils, ValidationError, Mixin) ->
+  @factory 'Model', (Base, ObjectProxy, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Relations, Utils, ValidationError, Mixin, debug) ->
     { extend, wrap } = Utils
 
     class Model extends Base
@@ -44,7 +44,8 @@ module.exports = ->
           @relation key, relations[key]
 
         @observe 'validate', (ctx, next) =>
- 
+          debug 'observe validate', ctx 
+
           finish = (err) ->
             if err?.length 
               next new ValidationError err
@@ -53,7 +54,7 @@ module.exports = ->
           if not @strict 
             return finish()
 
-          @attributes.validate ctx.instance, finish
+          @attributes.validate ctx.data, finish
 
         Object.keys(mixins).forEach (key) =>
           @mixin key, mixins[key]

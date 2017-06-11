@@ -2,6 +2,8 @@ name: "Protocol"
 
 base: "SharedModel"
 
+strict: true 
+
 properties:
 
   id:
@@ -10,6 +12,7 @@ properties:
 
   protocol:
     type: 'string'
+    enum: [ 'test' ]
 
   serverType:
     type: "string"

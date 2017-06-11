@@ -12,6 +12,6 @@ module.exports = ->
         a <= e
 
       @pattern: (a, e) ->
-        e = if @string e then (e = new RegExp(e)) else e
+        e = if typeof e is 'string' then (e = new RegExp(e)) else e
 
         e.test a

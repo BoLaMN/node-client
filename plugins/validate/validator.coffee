@@ -1,9 +1,9 @@
 
 module.exports = ->
 
-  @factory 'Validator', (Type, ValidatorFormats) ->
+  @factory 'Validator', (ValidatorFormats) ->
     
-    class Validator extends Type
+    class Validator 
 
       @conform: (value, options, object) ->
         options value, object
