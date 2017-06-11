@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'Context', (Utils) ->
+  @factory 'Context', (Utils, injector) ->
     { getArgs } = Utils 
 
     class Context
@@ -15,19 +15,27 @@ module.exports = ->
 
         return @execute()
 
+      clone: (data) ->
+        if data instanceof injector.get 'Model'
+          instance = data 
+        else
+          instance = new @model data
+
+        if @id
+          idName = @model.primaryKey
+
+          if not data[idName]
+            instance.setId @id 
+
+        Object.assign { data, instance }, @
+
       setup: (args) ->
 
         for arg, idx in @args
           @[arg] = args[idx]
 
-        if @data and not @instance
-          @instance = new @model @data
-
         if @id
           idName = @model.primaryKey
-
-          if not @data[idName]
-            @instance.setId id 
 
           @where ?= {}
           @where[idName] = @id
@@ -52,7 +60,8 @@ module.exports = ->
             @[fn] res
           current
 
-        Promise.all(promises).then @finish
+        Promise.all(promises).then =>
+          @data
 
       run: ->
         args = []
@@ -74,18 +83,20 @@ module.exports = ->
       after: ->
         @notify 'after ' + @cmd
 
-      finish: (res) ->
-        @instance
-        
       loaded: (res) ->
-        @results = res 
+        @data = res 
+
         @notify 'loaded'
 
       persist: ->
         @notify 'persist'
 
       notify: (event) ->
-        @model.fire event, @
+        if Array.isArray @data
+          Promise.each @data, (data) =>
+            @model.fire event, @clone data 
+        else 
+          @model.fire event, @clone @data
 
       validate: ->
         @notify 'validate'

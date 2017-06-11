@@ -54,7 +54,7 @@ module.exports = ->
           if not @strict 
             return finish()
 
-          @attributes.validate ctx.data, finish
+          @attributes.validate ctx.instance, finish
 
         Object.keys(mixins).forEach (key) =>
           @mixin key, mixins[key]
