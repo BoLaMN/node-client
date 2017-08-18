@@ -23,7 +23,7 @@ module.exports = ->
             when 'destroyById', 'deleteById', 'removeById'
               AccessContext.DELETE
             else
-              AccessContext.EXECUTE
+              AccessContext.ALL
 
         assert @accessType in AccessContext.accessTypes, 'invalid accessType ' + @accessType + '. It must be ' + AccessContext.accessTypes.join ', '
 
@@ -36,21 +36,20 @@ module.exports = ->
             if acl.methodName and acl.methodName isnt AccessContext.ALL 
               wildcard = acl.methodName is @methodName
 
-            acl.accessType in [ @accessType, 'ALL', 'EXECUTE' ] and wildcard 
+            acl.accessType in [ @accessType, 'ALL' ] and wildcard 
 
       @ALL: 'ALL'
       @READ: 'READ'
       @REPLICATE: 'REPLICATE'
       @WRITE: 'WRITE'
       @DELETE: 'DELETE'
-      @EXECUTE: 'EXECUTE'
       @DEFAULT: 'DEFAULT'
       @ALLOW: 'ALLOW'
       @ALARM: 'ALARM'
       @AUDIT: 'AUDIT'
       @DENY: 'DENY'
 
-      @accessTypes: [ "READ", "REPLICATE", "WRITE", "EXECUTE", "DELETE" ]
+      @accessTypes: [ "READ", "REPLICATE", "WRITE", "ALL", "DELETE" ]
 
       @permissionOrder:
         DEFAULT: 0
@@ -132,8 +131,8 @@ module.exports = ->
 
             if props[i] is 'accessType' and not isMatchingAccessType
               switch ruleValue
-                when AccessContext.EXECUTE, AccessContext.READ, AccessContext.WRITE, AccessContext.REPLICATE
-                  # EXECUTE should match READ, REPLICATE and WRITE
+                when AccessContext.ALL, AccessContext.READ, AccessContext.WRITE, AccessContext.REPLICATE
+                  # ALL should match READ, REPLICATE and WRITE
                   isMatchingAccessType = true
                 when AccessContext.WRITE
                   # WRITE should match REPLICATE too

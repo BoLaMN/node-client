@@ -227,13 +227,13 @@ acls: [
     principalId: "$everyone"
     permission: "ALLOW"
     methodName: "resetPassword"
-    accessType: "EXECUTE"
+    accessType: "ALL"
   }
   {
     principalType: "Role"
     principalId: "$everyone"
     permission: "ALLOW"
     methodName: "completePasswordReset"
-    accessType: "EXECUTE"
+    accessType: "ALL"
   }
 ]
