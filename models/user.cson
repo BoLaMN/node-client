@@ -124,26 +124,26 @@ acls: [
     principalType: "Role"
     principalId: "$everyone"
     permission: "ALLOW"
-    property: "create"
+    methodName: "create"
   }
   {
     principalType: "Role"
     principalId: "$everyone"
     permission: "ALLOW"
-    property: "callback"
+    methodName: "callback"
   }
   {
     principalType: "Role"
     principalId: "$everyone"
     permission: "ALLOW"
-    property: "login"
+    methodName: "login"
   }
   {
     principalType: "Role"
     principalId: "auth:info"
     permission: "ALLOW"
     accessType: "READ"
-    property: "info"
+    methodName: "info"
   }
   {
     principalType: "Role"
@@ -168,72 +168,72 @@ acls: [
     principalId: "auth:lookup"
     permission: "ALLOW"
     accessType: "READ"
-    property: "find"
+    methodName: "find"
   }
   {
     principalType: "Role"
     principalId: "auth:lookup"
     permission: "ALLOW"
     accessType: "READ"
-    property: "exists"
+    methodName: "exists"
   }
   {
     principalType: "Role"
     principalId: "$authenticated"
     permission: "ALLOW"
     accessType: "WRITE"
-    property: "updateById"
+    methodName: "updateById"
   }
   {
     principalType: "Role"
     principalId: "auth:lookup"
     permission: "ALLOW"
     accessType: "READ"
-    property: "findById"
+    methodName: "findById"
   }
   {
     principalType: "Role"
     principalId: "auth:lookup"
     permission: "ALLOW"
     accessType: "READ"
-    property: "findOne"
+    methodName: "findOne"
   }
   {
     principalType: "Role"
     principalId: "$everyone"
     permission: "ALLOW"
-    property: "logout"
+    methodName: "logout"
   }
   {
     principalType: "Role"
     principalId: "$owner"
     permission: "ALLOW"
-    property: "findById"
+    methodName: "findById"
   }
   {
     principalType: "Role"
     principalId: "$owner"
     permission: "ALLOW"
-    property: "updateAttributes"
+    methodName: "updateAttributes"
   }
   {
     principalType: "Role"
     principalId: "$everyone"
     permission: "ALLOW"
-    property: "confirm"
+    methodName: "confirm"
   }
   {
     principalType: "Role"
     principalId: "$everyone"
     permission: "ALLOW"
-    property: "resetPassword"
+    methodName: "resetPassword"
     accessType: "EXECUTE"
   }
   {
     principalType: "Role"
     principalId: "$everyone"
     permission: "ALLOW"
-    property: "completePasswordReset"
+    methodName: "completePasswordReset"
     accessType: "EXECUTE"
   }
 ]

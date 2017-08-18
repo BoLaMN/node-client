@@ -2,7 +2,7 @@
 
 module.exports = ->
 
-  @provider 'settings', (Utils, fs, path, crypto) ->
+  @provider 'settings', (utils, fs, path, crypto) ->
 
     class Settings
 
@@ -14,7 +14,7 @@ module.exports = ->
             source[key] or
             defaultValue
 
-          Utils.set @,
+          utils.set @,
             key.split('-').slice(-1),
             if formatter then formatter(value) else value
 

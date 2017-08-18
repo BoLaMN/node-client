@@ -1,8 +1,8 @@
 module.exports = ->
 
-  @factory 'Attribute', (Storage, Module, Validators, Cast, inflector, Utils) ->
+  @factory 'Attribute', (Storage, Module, Validators, Cast, inflector, utils) ->
     { camelize } = inflector
-    { clone, extend } = Utils
+    { clone, extend } = utils
 
     class Attribute extends Module
       @inherit Cast::

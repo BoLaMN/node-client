@@ -6,8 +6,8 @@ noop = ->
 
 module.exports = ->
 
-  @factory 'MongoCollection', (MongoCursor, Utils, ObjectID) ->
-    { extend } = Utils
+  @factory 'MongoCollection', (MongoCursor, utils, ObjectID) ->
+    { extend } = utils
 
     class MongoCollection
       constructor: (@collection) ->

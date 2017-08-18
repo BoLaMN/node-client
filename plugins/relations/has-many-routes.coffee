@@ -33,6 +33,10 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          data: 
+            type: @through?.name or @model?.name
+            root: true 
         description: "Add a related item by id for #{ @as }."
         accessType: 'WRITE'
 
@@ -54,6 +58,11 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          count:
+            type: 'object'
+            description: 'The number of instances deleted'
+            root: true
         description: "Remove the #{ @as } relation to an item by id."
         accessType: 'WRITE'
 
@@ -75,6 +84,9 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns: 
+          exists:
+            type: 'boolean'
         description: "Check the existence of #{ @as } relation to an item by id."
         accessType: 'READ'
 
@@ -106,6 +118,10 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          data: 
+            type: @model?.name
+            root: true 
         description: "Find a related item by id for #{ @as }."
         accessType: 'READ'
 
@@ -127,6 +143,11 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          count:
+            type: 'object'
+            description: 'The number of instances deleted'
+            root: true
         description: "Delete a related item by id for #{ @as }."
         accessType: 'WRITE'
 
@@ -153,6 +174,9 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          success:
+            type: 'boolean'
         description: "Update a related item by id for #{ @as }."
         accessType: 'WRITE'
 
@@ -179,6 +203,9 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          success:
+            type: 'boolean'
         description: "Patch a related item by id for #{ @as }."
         accessType: 'WRITE'
 

@@ -2,8 +2,8 @@
 
 module.exports = ->
 
-  @factory 'Request', (Utils) ->
-    { defer } = Utils
+  @factory 'Request', (utils) ->
+    { defer } = utils
 
     class Request
       constructor: (@middlewares, @errorHandlers, @handlers) ->

@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'InterpolateFilters', (InterpolateToFunction, Interpolate, Utils, debug, moment) ->
+  @factory 'InterpolateFilters', (InterpolateToFunction, Interpolate, utils, debug, moment) ->
 
     preprocessDate = (value) ->
       if moment.isMoment(value) then value else moment value
@@ -17,7 +17,7 @@ module.exports = ->
         template = interpolate.templates[val]
 
         process = (obj) =>
-          newCtx = Utils.clone @scope
+          newCtx = utils.clone @scope
           newCtx.scope[val] = obj
 
           Interpolate.walk template, newCtx

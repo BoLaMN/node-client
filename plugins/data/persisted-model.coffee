@@ -1,7 +1,7 @@
 module.exports = ->
 
-  @factory 'PersistedModel', (Model, Context, Utils, ObjectProxy, assert, Models) ->
-    { getArgs } = Utils
+  @factory 'PersistedModel', (Model, Context, utils, ObjectProxy, assert, Models) ->
+    { getArgs } = utils
 
     class PersistedModel extends Model
 

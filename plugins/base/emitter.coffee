@@ -1,7 +1,7 @@
 module.exports = ->
 
-  @factory 'Events', (Utils) ->
-    { property } = Utils
+  @factory 'Events', (utils) ->
+    { property } = utils
 
     iterate = (ev, fn) ->
       if not @$events

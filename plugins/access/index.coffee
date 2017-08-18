@@ -8,7 +8,7 @@ module.exports = (app) ->
     @include './access-context'
     @include './principal'
 
-    @decorator 'ACL', (ACL, debug) ->
+    @decorator 'ACL', (ACL) ->
       ACL.resolvers = {}
 
       ###*
@@ -22,34 +22,9 @@ module.exports = (app) ->
         ACL.resolvers[role] = resolver
         return
 
-      ###*
-      # Check if the given principal is allowed to access the model/methodName
-      # @param {String} principalType The principal type.
-      # @param {String} principalId The principal ID.
-      # @param {String} model The model name.
-      # @param {String} methodName The methodName/method/relation name.
-      # @param {String} accessType The access type.
-      # @callback {Function} callback Callback function.
-      # @param {String|Error} err The error object
-      # @param {AccessRequest} result The access permission
-      ###
-
-      ACL::debug = ->
-        if debug.enabled
-          debug '---ACL---'
-          debug 'model %s', @modelName
-          debug 'methodName %s', @methodName
-          debug 'principalType %s', @principalType
-          debug 'principalId %s', @principalId
-          debug 'accessType %s', @accessType
-          debug 'permission %s', @permission
-          debug 'with score: %s', @score
-
-        return
-
       ACL
 
-    @factory 'AccessHandler', (OAuthError, ServerError, AccessDeniedError, InvalidArgumentError, AccessContext) ->
+    @factory 'AccessHandler', (OAuthError, ServerError, AccessDeniedError, InvalidArgumentError, AccessContext, debug) ->
 
       class AccessHandler
         constructor: (@request, @response) ->
@@ -65,7 +40,7 @@ module.exports = (app) ->
             accessType: @getAccessType route
 
           @authenticateHandler = handle: ->
-            Promise.resolve userId: '1', roles: []
+            Promise.resolve id: 1, userId: '1', roles: []
 
         @check: (req, res) ->
           handler = new AccessHandler req, res

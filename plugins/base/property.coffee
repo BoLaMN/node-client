@@ -1,8 +1,8 @@
 module.exports = ->
 
-  @decorator 'Utils', (Utils) ->
+  @decorator 'utils', (utils) ->
 
-    Utils.property = (cls, key, accessor = {}, hidden) ->
+    utils.property = (cls, key, accessor = {}, hidden) ->
       if cls[key]
         return
 
@@ -21,4 +21,4 @@ module.exports = ->
 
       Object.defineProperty cls, key, accessor
 
-    Utils
+    utils

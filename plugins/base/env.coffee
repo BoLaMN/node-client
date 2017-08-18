@@ -17,7 +17,7 @@ module.exports = ->
       mode is anotherMode
 
     @set = (key, value) ->
-      Utils.set settings, key, value 
+      utils.set settings, key, value 
 
     @mode = (newMode) ->
       if newMode
@@ -30,13 +30,13 @@ module.exports = ->
     @load = (definition) ->
       @settings = definition
 
-    @$get = (Utils) ->
+    @$get = (utils) ->
 
       settings.get = (path, value) ->
-        Utils.get(settings, path) or value
+        utils.get(settings, path) or value
 
       settings.has = (path) ->
-        not not Utils.get settings, path
+        not not utils.get settings, path
 
       settings.is = equals
 

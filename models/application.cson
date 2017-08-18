@@ -152,6 +152,6 @@ acls: [
     principalType: "Role"
     principalId: "$everyone"
     permission: "ALLOW"
-    property: "findById"
+    methodName: "findById"
   }
 ]

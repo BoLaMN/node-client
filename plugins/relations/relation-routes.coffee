@@ -23,6 +23,10 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          data: 
+            type: @model?.name
+            root: true 
         description: "Queries #{ @as } of #{ @model.name }."
         accessType: 'READ'
 
@@ -44,6 +48,10 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          data: 
+            type: @model?.name
+            root: true 
         description: "Creates a new instance in  #{ @as }  of this model."
         accessType: 'WRITE'
 
@@ -64,6 +72,9 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          success:
+            type: 'boolean'
         description: "Deletes all #{ @as } of this model."
         accessType: 'WRITE'
 
@@ -85,6 +96,9 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns: 
+          count:
+            type: 'number'
         description: "Counts #{ @as } of #{ @model.name }"
         accessType: 'READ'
 
@@ -106,5 +120,8 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          exists:
+            type: 'boolean'
         description: "#{ @as } exists of #{ @model.name }"
         accessType: 'READ'

@@ -5,7 +5,7 @@ module.exports = ->
   @include './route'
   @include './request'
 
-  @factory 'Section', (Request, Route, Utils, url) ->
+  @factory 'Section', (Request, Route, utils, url) ->
 
     methods = [
       'head'
@@ -53,11 +53,11 @@ module.exports = ->
         @
 
       use: (middleware) ->
-        @middlewares.push.apply @middlewares, Utils.flatten(middleware)
+        @middlewares.push.apply @middlewares, utils.flatten(middleware)
         @
 
       error: (middleware) ->
-        @errorHandlers.push.apply @errorHandlers, Utils.flatten(middleware)
+        @errorHandlers.push.apply @errorHandlers, utils.flatten(middleware)
         @
 
       _route: (name, options, handler) ->

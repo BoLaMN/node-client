@@ -1,8 +1,8 @@
 module.exports = ->
 
-  @decorator 'Utils', (Utils, merge) ->
+  @decorator 'utils', (utils, merge) ->
 
-    Utils.mergeQuery = (base = {}, update, spec = {}) ->
+    utils.mergeQuery = (base = {}, update, spec = {}) ->
       if not update
         return
 
@@ -47,4 +47,4 @@ module.exports = ->
 
       base
 
-    Utils
+    utils

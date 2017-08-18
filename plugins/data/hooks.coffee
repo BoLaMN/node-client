@@ -1,7 +1,7 @@
 module.exports = ->
 
-  @factory 'Hook', (Utils) ->
-    { wrap } = Utils
+  @factory 'Hook', (utils) ->
+    { wrap } = utils
 
     class Hook
       constructor: (fn) ->

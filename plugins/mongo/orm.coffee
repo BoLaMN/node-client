@@ -2,8 +2,8 @@
 
 module.exports = ->
 
-  @factory 'MongoORM', (Adapter, MongoQuery, KeyArray, MongoCollection, Utils, ObjectID, debug, inspect) ->
-    { buildOptions } = Utils
+  @factory 'MongoORM', (Adapter, MongoQuery, KeyArray, MongoCollection, utils, ObjectID, debug, inspect) ->
+    { buildOptions } = utils
 
     class MongoORM extends Adapter
 

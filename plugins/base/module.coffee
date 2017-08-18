@@ -1,7 +1,7 @@
 module.exports = ->
 
-  @factory 'Module', (Events, Utils) ->
-    { property } = Utils
+  @factory 'Module', (Events, utils) ->
+    { property } = utils
 
     class Module extends Events
 

@@ -1,7 +1,7 @@
 module.exports = ->
 
-  @factory 'Model', (Base, ObjectProxy, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Relations, Utils, ValidationError, Mixin, debug) ->
-    { extend, wrap } = Utils
+  @factory 'Model', (Base, ObjectProxy, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Relations, utils, ValidationError, Mixin, debug) ->
+    { extend, wrap } = utils
 
     class Model extends Base
       @mixin Relations

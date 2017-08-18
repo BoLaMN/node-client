@@ -29,11 +29,14 @@ module.exports = ->
 
         if @modelName
           @model = injector.get @modelName
-          @acls = @model.acls
+          
+          @acls = @model.acls.filter (acl) =>
+            wildcard = true 
 
-        AccessToken = injector.get 'AccessToken'
+            if acl.methodName and acl.methodName isnt AccessContext.ALL 
+              wildcard = acl.methodName is @methodName
 
-        @token ?= new AccessToken accessToken: '$anonymous'
+            acl.accessType in [ @accessType, 'ALL', 'EXECUTE' ] and wildcard 
 
       @ALL: 'ALL'
       @READ: 'READ'
@@ -100,6 +103,9 @@ module.exports = ->
           resolve false
 
       getMatchingScore: (rule) ->
+        if rule.score 
+          return rule.score 
+
         props = [
           'model'
           'methodName'
@@ -184,6 +190,8 @@ module.exports = ->
 
         score = score * 4
         score += AccessContext.permissionOrder[rule.permission or AccessContext.ALLOW] - 1
+        
+        rule.score = score 
 
         score
 
@@ -197,10 +205,10 @@ module.exports = ->
         while i < acls.length
           candidate = acls[i]
 
-          if not acls[i].score
-            acls[i].score = @getMatchingScore(candidate)
+          if not candidate.score
+            @getMatchingScore(candidate)
 
-          score = acls[i].score
+          score = candidate.score
 
           if score < 0
             # the highest scored ACL did not match
@@ -224,11 +232,19 @@ module.exports = ->
 
           i++
 
-        if debug.enabled
-          debug 'The following ACLs were searched: '
+        debug 'The following ACLs were searched: '
 
-          acls.forEach (acl) ->
-            acl.debug()
+        acls.forEach (acl) ->
+          debug '---ACL---'
+          debug 'model %s', acl.modelName
+          debug 'methodName %s', acl.methodName
+          debug 'principalType %s', acl.principalType
+          debug 'principalId %s', acl.principalId
+          debug 'accessType %s', acl.accessType
+          debug 'permission %s', acl.permission
+          debug 'with score: %s', acl.score
+
+          return
 
         if @permission is AccessContext.DEFAULT
           @permission = AccessContext.ALLOW
@@ -284,7 +300,7 @@ module.exports = ->
         @toJSON()
 
       setToken: (token) ->
-        @token = token.accessToken
+        @token = token.id
 
         if token.userId
           @addPrincipal AccessPrincipal.USER, token.userId
@@ -304,35 +320,33 @@ module.exports = ->
         not not (@getUserId() or @getAppId())
 
       debugContext: ->
-        if debug.enabled
-          debug '---AccessContext---'
+        debug '---AccessContext---'
 
-          if @principals.length
-            debug 'principals:'
-            @principals.forEach (principal) ->
-              debug ' principal: %j', principal
-          else
-            debug 'principals: %j', @principals
+        if @principals.length
+          debug 'principals:'
+          @principals.forEach (principal) ->
+            debug ' principal: %j', principal
+        else
+          debug 'principals: %j', @principals
 
-          debug 'modelName %s', @modelName
-          debug 'modelId %s', @modelId
-          debug 'methodName %s', @methodName
-          debug 'accessType %s', @accessType
+        debug 'modelName %s', @modelName
+        debug 'modelId %s', @modelId
+        debug 'methodName %s', @methodName
+        debug 'accessType %s', @accessType
 
-          if @token
-            debug 'accessToken: %s', @token
+        if @token
+          debug 'accessToken:', @token
 
-          debug 'getUserId() %s', @getUserId()
-          debug 'isAuthenticated() %s', @isAuthenticated()
+        debug 'getUserId() %s', @getUserId()
+        debug 'isAuthenticated() %s', @isAuthenticated()
 
         return
 
       debugRequest: ->
-        if debug.enabled
-          debug '---AccessRequest---'
+        debug '---AccessRequest---'
 
-          debug ' permission %s', @permission
-          debug ' isWildcard() %s', @isWildcard()
-          debug ' isAllowed() %s', @isAllowed()
+        debug ' permission %s', @permission
+        debug ' isWildcard() %s', @isWildcard()
+        debug ' isAllowed() %s', @isAllowed()
 
         return

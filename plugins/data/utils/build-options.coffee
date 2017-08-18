@@ -1,8 +1,8 @@
 module.exports = ->
 
-  @decorator 'Utils', (Utils) ->
+  @decorator 'utils', (utils) ->
 
-    Utils.buildOptions = (instance, name, index) ->
+    utils.buildOptions = (instance, name, index) ->
       if arguments.length is 2
         index = name
         { name, instance } = instance
@@ -10,7 +10,7 @@ module.exports = ->
       if not instance?.$options
         return
 
-      obj = Utils.clone instance.$options
+      obj = utils.clone instance.$options
       obj.name = name
 
       if index isnt undefined
@@ -20,4 +20,4 @@ module.exports = ->
       obj.parent = instance
       obj
 
-    Utils
+    utils

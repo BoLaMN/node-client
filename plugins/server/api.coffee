@@ -2,8 +2,8 @@
 
 module.exports = ->
 
-  @factory 'api', (Section, Middleware, injector, Swagger, Utils, Models, Types) ->
-    { extend } = Utils
+  @factory 'api', (Section, Middleware, injector, Swagger, utils, Models, Types) ->
+    { extend } = utils
 
     class Api extends Section
       constructor: ->

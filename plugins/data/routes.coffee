@@ -14,6 +14,11 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          count:
+            type: 'object'
+            description: 'The number of instances deleted'
+            root: true
         accessType: "WRITE"
         description: "Delete all matching records."
         path: "/"
@@ -29,6 +34,11 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          count:
+            type: 'object'
+            description: 'The number of instances deleted'
+            root: true
         accessType: "WRITE"
         aliases: [
           "destroyById"
@@ -50,6 +60,10 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns: 
+          data:
+            type: 'any'
+            root: true 
         accessType: "WRITE"
         description: "Create a new instance of the model and persist it into the data source."
         path: "/"
@@ -66,6 +80,9 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns: 
+          count:
+            type: 'number'
         accessType: "READ"
         description: "Count instances of the model matched by where from the data source."
         path: "/count"
@@ -81,6 +98,9 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns: 
+          exists:
+            type: 'boolean'
         accessType: "READ"
         description: "Check whether a model instance exists in the data source."
         path: "/:#{ @primaryKey }"
@@ -97,6 +117,10 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          data: 
+            type: [ @name ]
+            root: true 
         accessType: "READ"
         description: "Find all instances of the model matched by filter from the data source."
         path: "/"
@@ -117,6 +141,10 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          data: 
+            type: @name
+            root: true 
         accessType: "READ"
         description: "Find a model instance by #{ @primaryKey } from the data source."
         path: "/:#{ @primaryKey }"
@@ -132,6 +160,11 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          data: 
+            type: @name
+            root: true 
+            default: {}
         accessType: "READ"
         description: "Find first instance of the model matched by filter from the data source."
         path: "/findOne"
@@ -152,6 +185,10 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          data: 
+            type: @name
+            root: true 
         accessType: "WRITE"
         aliases: [
           "patchAttributes"
@@ -175,6 +212,11 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns: 
+          count:
+            description: 'The number of instances updated'
+            type: 'number'
+            root: true
         accessType: "WRITE"
         aliases: [
           "update"
@@ -198,6 +240,9 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns: 
+          success:
+            type: 'boolean'
         accessType: "WRITE"
         description: "Replace attributes for a model instance and persist it into the data source."
         path: "/:#{ @primaryKey }"
@@ -209,6 +254,10 @@ module.exports = ->
       #      description: "Model instance data"
       #      source: "body"
       #      type: "object"
+      #  returns:
+      #    data: 
+      #      type: @name
+      #      root: true 
       #  accessType: "WRITE"
       #  aliases: [
       #    "upsert"
@@ -224,6 +273,10 @@ module.exports = ->
       #      description: "Model instance data"
       #      source: "body"
       #      type: "object"
+      #  returns:
+      #    data: 
+      #      type: @name
+      #      root: true 
       #  accessType: "WRITE"
       #  description: "Replace an existing model instance or insert a new one into the data source."
       #  path: "/replaceOrCreate"
@@ -235,5 +288,9 @@ module.exports = ->
       #    data:
       #      type: 'object'
       #      source: 'body'
+      #  returns:
+      #    data: 
+      #      type: @name
+      #      root: true 
       #  method: 'post'
       #  path: '/findOrCreate'

@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'Base', (Entity, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Relations, Utils, ValidationError, Mixin) ->
+  @factory 'Base', (Entity, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Relations, utils, ValidationError, Mixin) ->
 
     class Base extends Entity
 

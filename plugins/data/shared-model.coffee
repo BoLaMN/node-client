@@ -2,7 +2,7 @@ module.exports = ->
 
   @include './routes'
 
-  @factory 'SharedModel', (PersistedModel, api, Utils, injector, Routes) ->
+  @factory 'SharedModel', (PersistedModel, api, utils, injector, Routes) ->
 
     class SharedModel extends PersistedModel
 
@@ -68,13 +68,13 @@ module.exports = ->
       @remoteMethod: (name, config, section, fn) ->
         route = section or api.section @name
 
-        fn ?= Utils.get @, name
+        fn ?= utils.get @, name
 
         if not fn
           console.error "method #{name} not found on #{ @name }"
           return
 
-        config.args ?= Utils.getArgs fn
+        config.args ?= utils.getArgs fn
         config.path = '/' + @name + config.path
 
         config.modelName = @name

@@ -25,6 +25,10 @@ module.exports = ->
             type: 'object'
             source: 'context'
             required: false
+        returns:
+          data: 
+            type: @model?.name
+            root: true 
         description: "Fetches hasOne relation #{ @as }."
         accessType: 'READ'
 
@@ -44,6 +48,10 @@ module.exports = ->
           options:
             type: 'object'
             source: 'context'
+        returns:
+          data: 
+            type: @model?.name
+            root: true 
         description: "Creates a new instance in #{ @as } of this model."
         accessType: 'WRITE'
 
@@ -63,6 +71,9 @@ module.exports = ->
           options:
             type: 'object'
             source: 'context'
+        returns:
+          success:
+            type: 'boolean'
         description: "Update #{ @as } of this model."
         accessType: 'WRITE'
 
@@ -78,6 +89,9 @@ module.exports = ->
           options:
             type: 'object'
             source: 'context'
+        returns:
+          success:
+            type: 'boolean'
         description: "Deletes #{ @as } of this model."
         accessType: 'WRITE'
 

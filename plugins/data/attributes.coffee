@@ -1,7 +1,7 @@
 module.exports = ->
 
-  @factory 'Attributes', (Storage, Validators, Utils, debug) ->
-    { wrap } = Utils
+  @factory 'Attributes', (Storage, Validators, utils, debug) ->
+    { wrap } = utils
 
     class Attributes extends Storage
 

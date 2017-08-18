@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @decorator 'Utils', (Utils) ->
+  @decorator 'utils', (utils) ->
 
     sync = (fn, done) ->
       ->
@@ -28,7 +28,7 @@ module.exports = ->
         fn = ->
         ret
 
-    Utils.wrap = (fn, done = ->) ->
+    utils.wrap = (fn, done = ->) ->
       done = once done
 
       ->
@@ -51,4 +51,4 @@ module.exports = ->
 
         sync(fn, done).apply ctx, args
 
-    Utils
+    utils

@@ -4,8 +4,8 @@ toFunction = require './ToFunction'
 
 module.exports = ->
 
-  @factory 'KeyArray', (Utils, isPlainObject) ->
-    { values } = Utils
+  @factory 'KeyArray', (utils, isPlainObject) ->
+    { values } = utils
 
     proto = Array.prototype
 

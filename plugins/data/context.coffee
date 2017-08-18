@@ -1,7 +1,7 @@
 module.exports = ->
 
-  @factory 'Context', (Utils, injector) ->
-    { getArgs } = Utils 
+  @factory 'Context', (utils, injector) ->
+    { getArgs } = utils 
 
     class Context
       constructor: (@model, @cmd, args...) ->

@@ -2,9 +2,9 @@ module.exports = ->
 
   @include './relation-routes'
 
-  @factory 'Relation', (Module, inflector, Utils, Models, ObjectProxy) ->
+  @factory 'Relation', (Module, inflector, utils, Models, ObjectProxy) ->
     { camelize, pluralize } = inflector
-    { extend, buildOptions, mergeQuery } = Utils
+    { extend, buildOptions, mergeQuery } = utils
 
     class Relation extends Module
 
