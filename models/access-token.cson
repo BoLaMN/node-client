@@ -38,7 +38,7 @@ properties:
 relations:
 
   user:
-    type: "hasOne"
+    type: "belongsTo"
     model: "User"
     foreignKey: "userId"
 

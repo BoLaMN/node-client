@@ -1,7 +1,6 @@
 camelize_rx = /(?:^|_|\-)(.)/g
 titleize_rx = /(^|\s)([a-z])/g
-underscore_rx1 = /([A-Z]+)([A-Z][a-z])/g
-underscore_rx2 = /([a-z\d])([A-Z])/g
+
 humanize_rx1 = /_id$/
 humanize_rx2 = /_|-|\./g
 humanize_rx3 = /^\w/g
@@ -100,17 +99,18 @@ class Inflector
       string.substr(0,1).toLowerCase() + string.substr(1)
     else string
 
-  @underscore: (string) ->
+  @underscore: (string, c = '_') ->
     string
-      .replace(underscore_rx1, '$1_$2')
-      .replace(underscore_rx2, '$1_$2')
-      .replace('-', '_').toLowerCase()
+      .replace /([A-Z]+)([A-Z][a-z])/g, '$1' + c + '$2' 
+      .replace /([a-z\d])([A-Z])/g, '$1' + c + '$2' 
+      .replace '-', c
+      .toLowerCase()
 
   @debug: (string) ->
-    Inflector.underscore(string).replace /_/g, ':'
+    Inflector.underscore(string, ':')
 
   @dasheize: (string) ->
-    Inflector.underscore(string).replace /_/g, '-'
+    Inflector.underscore string, '-'
 
   @titleize: (string) ->
     string.replace titleize_rx, (m, p1, p2) ->

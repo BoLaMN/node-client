@@ -47,8 +47,10 @@ class Injector
 
   get: (name, context) ->
     factory = @require name
+    provider = @[dependencies][name + 'Provider']
+    context ?= provider() if provider
     args = @inject @parse(factory), name
-    service = @decorate name, factory args...
+    service = @decorate name, factory.apply context, args 
     factory.apply context, args
 
   decorate: (name, service) ->
@@ -63,6 +65,12 @@ class Injector
       try
         module = require name
       catch e
+      
+      try 
+        module = require dasheize name 
+      catch e 
+        
+      if not module
         throw new ReferenceError "Dependency '#{name}' not defined"
 
       if module
@@ -89,12 +97,15 @@ class Injector
       args = @inject @parse(factory), owner
       service = @decorate name, factory args...
       if name is 'debug'
-        dbg = owner or name
-        plugin = debug @[plugins][dbg]
-        service = service plugin + ':' + dasheize(dbg)
+        dbg = owner or name or ''
+        if @[plugins][dbg]
+          plugin = debug(@[plugins][dbg]) + ':'
+        service = service (plugin or '') + dasheize(dbg)
       service
 
   exec: (name, factory, context) ->
+    provider = @[dependencies][name + 'Provider']
+    context ?= provider() if provider
     args = @inject @parse(factory), name
     factory.apply context, args
 

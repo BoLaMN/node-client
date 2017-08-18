@@ -8,22 +8,6 @@ module.exports = (app) ->
 
   .initializer ->
 
-    buildModel = (name, config) =>
-      model = @injector.get config.base or 'Model'
-      adptr = @injector.get config.adapter or 'MongoDB'
-
-      connector = adptr.define 'db'
-
-      factory = model.define name, config
-      factory.adapter connector
-
-      service = ->
-        factory
-
-      @factory name, service, 'model'
-
-      @
-
     @require [
       'fs'
       'path'
@@ -36,6 +20,7 @@ module.exports = (app) ->
     @include './attribute'
     @include './attributes'
     @include './models'
+    @include './datasources'
     @include './shared-model'
     @include './persisted-model'
     @include './model'
@@ -51,19 +36,28 @@ module.exports = (app) ->
     @include './utils/merge-query'
 
     @assembler 'model', ->
-      (name, config) ->
-        buildModel name, config
+      (name, definition, config = {}, fn) =>
+        Model = @injector.get definition.base or 'Model'
+        Adapters = @injector.get 'Adapters'
 
-    @run (settings, glob, path) ->
-      directory = settings.directorys.models
-      pattern = path.join directory, '**/*.{cson,json}'
+        factory = Model.define name, definition
+        
+        if config.dataSource
+          Adapters.get config.dataSource, (connector) ->
+            factory.adapter connector
 
-      files = glob.sync path.resolve pattern
+        mixins = Object.keys definition.mixins or {} 
+        mixins.forEach (mixin) ->
+          factory.mixin mixin, definition.mixins[mixin]
 
-      models = files.map (filename) ->
-        config = require filename
-        buildModel config.name, config
+        if fn
+          fn factory
+        
+        service = ->
+          factory
 
-      models
+        @factory name, service, 'model'
+
+        @
 
     @model 'TransientModel', { }

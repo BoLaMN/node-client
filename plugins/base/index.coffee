@@ -12,7 +12,6 @@ module.exports = (app) ->
     @include './module'
     @include './storage'
     @include './emitter'
-    @include './env'
     @include './property'
     @include './settings'
     

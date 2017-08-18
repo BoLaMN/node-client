@@ -1,15 +1,12 @@
 'use strict'
 
-require 'require-cson'
-
-path = require 'path'
 server = require './core/Host'
 
 if not module.parent
   server.bootstrap
     directories: [
-      path.join __dirname, 'plugins'
-      path.join process.cwd(), 'plugins'
+      __dirname 
+      process.cwd() 
     ]
   .run()
 else
@@ -17,8 +14,8 @@ else
   ###
     require 'node-client'
       directories: [
-        path.join __dirname, 'plugins'
-        path.join process.cwd(), 'plugins'
+        __dirname 
+        process.cwd() 
       ]
     .run()
 
@@ -27,8 +24,8 @@ else
     app = require 'node-client'
 
     options = directories: [
-      path.join __dirname, 'plugins'
-      path.join process.cwd(), 'plugins'
+      __dirname 
+      process.cwd() 
     ]
 
     app(options).run()

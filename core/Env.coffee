@@ -16,9 +16,6 @@ module.exports = ->
     equals = (anotherMode) ->
       mode is anotherMode
 
-    @set = (key, value) ->
-      utils.set settings, key, value 
-
     @mode = (newMode) ->
       if newMode
         mode = newMode
@@ -30,7 +27,7 @@ module.exports = ->
     @load = (definition) ->
       @settings = definition
 
-    @$get = (utils) ->
+    @$get = (utils, merge) ->
 
       settings.get = (path, value) ->
         utils.get(settings, path) or value
@@ -38,6 +35,27 @@ module.exports = ->
       settings.has = (path) ->
         not not utils.get settings, path
 
+      settings.extend = (values) ->
+        merge settings, values 
+         
       settings.is = equals
 
       settings
+
+  @factory 'debug', (env, inspect) ->
+    debug = require 'debug'
+
+    (name) -> 
+      if not env.DEBUG 
+        return -> 
+
+      debug name
+
+  @factory 'inspect', (env) ->
+    { inspect } = require 'util'
+
+    (args...) -> 
+      if not env.DEBUG 
+        return args
+
+      inspect args... 

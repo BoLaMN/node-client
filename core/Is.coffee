@@ -1,4 +1,5 @@
 toFunction = require './ToFunction'
+toString = Object::toString
 
 module.exports = ->
 
@@ -23,22 +24,22 @@ module.exports = ->
     (name, factory) ->
       @factory 'is' + name, factory, 'helper'
 
-  @is 'Arguments', (baseGetTag)->
+  @is 'Arguments', ->
     (value) -> typeof value is 'object' and
                value isnt null and
-               baseGetTag(value) is '[object Arguments]'
+               toString.call(value) is '[object Arguments]'
 
   @is 'Null', ->
     (value) -> value is null
 
-  @is 'Number', (baseGetTag, isObjectLike) ->
+  @is 'Number', (isObjectLike) ->
     (value) -> typeof value is 'number' or
-               isObjectLike(value) and baseGetTag(value) is '[object Number]'
+               isObjectLike(value) and toString.call(value) is '[object Number]'
 
-  @is 'Boolean', (baseGetTag, isObjectLike) ->
+  @is 'Boolean', (isObjectLike) ->
     (value) -> value is true or
                value is false or
-               isObjectLike(value) and baseGetTag(value) is '[object Boolean]'
+               isObjectLike(value) and toString.call(value) is '[object Boolean]'
 
   @is 'Prototype', ->
     (value) ->
@@ -79,9 +80,8 @@ module.exports = ->
       if isPrototype(value)
         return not Object.keys(value).length
 
-      for key of value
-        if hasOwnProp.call(value, key)
-          return false
+      for own key of value
+        return false
 
       true
 
@@ -90,9 +90,6 @@ module.exports = ->
 
   @is 'Defined', ->
     (value) -> value isnt undefined
-
-  @is 'ObjectLike', ->
-    (value) -> typeof value is 'object' and value isnt null
 
   @is 'Object', ->
     (value) ->
@@ -103,49 +100,13 @@ module.exports = ->
   @is 'ObjectLike', ->
     (value) -> typeof value is 'object' and value isnt null
 
-  @factory 'hasOwnProp', ->
-    (ctx, val) -> Object::hasOwnProperty.call ctx, val
+  @is 'Date', (isObjectLike) ->
+    (value) -> isObjectLike(value) and toString.call(value) is '[object Date]'
 
-  @factory 'objToString', ->
-    (value) -> Object::toString.call value
+  @is 'RegExp', (isObjectLike) ->
+    (value) -> isObjectLike(value) and toString.call(value) is '[object RegExp]'
 
-  @factory 'baseGetTag', (hasOwnProp, objToString) ->
-    symToStringTag = if typeof Symbol isnt 'undefined' then Symbol.toStringTag else undefined
-
-    (value) ->
-      if value is null
-        return if value is undefined then '[object Undefined]' else '[object Null]'
-
-      if not (symToStringTag and symToStringTag of Object(value))
-        return objToString value
-
-      isOwn = hasOwnProp value, symToStringTag
-      tag = value[symToStringTag]
-
-      unmasked = false
-
-      try
-        value[symToStringTag] = undefined
-        unmasked = true
-      catch e
-
-      result = objToString value
-
-      if unmasked
-        if isOwn
-          value[symToStringTag] = tag
-        else
-          delete value[symToStringTag]
-
-      result
-
-  @is 'Date', (isObjectLike, baseGetTag) ->
-    (value) -> isObjectLike(value) and baseGetTag(value) is '[object Date]'
-
-  @is 'RegExp', (isObjectLike, baseGetTag) ->
-    (value) -> isObjectLike(value) and baseGetTag(value) is '[object RegExp]'
-
-  @is 'String', (baseGetTag) ->
+  @is 'String',  ->
     (value) ->
       type = typeof value
 
@@ -153,79 +114,69 @@ module.exports = ->
       type is 'object' and
       value isnt null and
       not Array.isArray(value) and
-      baseGetTag(value) is '[object String]'
+      toString.call(value) is '[object String]'
 
-  @is 'Function', (isObject, baseGetTag) ->
+  @is 'Function', (isObject) ->
     (value) ->
       if not isObject value
         return false
 
-      tag = baseGetTag value
+      tag = toString.call value
 
       tag is '[object Function]' or
       tag is '[object AsyncFunction]' or
       tag is '[object GeneratorFunction]' or
       tag is '[object Proxy]'
 
-  @is 'PlainObject', (isObjectLike, baseGetTag, objToString, hasOwnProp) ->
+  @is 'Value', ->
     (value) ->
-      if not isObjectLike(value) or baseGetTag(value) isnt '[object Object]'
+      if typeof value is 'number'
+        return not isNaN value
+      value isnt null
+
+  @is 'PlainObject', (isObjectLike) ->
+    (value) ->
+      if not isObjectLike(value) or toString.call(value) isnt '[object Object]'
         return false
 
       proto = Object.getPrototypeOf value
-      objectCtorString = objToString Object
+      objectCtorString = toString.call Object
 
       if proto is null
         return true
 
-      Ctor = hasOwnProp(proto, 'constructor') and proto.constructor
+      Ctor = Object::hasOwnProperty.call(proto, 'constructor') and proto.constructor
 
-      typeof Ctor is 'function' and Ctor instanceof Ctor and objToString(Ctor) is objectCtorString
+      typeof Ctor is 'function' and Ctor instanceof Ctor and toString.call(Ctor) is objectCtorString
 
-  @factory 'baseExtend', (isObject, isFunction, isRegExp, isDate) ->
-    (dst, objs, deep) ->
-      i = 0
-      ii = objs.length
+  @factory 'extend', (isObjectLike, isPlainObject, isFunction, isRegExp, isDate) ->
+    extend = (dst, objs..., deep = false) ->
+      for obj in objs
 
-      while i < ii
-        obj = objs[i]
-
-        if not isObject(obj) and not isFunction(obj)
-          ++i
+        if not isObjectLike(obj) and not isFunction obj
           continue
 
-        keys = Object.keys(obj)
-
-        j = 0
-        jj = keys.length
-
-        while j < jj
-          key = keys[j]
-          src = obj[key]
-
-          if deep and isObject(src)
-            if isDate(src)
-              dst[key] = new Date(src.valueOf())
+        for own key, src of obj
+          if deep and isObjectLike src
+            if isDate src
+              dst[key] = new Date src.valueOf() 
             else if isRegExp(src)
-              dst[key] = new RegExp(src)
+              dst[key] = new RegExp src
             else
-              if not isObject(dst[key])
+              if not isObjectLike dst[key] 
                 dst[key] = if Array.isArray(src) then [] else {}
 
-              baseExtend dst[key], [ src ], true
+              if isPlainObject src
+                extend dst[key], src, true
+              else 
+                dst[key] = src
           else
             dst[key] = src
 
-          j++
-
-        ++i
-
       dst
 
-  @factory 'extend', (baseExtend) ->
-    (dst, objs...) ->
-      baseExtend dst, objs, false
+    extend
 
-  @factory 'merge', (baseExtend) ->
+  @factory 'merge', (extend) ->
     (dst, objs...) ->
-      baseExtend dst, objs, true
+      extend dst, objs..., true

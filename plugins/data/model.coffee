@@ -83,9 +83,6 @@ module.exports = ->
       @check: ->
         true
 
-      @inspect: ->
-        @name
-
       @checkAccess: (id, method, options) ->
         context = new AccessContext
           modelName: @name

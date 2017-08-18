@@ -9,7 +9,7 @@ Plugin = require './Plugin'
 PluginCollection = require './PluginCollection'
 
 plugins = Symbol()
-dir = path.join __dirname, '..', 'plugins'
+dir = path.join __dirname, '..'
 
 class Registry
 
@@ -23,9 +23,6 @@ class Registry
 
     if @directories.indexOf(dir) is -1
       @directories.unshift dir
-
-  inspect: ->
-    @list()
 
   list: ->
     Object.keys @[plugins]
@@ -47,7 +44,7 @@ class Registry
 
   glob: ->
     @files = @directories.reduce (results, directory) ->
-      pattern = path.join directory, '**/index.{coffee,js}'
+      pattern = path.join directory, 'plugins', '**/index.{coffee,js}'
       files = glob.sync path.resolve pattern
       results.concat files
     , []
@@ -110,9 +107,15 @@ class Registry
 
   initialize: ->
     @prioritized.initialize()
+    @
+    
+  assemble: ->
+    @prioritized.assemble()
+    @
 
   start: ->
     @prioritized.start()
+    @
 
   core: ->
 
@@ -128,13 +131,20 @@ class Registry
       @include './KeyArray'
       @include './Is'
       @include './helpers/assert'
+      @include './Env'
 
     @
 
   module: (name, dependencies) ->
     if dependencies
-      @set name, new Plugin name, dependencies
+      @set name, new Plugin name, dependencies, @
     else
       @get name
+
+  assembler: (name, factory) ->
+    Object.defineProperty Plugin::, name, 
+      value: factory
+
+    @
 
 module.exports = Registry

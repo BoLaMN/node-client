@@ -1,0 +1,75 @@
+_meta:
+  mixins: [
+    "common/mixins"
+    "server/mixins"
+    "../common/mixins"
+    "./mixins"
+  ]
+  sources: [
+    "common/models"
+    "server/models"
+    "../common/models"
+    "./models"
+  ]
+
+AuthorizationCode:
+  dataSource: "mongo"
+  public: false
+
+ApplicationProvider:
+  dataSource: "mongo"
+  public: false
+
+Provider:
+  dataSource: "mongo"
+  public: false
+
+Protocol:
+  dataSource: "mongo"
+  public: false
+
+ProtocolProperty:
+  dataSource: "mongo"
+  public: false
+
+RefreshToken:
+  dataSource: "mongo"
+  public: false
+
+Application:
+  dataSource:  "mongo"
+
+Role:
+  dataSource: "mongo"
+
+RoleMapping:
+  dataSource: "mongo"
+  public: false
+
+User:
+  dataSource: "mongo"
+
+UserSubscription:
+  dataSource: "transient"
+  public: false
+
+UserApplication:
+  dataSource: "mongo"
+  public: false
+
+UserIdentity:
+  dataSource: "mongo"
+  public: false
+
+Invite:
+  dataSource: "mongo"
+
+Scope:
+  dataSource: "mongo"
+
+ACL:
+  dataSource: "mongo"
+  public: false
+
+AccessToken:
+  dataSource: "redis"

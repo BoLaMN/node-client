@@ -1,7 +1,7 @@
 'use strict'
 
+Controller = require './Controller'
 Provider = require './Provider'
-Emitter = require './Emitter'
 
 { camelize } = require './Inflector'
 { zipObject } = require './Utils'
@@ -11,13 +11,23 @@ callsite = require "callsite"
 injector = require './injectorInstance'
 
 init = Symbol()
+config = Symbol()
+run = Symbol()
 
-class Plugin extends Emitter
+fn = (f) -> f()
 
-  constructor: (@name, @dependencies) ->
+class Plugin
+
+  constructor: (@name, @dependencies, @registry) ->
     @injector = injector
 
-    super
+    @injector.register 'provide',
+      factory:
+        $get: => @
+      type: 'provider'
+
+    @[config] = [] 
+    @[run] = []
 
   require: (modules) ->
     if typeof modules is 'string'
@@ -36,20 +46,18 @@ class Plugin extends Emitter
     caller = callsite()[1]
     callerpath = caller.getFileName()
     filepath = path.join path.dirname(callerpath), filename
-    require(filepath).bind(@)()
+    require(filepath).bind(@)(@registry)
     @
 
   config: (configurator) ->
-    @on 'config', =>
-      injector.exec 'config', configurator, @
+    @[config].push configurator 
     @
 
   run: (configurator) ->
-    @on 'run', =>
-      injector.exec 'run', configurator, @
+    @[run].push configurator
     @
 
-  provider: (name, factory, type = 'provider') ->
+  @provider: (name, factory, type = 'provider') ->
     provider = new Provider
 
     injector.exec name, factory, provider
@@ -59,6 +67,10 @@ class Plugin extends Emitter
       type: type
       plugin: @name 
       
+    @
+
+  provider: ->
+    @constructor.provider arguments...
     @
 
   alias: (name, alias) ->
@@ -74,29 +86,31 @@ class Plugin extends Emitter
 
   value: (name, factory) ->
     @provider name, ->
+      provider = this 
+      
       value = undefined
-
       @$get = ->
         if value
           return value
-        value = injector.exec name, factory, @
+        value = injector.exec name, factory, provider
         value
     , 'value'
 
   factory: (name, factory, type = 'factory') ->
     @provider name, ->
-      instance = undefined
+      provider = this 
 
+      instance = undefined
       @$get = ->
         if instance
           return instance
-        instance = injector.exec name, factory
+        instance = injector.exec name, factory, provider
         instance
     , type
 
   controller: (name, factory) ->
     @factory name, ->
-      instance = new Emitter
+      instance = new Controller
       injector.exec name, factory, instance
       instance
     , 'controller'
@@ -114,8 +128,12 @@ class Plugin extends Emitter
     @
 
   start: ->
-    @emit 'config'
-    @emit 'run'
+    @[config].forEach (configurator) =>
+      injector.exec 'config', configurator, @
+
+    @[run].forEach (configurator) =>
+      injector.exec 'run', configurator, @
+
     @
 
   extension: (name, mutator) ->
