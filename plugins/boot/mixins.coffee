@@ -11,11 +11,13 @@ module.exports = ->
       configs = config.from [ '**' ], dirs    
       configs
 
-  @run (mixins, debug) ->
+  @run (mixins, Mixins, debug) ->
 
     Object.keys(mixins).forEach (key) ->
       mixin = mixins[key]
-    
+      
       debug 'mixins:' + key, mixin 
+
+      Mixins.define key, mixin
 
     return

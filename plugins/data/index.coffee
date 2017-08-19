@@ -47,6 +47,7 @@ module.exports = (app) ->
             factory.connector connector
 
         mixins = Object.keys definition.mixins or {} 
+        
         mixins.forEach (mixin) ->
           factory.mixin mixin, definition.mixins[mixin]
 
