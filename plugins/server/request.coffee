@@ -3,10 +3,10 @@
 module.exports = ->
 
   @factory 'Request', (utils) ->
-    { defer } = utils
+    { defer, values, flatten } = utils
 
     class Request
-      constructor: (@middlewares, @errorHandlers, @handlers) ->
+      constructor: (@middlewares, @errorHandlers) ->
 
       run: (args...) ->
         length = args.length
@@ -31,10 +31,10 @@ module.exports = ->
           else deferred.promise
 
       handle: (@req, @res, next) ->
-        fns = @middlewares.concat @handlers
+        fns = flatten values @middlewares
         err = @error.bind @, next
 
-        Promise.each fns, @run(@req, @res)
+        Promise.eachSeries fns, @run(@req, @res)
           .then null, err
 
       error: (next, err) ->

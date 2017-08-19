@@ -2,16 +2,12 @@
 
 module.exports = ->
 
-  @factory 'api', (Section, Middleware, injector, Swagger, utils, Models, Types) ->
+  @factory 'api', (Section, injector, Swagger, utils, Models, Types) ->
     { extend } = utils
 
     class Api extends Section
       constructor: ->
         super
-
-        @use Middleware.defaults
-
-        @error Middleware.errorHandler
 
         fn = (cb) ->
           cb null, @toSwagger()

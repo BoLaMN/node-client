@@ -23,7 +23,16 @@ module.exports = ->
         @routes = {}
         @sections = {}
 
-        @middlewares = []
+        @phases = [
+          'initial', 'session', 'auth', 'parse',
+          'routes', 'files', 'final',
+        ]
+
+        @middlewares = {}
+
+        @phases.forEach (phase) =>
+          @middlewares[phase] = []
+
         @errorHandlers = []
 
         if @path[0] isnt '/'
@@ -52,8 +61,12 @@ module.exports = ->
           @[method].apply @, args
         @
 
-      use: (middleware) ->
-        @middlewares.push.apply @middlewares, utils.flatten(middleware)
+      use: (phase, middleware) ->
+        if not @middlewares[phase]
+          @middlewares[phase] = []
+          @phases.push phase
+
+        @middlewares[phase].push.apply @middlewares[phase], utils.flatten(middleware)
         @
 
       error: (middleware) ->
@@ -94,19 +107,35 @@ module.exports = ->
         if methods.indexOf(method) is -1
           return next()
 
-        handler = @match req, path, method
+        route = @match req, path, method
 
-        if not handler
+        if not route
           return next()
 
-        new Request @middlewares, @errorHandlers, handler
+        handler = route.parent
+
+        middleware = {}
+        errorHandlers = []
+
+        while handler
+          handler.phases.forEach (phase) ->
+            middleware[phase] ?= []
+            middleware[phase].unshift.apply middleware[phase], handler.middlewares[phase] or []
+          
+          errorHandlers.unshift.apply errorHandlers, handler.errorHandlers or []
+          
+          handler = handler.parent
+
+        middleware.routes.push route.handler
+
+        new Request middleware, errorHandlers
           .handle req, res, next
 
       match: (req, path, method) ->
 
         for route in @routes[method]
           if route.match req, path
-            return route.middlewares
+            return route
 
         splitPath = path.split '/'
 

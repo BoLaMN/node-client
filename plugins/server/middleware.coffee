@@ -2,9 +2,9 @@
 
 module.exports = ->
 
-  @factory 'Middleware', (HttpError) ->
+  @run (api, HttpError, AccessHandler) ->
 
-    defaults: (req, res, next) ->
+    api.use 'initial', (req, res, next) ->
 
       res.header = (field, val) ->
         if arguments.length == 2
@@ -36,13 +36,11 @@ module.exports = ->
 
       next()
 
-    errorHandler: (err, req, res, next) ->
+    api.use 'auth', AccessHandler.check
+
+    api.error (err, req, res, next) ->
       { code, statusCode } = err
       console.log err
       res.json err, {}, code or statusCode or 500
 
       return
-
-    describeApi: (root) ->
-      (req, res, next) ->
-        res.json root.describe()
