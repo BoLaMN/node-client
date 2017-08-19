@@ -10,7 +10,7 @@ module.exports = ->
 
       configs
 
-  @run (connectors, Adapters, debug) ->
+  @run (connectors, Connectors, debug) ->
 
     Object.keys(connectors).forEach (key) ->
       config = connectors[key]
@@ -22,7 +22,7 @@ module.exports = ->
 
       debug 'connectors:' + key, config 
       
-      Adapters.define key, connector
+      Connectors.define key, connector
       
     return
 

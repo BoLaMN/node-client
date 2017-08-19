@@ -2,19 +2,19 @@ module.exports = (app) ->
 
   app
 
-  .module 'Adapter', [ 'Base' ]
+  .module 'Connector', [ 'Base' ]
 
   .initializer ->
 
-    @include './adapters'
+    @include './connectors'
 
-    @assembler 'adapter', ->
+    @assembler 'connector', ->
       (name, factory) ->
-        @factory name, factory, 'adapter'
+        @factory name, factory, 'connector'
 
-    @factory 'Adapter', (Adapters, Storage, Entity, Events) ->
+    @factory 'Connector', (Connectors, Storage, Entity, Events) ->
 
-      class Adapter extends Entity
+      class Connector extends Entity
         @extend Events::
 
         @inspect: ->
@@ -31,7 +31,7 @@ module.exports = (app) ->
         @initialize: (@settings, fn = ->) ->
           @models = new Storage
 
-          Adapters.define @name, @
+          Connectors.define @name, @
 
         @connect: (cb = ->) ->
           process.nextTick cb

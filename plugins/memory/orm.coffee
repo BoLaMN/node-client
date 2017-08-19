@@ -2,9 +2,9 @@
 
 module.exports = ->
 
-  @factory 'MemoryORM', (Adapter) ->
+  @factory 'MemoryORM', (Connector) ->
     
-    class MemoryORM extends Adapter
+    class MemoryORM extends Connector
       create: (model, data, options, callback) ->
         { properties } = @_models[model]
         

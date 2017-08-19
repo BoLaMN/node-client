@@ -2,7 +2,7 @@ module.exports = (app) ->
 
   app
 
-  .module 'MongoDBAdapter', [ 'Adapter', 'MongoQuery', 'Type' ]
+  .module 'MongoDBConnector', [ 'Connector', 'MongoQuery', 'Type' ]
 
   .initializer ->
 
@@ -47,7 +47,7 @@ module.exports = (app) ->
 
           undefined
 
-    @adapter 'MongoDB', (MongoORM, MongoClient) ->
+    @connector 'MongoDB', (MongoORM, MongoClient) ->
       class MongoDB extends MongoORM
 
         @buildUrl: ({ username, password, port, hostname, database }) ->
@@ -63,7 +63,7 @@ module.exports = (app) ->
 
           path + '/' + database
 
-        @initialize: (@name = 'mongodb-advanced', @settings = {}, fn = ->) ->
+        @initialize: (@settings = {}, fn = ->) ->
           super
 
           @url = @buildUrl @settings
@@ -84,7 +84,7 @@ module.exports = (app) ->
         @_connect: ->
           @connecting = true
 
-          MongoClient.connect @url, @settings
+          MongoClient.connect @url, @settings.options
             .then (db) =>
               @db = db
               @connected = true

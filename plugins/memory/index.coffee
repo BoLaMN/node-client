@@ -2,17 +2,17 @@ module.exports = (app) ->
 
   app
 
-  .module 'MemoryAdapter', [ 'Adapter', 'Type' ]
+  .module 'MemoryConnector', [ 'Connector', 'Type' ]
 
   .initializer ->
 
     @include './orm'
     @include './collection'
 
-    @adapter 'Memory', (MemoryORM, MemoryCollection) ->
+    @connector 'Memory', (MemoryORM, MemoryCollection) ->
       class Memory extends MemoryORM
 
-        @initialize: (@name = 'memory', @settings = {}, fn = ->) ->
+        @initialize: (@settings = {}, fn = ->) ->
           super
 
           @connect().asCallback fn
@@ -33,8 +33,11 @@ module.exports = (app) ->
           modelClass = @_models[model]
           modelClass.settings[@name]?.collection or model
 
-        @connect: (callback) ->
-          process.nextTick callback
+        @connect: ->
+          @connecting = true
+          @connected = true
+
+          Promise.resolve()
 
         @disconnect: (callback) ->
           debug 'disconnect'

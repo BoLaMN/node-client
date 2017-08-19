@@ -14,12 +14,12 @@ module.exports = ->
       @extend Mixin
       @extend Inclusion
 
-      @adapter: (adapter) ->
+      @connector: (connector) ->
         @property 'dao',
-          value: new adapter @
+          value: new connector @
         @
 
-      @configure: ({ adapter, strict, mixins = {}, properties = {}, relations = {}, acls = [] }) ->
+      @configure: ({ connector, strict, mixins = {}, properties = {}, relations = {}, acls = [] }) ->
         @primaryKey = 'id'
 
         @property 'strict',

@@ -128,10 +128,31 @@ class Registry
         util: 'util'
         utils: './Utils'
 
-      @include './KeyArray'
-      @include './Is'
-      @include './helpers/assert'
       @include './Env'
+      @include './Is'
+      @include './Parsers'
+
+      @config (parsersProvider, csonParser, coffeeScript) ->
+
+        parsersProvider
+
+          .register 'js', (mod, content, file) ->
+            mod._compile content, file 
+
+          .register 'json', (mod, content) ->
+            mod.exports = JSON.parse content
+
+          .register 'coffee', (mod, content, file) ->
+            js = coffeeScript.compile content, false, true
+            mod._compile js, file 
+
+          .register 'cson', (mod, content) -> 
+            mod.exports = csonParser.parse content
+
+        return 
+      
+      @include './KeyArray'
+      @include './helpers/assert'
 
     @
 

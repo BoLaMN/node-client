@@ -4,7 +4,7 @@ module.exports = (app) ->
 
   app
 
-  .module 'Data', [ 'Relations', 'Base', 'Server', 'MongoDBAdapter', 'Access', 'Type', 'Validation' ]
+  .module 'Data', [ 'Relations', 'Base', 'Server', 'MongoDBConnector', 'Access', 'Type', 'Validation' ]
 
   .initializer ->
 
@@ -38,13 +38,13 @@ module.exports = (app) ->
     @assembler 'model', ->
       (name, definition, config = {}, fn) =>
         Model = @injector.get definition.base or 'Model'
-        Adapters = @injector.get 'Adapters'
+        Connectors = @injector.get 'Connectors'
 
         factory = Model.define name, definition
         
         if config.dataSource
-          Adapters.get config.dataSource, (connector) ->
-            factory.adapter connector
+          Connectors.get config.dataSource, (connector) ->
+            factory.connector connector
 
         mixins = Object.keys definition.mixins or {} 
         mixins.forEach (mixin) ->
