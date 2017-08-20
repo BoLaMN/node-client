@@ -1,8 +1,9 @@
 module.exports = ->
 
-  @factory 'Swagger', (Types, TypeOf, Models) ->
+  @factory 'swagger', (injector, Types, TypeOf, Models, utils) ->
+    { extend } = utils
 
-    buildFromSchemaType: (def) ->
+    buildFromSchemaType = (def) ->
       if typeof def is 'string' or typeof def is 'function'
         def = type: def
       else if Array.isArray def
@@ -10,38 +11,84 @@ module.exports = ->
 
       type = def.type or def
 
-      if type is 'object' and def.model
-        type = def.model
-
+      if Array.isArray type 
+        kind = 'array'
       if typeof type is 'string'
         kind = type
       else
         kind = TypeOf type
 
-      switch kind
-        when 'array'
-          item = type[0] or 'any'
+      fn = Types.get kind.toLowerCase()
+      fn ?= Models.get kind
 
-          type: 'array'
-          items: @buildFromSchemaType item
-        when 'object'
-          obj = {}
+      if not fn?.swagger?.schema
+        console.log 'no swagger definition found for ', type
+        return
 
-          for prop, val of type
-            obj[prop] = @buildFromSchemaType val
+      schema = fn.swagger.schema def
 
-          type: 'object'
-          properties: obj
-        when 'string'
-          fn = Types.get type.toLowerCase()
-          fn ?= Models.get type
+      if def.source is 'body'
+        schema: schema
+      else schema
 
-          if not fn?.swagger?.schema
-            console.log 'no swagger definition found for ', type
-            return
+    handle: (req, res, next) ->
+      api = injector.get 'api'
+      tags = []
 
-          schema = fn.swagger.schema def
+      definitions = {}
+      
+      for own name, type of Types
+        if typeof type.swagger.definition is 'function'
+          definitions[name] = type.swagger.definition()
 
-          if def.source is 'body'
-            schema: schema
-          else schema
+      for own name, model of Models
+        tags.push { name }
+
+        attributes = model.attributes
+
+        properties = {}
+
+        for own attribute, field of attributes
+          schema = buildFromSchemaType field
+
+          if schema.properties
+            properties[attribute] = schema
+          else
+            properties[attribute] = {}
+            extend properties[attribute], field, schema
+
+          delete properties[attribute].id
+          delete properties[attribute].foreignKey
+          delete properties[attribute].defaultFn
+
+        definitions[name] ?= {}
+
+        definitions[name] =
+          properties: properties
+
+      res.json api.toSwagger
+        swagger: "2.0"
+        info:
+          version: "0.0.0"
+          title: "api"
+        basePath: "/api"
+        paths: {}
+        tags: tags
+        consumes: [
+          "application/json"
+          "application/x-www-form-urlencoded"
+          "application/xml"
+          "text/xml"
+        ]
+        produces: [
+          "application/json"
+          "application/xml"
+          "text/xml"
+          "application/javascript"
+          "text/javascript"
+        ]
+        definitions: definitions
+
+      next() 
+
+    buildFromSchemaType: buildFromSchemaType

@@ -23,7 +23,7 @@ module.exports = ->
 
         @
 
-      notify: (ctx, done) ->
+      notify: (ctx, self, done) ->
         i = 0
         fns = @fns
 
@@ -39,7 +39,7 @@ module.exports = ->
           if not fn
             return done()
 
-          wrap(fn, next).apply @, [ ctx ]
+          wrap(fn, next).apply self, [ ctx ]
 
           return
 
@@ -47,18 +47,19 @@ module.exports = ->
 
         @
 
-  @factory 'Hooks', (Hook, debug) ->
+  @factory 'Hooks', (Hook, debug, utils) ->
+    { glob2re } = utils
 
     class Hooks
       constructor: (event, fn) ->
         if event and fn
           @observe event, fn
 
-      fire: (event, ctx = {}, fn = ->) ->
+      fire: (event, ctx = {}, self = @, fn = ->) ->
         debug event, ctx 
         
         if typeof ctx is 'function'
-          return @fire event, {}, ctx
+          return @fire event, {}, ctx, self
 
         { instance } = ctx.options?
 
@@ -79,7 +80,7 @@ module.exports = ->
           if err
             return q.reject err
 
-          @notify event, ctx, ->
+          @notify event, ctx, self, ->
             q.resolve ctx
 
         nested = (key, cb) ->
@@ -94,26 +95,92 @@ module.exports = ->
 
         q.promise
 
-      observe: (event, fn) ->
-        if Array.isArray event
-          event.forEach (e) =>
+      observe: (ev, fn) ->
+        if Array.isArray ev
+          ev.forEach (e) =>
             @observe e, fn
+          
           return @
 
-        if event[0] isnt '$'
-          event = '$' + event
+        @hooks = {}
+        @evs = []
+          
+        if not @hooks[ev]
+          @hooks[ev] = new Hook
+          @evs.push ev 
 
-        @hooks ?= {}
-        @hooks[event] ?= new Hook
-        @hooks[event].observe fn
+        @hooks[ev].observe fn
 
         @
 
-      notify: (event, ctx, fn = ->) ->
-        if event[0] isnt '$'
-          event = '$' + event
+      removeAllListeners: (ev) ->
+        if not ev
+          @hooks = {}
+          @evs = []
+        else
+          @hooks[ev] ?= []
+          idx = @evs.indexOf ev 
+          @evs.splice idx, 1
 
-        if not @hooks?[event]
-          return fn()
+        @
 
-        @hooks[event].notify ctx, fn
+      removeListener: (ev, fn) ->
+        return @ unless @hooks[ev]
+
+        evts = @hooks[ev].fns or [] 
+        
+        evts.forEach (e, i) =>
+          if e is fn or e.fn is fn
+            evts.splice i, 1
+
+        return @ if evts.length 
+        
+        idx = @evs.indexOf ev 
+
+        return @ if idx is -1 
+
+        @evs.splice idx, 1
+
+        @
+
+      once: (ev, fn) ->
+        return @ unless fn
+
+        c = ->
+          @removeListener ev, c
+          fn.apply @, arguments
+
+        c.fn = fn
+
+        @on ev, c
+
+        @
+
+      notify: (ev, ctx, self = @, fn = ->) ->
+        return unless @evs?.length
+
+        re = glob2re ev
+
+        fns = [] 
+
+        @evs.forEach (hook) =>
+          return unless re.test hook  
+          
+          Array::push.apply fns, @hooks[hook]
+
+        next = (err) =>
+          if err
+            return fn err
+
+          fn = fns[i++]
+
+          if not fn
+            return fn()
+
+          fn.notify ctx, self, fn
+
+          return
+
+        next()
+
+        @

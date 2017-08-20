@@ -2,7 +2,7 @@
 
 module.exports = ->
 
-  @factory 'RouteParam', (Types, Swagger, utils, Models) ->
+  @factory 'RouteParam', (Types, swagger, utils, Models) ->
 
     class RouteParam
       constructor: (@name, param) ->
@@ -113,4 +113,4 @@ module.exports = ->
           name: @name
           description: @description
           required: @required
-        , Swagger.buildFromSchemaType @
+        , swagger.buildFromSchemaType @

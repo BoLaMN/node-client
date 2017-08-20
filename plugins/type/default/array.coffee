@@ -1,12 +1,21 @@
 
 module.exports = ->
 
-  @type 'Array', (Type) ->
+  @type 'Array', (Type, injector) ->
     class Array extends Type
       @construct: (itemType) ->
         ctor = @extends @name, @
         ctor.itemType = itemType
         ctor
+
+      @swagger:
+
+        schema: (v) ->
+          swagger = injector.get 'swagger'
+          item = v.type[0] or 'any'
+
+          type: 'array'
+          items: swagger.buildFromSchemaType item
 
       @check: (v) ->
         return false if @absent v
@@ -40,5 +49,4 @@ module.exports = ->
           i++
 
         v
-
-module.exports = ->
+        

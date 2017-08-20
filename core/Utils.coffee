@@ -118,6 +118,8 @@ class Utils
     , obj)[key] = value
 
   @flatten: (arr, ret = []) ->
+    return unless arr?
+
     if arr and not Array.isArray arr
       return [ arr ]
 

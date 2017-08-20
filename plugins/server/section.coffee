@@ -31,7 +31,9 @@ module.exports = ->
         @middlewares = {}
 
         @phases.forEach (phase) =>
+          @middlewares[phase + ':before'] = []
           @middlewares[phase] = []
+          @middlewares[phase + ':after'] = []
 
         @errorHandlers = []
 
@@ -206,14 +208,13 @@ module.exports = ->
 
         for method, routes of @routes
           for route in routes
-            if route.path isnt '/swagger.json'
-              info = route.toSwagger()
-              path = route.path
-                .replace /\/:([\w\.\-\_]+)(\*?)/g, '/{$1}'
-                .replace /\/$/, ''
+            info = route.toSwagger()
+            path = route.path
+              .replace /\/:([\w\.\-\_]+)(\*?)/g, '/{$1}'
+              .replace /\/$/, ''
 
-              if info
-                api.paths[path] ?= {}
-                api.paths[path][method] = info
+            if info
+              api.paths[path] ?= {}
+              api.paths[path][method] = info
 
         api
