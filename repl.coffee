@@ -7,8 +7,7 @@ coffee = require 'coffee-script'
 
 { updateSyntaxError } = require 'coffee-script/lib/coffee-script/helpers'
 
-server = require('./core/Host').bootstrap()
-
+server = require('./index')
 injector = server.run()
 
 runInContext = (js, context, filename) ->

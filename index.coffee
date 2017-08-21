@@ -8,7 +8,6 @@ if not module.parent
       __dirname 
       process.cwd() 
     ]
-  .run()
 else
 
   ###
@@ -31,4 +30,4 @@ else
     app(options).run()
   ###
 
-  module.exports = server.bootstrap
+  module.exports = server.bootstrap()
