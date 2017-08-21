@@ -2,11 +2,10 @@
 
 module.exports = ->
 
-  @factory 'EmailORM', (env, fs, hbs, path, Connector, debug, assert) ->
+  @factory 'EmailORM', (env, fs, path, Connector, debug, assert) ->
     { join, resolve } = path
 
-    html = fs.readFileSync resolve(__dirname + '/email.hbs'), 'utf8'
-    template = hbs.compile html
+    template = require resolve(__dirname + '/email'), 'utf8'
 
     class Mailer 
       ###*
@@ -121,7 +120,7 @@ module.exports = ->
           .map (file) -> require file
           .sort (b, a) -> a._ts - b._ts
 
-        html = template emails: emails 
+        html = template emails 
 
         fs.writeFileSync join(dir, 'emails.html'), html
         

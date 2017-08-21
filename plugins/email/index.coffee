@@ -8,7 +8,6 @@ module.exports = (app) ->
 
     @require [
       'nodemailer'
-      'hbs'
     ]
 
     @include './orm'
