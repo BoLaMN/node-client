@@ -21,8 +21,8 @@ module.exports = (app) ->
     @include './server'
     @include './swagger'
 
-    @run (server, api, settings) ->
+    @run (server, config) ->
 
-      server.listen settings.port, settings.host, ->
-        console.log ' server listening at: %s', settings.host + ':' + settings.port
+      server.listen config.port, config.host, ->
+        console.log ' server listening at: %s', config.host + ':' + config.port
 

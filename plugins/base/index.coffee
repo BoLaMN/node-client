@@ -13,8 +13,7 @@ module.exports = (app) ->
     @include './storage'
     @include './emitter'
     @include './property'
-    @include './settings'
-    
+
     @factory 'debug', (env, inspect) ->
       debug = require 'debug'
 

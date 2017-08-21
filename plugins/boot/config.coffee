@@ -126,12 +126,13 @@ module.exports = (app) ->
       result
     
     @$get = -> 
+    
+      { definition } = one 'config'
 
-      config = one 'config'
-      config.get = get
-      config.load = load
-      config.one = one
-      config.build = build 
-      config.from = from 
+      definition.get = get
+      definition.load = load
+      definition.one = one
+      definition.build = build 
+      definition.from = from 
 
-      config
+      definition
