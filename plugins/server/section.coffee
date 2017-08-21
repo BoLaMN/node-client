@@ -128,7 +128,11 @@ module.exports = ->
           
           handler = handler.parent
 
+        middleware.routes.unshift route.before
         middleware.routes.push route.handler
+        middleware.routes.push route.after
+
+        errorHandlers.unshift route.afterError
 
         new Request middleware, errorHandlers
           .handle req, res, next

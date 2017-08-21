@@ -2,9 +2,9 @@
 
 module.exports = ->
 
-  @factory 'Mixin', (Mixins) ->
+  @factory 'ModelMixin', (Mixins) ->
 
-    class Mixin
+    class ModelMixin
 
       @mixin: (name, options = {}) ->
 

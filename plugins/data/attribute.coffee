@@ -1,10 +1,10 @@
 module.exports = ->
 
-  @factory 'Attribute', (Storage, Module, Validators, Cast, inflector, utils) ->
+  @factory 'ModelAttribute', (Storage, Module, Validators, Cast, inflector, utils) ->
     { camelize } = inflector
     { clone, extend } = utils
 
-    class Attribute extends Module
+    class ModelAttribute extends Module
       @inherit Cast::
 
       @attribute: (name, type, options) ->
@@ -30,7 +30,7 @@ module.exports = ->
         if options.id
           @primaryKey = name
 
-        attr = new Attribute name, options
+        attr = new ModelAttribute name, options
 
         @attributes.define name, attr
 

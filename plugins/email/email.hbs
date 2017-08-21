@@ -1,0 +1,59 @@
+
+<style>
+.frame {
+    display: block;
+    width: 800px;
+    height: 500px;
+}
+</style>
+
+<h1>emails</h1>
+<ul>
+    {{#each emails}}
+        <li>
+            <h3>{{this.subject}}
+                <small>{{this._date}}</small>
+            </h3>
+            
+            <strong>to:</strong>
+            <span>{{this.to}}</span>
+            
+            <br>
+            
+            <strong>from:</strong>
+            <span>{{this.from}}</span>
+
+            <p></p>
+
+            <strong>attachments:</strong>
+            <ul>
+                {{#each this.attachments}}
+                    <li>
+                        <strong>filename:</strong>
+                        <span>{{this.filename}}</span>
+
+                        <br>
+
+                        <strong>path:</strong>
+                        <span>{{this.path}}</span>
+
+                        <br>
+
+                        <strong>contentType:</strong>
+                        <span>{{this.contentType}}</span>
+                    </li>
+                {{/each}}
+            </ul>
+
+            <p></p>
+
+            <strong>html:</strong>
+            <iframe src="data:text/html;charset=utf-8,{{this.html}}" class="frame"></iframe>
+
+            <p></p> 
+            
+            <strong>text:</strong>
+            <pre>{{this.text}}</pre>
+        </li>
+    {{/each}}
+</ul>

@@ -156,11 +156,12 @@ module.exports = ->
 
         @
 
-      notify: (ev, ctx, self = @, fn = ->) ->
+      notify: (ev, ctx, self = @, cb = ->) ->
         return unless @evs?.length
 
         re = glob2re ev
-
+        
+        i = 0
         fns = [] 
 
         @evs.forEach (hook) =>
@@ -170,14 +171,14 @@ module.exports = ->
 
         next = (err) =>
           if err
-            return fn err
+            return cb err
 
           fn = fns[i++]
 
           if not fn
-            return fn()
+            return cb()
 
-          fn.notify ctx, self, fn
+          fn.notify ctx, self, next
 
           return
 

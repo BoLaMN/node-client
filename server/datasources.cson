@@ -26,17 +26,17 @@ transient:
 #   connector: 'redis'
 #   host: '${REDIS_HOST}'
 
-# email:
-#   name: 'mail'
-#   connector: 'mail'
-#   transports: [
-#     {
-#       type: 'ses'
-#       region: '${AWS_REGION}'
-#       accessKeyId: '${AWS_ACCESS_KEY_ID}'
-#       secretAccessKey: '${AWS_SECRET_ACCESS_KEY}'
-#     }
-#   ]
+email:
+  name: 'mail'
+  connector: 'Email'
+  transports: [
+    {
+      type: 'ses'
+      region: '${AWS_REGION}'
+      accessKeyId: '${AWS_ACCESS_KEY_ID}'
+      secretAccessKey: '${AWS_SECRET_ACCESS_KEY}'
+    }
+  ]
 
 # auth:
 #   name: 'auth'

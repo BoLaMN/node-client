@@ -16,7 +16,7 @@ module.exports = ->
       
       debug 'datasources:' + key, datasource
 
-      connector = injector.get datasource.connector 
+      connector = injector.get datasource.connector + 'Connector'
       connector.define key, datasource
 
     return

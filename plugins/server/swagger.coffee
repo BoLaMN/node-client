@@ -11,8 +11,6 @@ module.exports = ->
 
       type = def.type or def
 
-      if Array.isArray type 
-        kind = 'array'
       if typeof type is 'string'
         kind = type
       else
@@ -22,7 +20,7 @@ module.exports = ->
       fn ?= Models.get kind
 
       if not fn?.swagger?.schema
-        console.log 'no swagger definition found for ', type
+        console.log 'no swagger definition found for ', kind
         return
 
       schema = fn.swagger.schema def
@@ -57,9 +55,9 @@ module.exports = ->
             properties[attribute] = {}
             extend properties[attribute], field, schema
 
-          delete properties[attribute].id
-          delete properties[attribute].foreignKey
-          delete properties[attribute].defaultFn
+          properties[attribute].id = undefined
+          properties[attribute].foreignKey = undefined
+          properties[attribute].defaultFn = undefined
 
         definitions[name] ?= {}
 

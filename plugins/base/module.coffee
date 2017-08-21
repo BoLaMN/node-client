@@ -5,7 +5,7 @@ module.exports = ->
 
     class Module extends Events
 
-      @mixin: (obj) ->
+      @mixes: (obj) ->
         @extend obj
         @inherit obj::
 

@@ -5,28 +5,26 @@ module.exports = ->
   @factory 'MemoryORM', (Connector) ->
     
     class MemoryORM extends Connector
-      create: (model, data, options, callback) ->
-        { properties } = @_models[model]
-        
-        idName = @idName model
-        type = properties[idName]?.type
+      constructor: (model) ->
+        super
 
-        id = @getIdValue model, data
+        @model = model
 
-        if type
-          id = type(id) or id
+      create: (data, options, callback) ->
+        id = data.getId()
 
-        @setIdValue model, data, id
-
-        if @collection(model).has id
+        if @collection().has id
           return callback new Error 'Duplicate entry for ' + model + '.' + idName
 
-        @collection(model).push data
+        @collection().push data
 
         callback null, id
 
-      count: (model, where, options, callback) ->
-        data = @collection(model)
+      collection: (data) ->
+        @constructor.collection @model.name, data
+
+      count: (where, options, callback) ->
+        data = @collection()
         count = data.length 
 
         if where
@@ -35,27 +33,27 @@ module.exports = ->
 
         callback null, count 
 
-      destroy: (model, id, options, callback) ->
-        callback null, count: @collection(model).remove id 
+      destroy: (id, options, callback) ->
+        callback null, count: @collection().remove id 
 
-      destroyAll: (model, where, options, callback) ->
-        data = @collection model
+      destroyAll: (where, options, callback) ->
+        data = @collection()
         count = data.length
 
         if where
           result = applyFilter data, where: where
-          @collection model, result
+          @collection result
           count = count - result.length
         else
-          @collection model, []
+          @collection []
 
         callback null, count: count
 
-      exists: (model, id, options, callback) ->
-        callback null, @collection(model).has id
+      exists: (id, options, callback) ->
+        callback null, @collection().has id
 
-      all: (model, filter, options, callback) ->
-        data = @collection model
+      all: (filter, options, callback) ->
+        data = @collection()
 
         if not filter
           return data
@@ -74,76 +72,74 @@ module.exports = ->
         else
           callback null, results
 
-      find: (model, id, options, callback) ->
-        callback null, @collection(model).get id
+      find: (id, options, callback) ->
+        callback null, @collection().get id
 
-      findOrCreate: (model, filter, data, callback) ->
-        @all model, filter, {}, (err, [ data ]) =>
+      findOrCreate: (filter, data, callback) ->
+        @all filter, {}, (err, [ data ]) =>
           if err or data
             return callback err, data, false 
 
-          @create model, data, (err, id) ->
+          @create data, (err, id) ->
             callback err, data, true
 
-      replaceById: (model, id, data, options, cb) ->
+      replaceById: (id, data, options, cb) ->
         if not id
           return cb new Error('You must provide an id when replacing!')
 
-        @setIdValue model, data, id
-
-        if not @collection(model).has id
+        if not @collection().has id
           return cb new Error 'Could not replace. Object with id ' + id + ' does not exist!'
 
-        cb null, @collection(model).replace data
+        cb null, @collection().replace data
 
-      replaceOrCreate: (model, data, options, callback) ->
-        idName = @idNames(model)[0]
-        id = @getIdValue model, data
+      replaceOrCreate: (data, options, callback) ->
+        idName = @model.primaryKey
+        id = data.getId()
 
         filter = where: {}
         filter.where[idName] = id
 
-        @all model, filter, {}, (err, [ data ]) =>
+        @all filter, options, (err, [ data ]) =>
           if not data
-            @create model, data, (err, id) ->
+            @create data, options, (err, id) ->
               callback err, data, isNewInstance: true
           else
-            @collection(model).replace data
+            @collection().replace data
 
             callback err, data, isNewInstance: false
 
-      save: (model, data, options, callback) ->
-        exists = @collection(model).has data
+      save: (data, options, callback) ->
+        exists = @collection().has data
         
-        @collection(model).update data, true
+        @collection().update data, true
 
         callback null, data, isNewInstance: not exists
 
-      update: (model, where = {}, update, options, callback) ->
-        data = @collection(model)
+      update: (where = {}, update, options, callback) ->
+        data = @collection()
 
         results = applyFilter data, where: where
 
         results.forEach (item) =>
-          id = @getIdValue model, item
-          @updateAttributes model, id, data, options, done
+          id = @getIdValue item
+          @updateAttributes id, data, options, done
 
         callback null, count: results.length
 
       updateAll: MemoryORM::update
 
-      updateAttributes: (model, id, data, options, callback) ->
+      updateAttributes: (id, data, options, callback) ->
         if id
-          @setIdValue model, data, id
+          @setIdValue data, id
 
-          if @collection(model).has data
-            return @save model, data, options, callback
+          if @collection().has data
+            return @save data, options, callback
 
         callback new Error('Could not update attributes. Object with id ' + id + ' does not exist!')
 
-      updateOrCreate: (model, data, options, callback) ->
-        exists = @collection(model).has data
+      updateOrCreate: (data, options, callback) ->
+        exists = @collection().has data
         
-        @collection(model).update data, true
+        @collection().update data, true
 
         callback null, data, isNewInstance: not exists

@@ -10,7 +10,7 @@ module.exports = (app) ->
 
     @assembler 'connector', ->
       (name, factory) ->
-        @factory name, factory, 'connector'
+        @factory name + 'Connector', factory, 'connector'
 
     @factory 'Connector', (Connectors, Storage, Entity, Events) ->
 
@@ -18,7 +18,10 @@ module.exports = (app) ->
         @extend Events::
 
         @inspect: ->
-          @name 
+          { @name
+            @connected
+            @connecting
+            @settings } 
           
         @define: (name, settings = {}, fn = ->) ->
           if typeof settings is 'function'

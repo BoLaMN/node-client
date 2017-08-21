@@ -57,6 +57,11 @@ module.exports = ->
           @[key] = val
 
         @handler = @wrapHandler(handler).bind(@)
+        
+        @before = @_before.bind @
+        @after = @_after.bind @
+        @afterError = @_afterError.bind @
+
         @path = @path.replace /\/$/, ''
 
         @method = (@method or 'GET').toLowerCase()
@@ -64,6 +69,15 @@ module.exports = ->
 
         for name, param of @params
           @params[name] = new RouteParam name, param
+
+      _before: (req, res, next) ->
+        @model.fire 'before remote', { req, res }, next
+
+      _after: (req, res, next) ->
+        @model.fire 'after remote', { req, res }, next
+
+      _afterError: (err, req, res, next) ->
+        @model.fire 'error remote', { err, req, res }, next
 
       match: (req, path) ->
         if req.method.toLowerCase() isnt @method
@@ -138,6 +152,8 @@ module.exports = ->
 
         route
 
+      inspect: Route::toObject
+      
       toJSON: ->
         route =
           path: @path
@@ -184,5 +200,5 @@ module.exports = ->
           "200":
             description: "Request was successful"
             schema:
-              $ref: "#/definitions/" + @modelName
+              $ref: "#/definitions/" + @model.name
         deprecated: false

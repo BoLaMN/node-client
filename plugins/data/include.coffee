@@ -3,7 +3,7 @@
 
 module.exports = ->
 
-  @factory 'Inclusion', (isString, KeyArray, isPlainObject, isObject, isEmpty) ->
+  @factory 'ModelInclusion', (isString, KeyArray, isPlainObject, isObject, isEmpty) ->
 
     processIncludeItem = (cls, objs, ids, targets) ->
       (filter) ->
@@ -91,7 +91,7 @@ module.exports = ->
           .then (included) ->
             model.include(included, sub).then finishIncludeItems
 
-    class Inclusion
+    class ModelInclusion
 
       @include: (objects, include) ->
         if isEmpty(include) or isEmpty objects

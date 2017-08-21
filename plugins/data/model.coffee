@@ -1,18 +1,18 @@
 module.exports = ->
 
-  @factory 'Model', (Base, ObjectProxy, Attributes, Attribute, Events, Hooks, Models, ModelACL, Inclusion, AccessContext, Storage, Relations, utils, ValidationError, Mixin, debug) ->
+  @factory 'Model', (Base, ObjectProxy, Attributes, ModelAttribute, Events, Hooks, Models, ModelACL, ModelInclusion, AccessContext, Storage, ModelRelations, utils, ValidationError, ModelMixin, debug) ->
     { extend, wrap } = utils
 
     class Model extends Base
-      @mixin Relations
+      @mixes ModelRelations
 
       @extend Events::
       @extend Hooks::
 
       @extend ModelACL
-      @extend Attribute
-      @extend Mixin
-      @extend Inclusion
+      @extend ModelAttribute
+      @extend ModelMixin
+      @extend ModelInclusion
 
       @connector: (connector) ->
         @property 'dao',
@@ -106,7 +106,10 @@ module.exports = ->
 
       @parse: (data = {}, options) ->
         new @ data, options
-
+      
+      @inspect: ->
+        @name 
+        
       fire: (event, options, fn = ->) ->
         options.instance = @
 

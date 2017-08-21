@@ -23,10 +23,10 @@ module.exports = (app) ->
     @include './has-and-belongs-to-many'
     @include './references-many'
 
-    @factory 'Relations', (Models, inflector, injector) ->
+    @factory 'ModelRelations', (Models, inflector, injector) ->
       { camelize } = inflector
 
-      class Relations
+      class ModelRelations
 
         @relation: (name, config, type) ->
           args = arguments
