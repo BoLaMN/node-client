@@ -2,7 +2,7 @@ module.exports = (app) ->
 
   app
 
-  .module 'MongoDBConnector', [ 'Connector', 'MongoQuery', 'Type' ]
+  .module 'MongoDBConnector', [ 'Connector', 'Filter', 'Type' ]
 
   .initializer ->
 
@@ -12,6 +12,8 @@ module.exports = (app) ->
     @include './orm'
     @include './collection'
     @include './cursor'
+    @include './query'
+    @include './aggregate'
 
     @factory 'MongoClient', (mongo) ->
       mongo.MongoClient
