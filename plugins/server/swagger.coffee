@@ -3,6 +3,8 @@ module.exports = ->
   @factory 'swagger', (injector, Types, TypeOf, Models, utils) ->
     { extend } = utils
 
+    data = {}
+
     buildFromSchemaType = (def) ->
       if typeof def is 'string' or typeof def is 'function'
         def = type: def
@@ -29,64 +31,67 @@ module.exports = ->
         schema: schema
       else schema
 
-    handle: (req, res, next) ->
-      api = injector.get 'api'
-      tags = []
+    handle: (req, res) ->
+      if not data.expire or data.expire >= Date.now()
+        api = injector.get 'api'
+        tags = []
 
-      definitions = {}
-      
-      for own name, type of Types
-        if typeof type.swagger.definition is 'function'
-          definitions[name] = type.swagger.definition()
+        definitions = {}
+        
+        for own name, type of Types
+          if typeof type.swagger.definition is 'function'
+            definitions[name] = type.swagger.definition()
 
-      for own name, model of Models
-        tags.push { name }
+        for own name, model of Models
+          tags.push { name }
 
-        attributes = model.attributes
+          attributes = model.attributes
 
-        properties = {}
+          properties = {}
 
-        for own attribute, field of attributes
-          schema = buildFromSchemaType field
+          for own attribute, field of attributes
+            schema = buildFromSchemaType field
 
-          if schema.properties
-            properties[attribute] = schema
-          else
-            properties[attribute] = {}
-            extend properties[attribute], field, schema
+            if schema.properties
+              properties[attribute] = schema
+            else
+              properties[attribute] = {}
+              extend properties[attribute], field, schema
 
-          properties[attribute].id = undefined
-          properties[attribute].foreignKey = undefined
-          properties[attribute].defaultFn = undefined
+            properties[attribute].id = undefined
+            properties[attribute].foreignKey = undefined
+            properties[attribute].defaultFn = undefined
 
-        definitions[name] ?= {}
+          definitions[name] ?= {}
 
-        definitions[name] =
-          properties: properties
+          definitions[name] =
+            properties: properties
 
-      res.json api.toSwagger
-        swagger: "2.0"
-        info:
-          version: "0.0.0"
-          title: "api"
-        basePath: "/api"
-        paths: {}
-        tags: tags
-        consumes: [
-          "application/json"
-          "application/x-www-form-urlencoded"
-          "application/xml"
-          "text/xml"
-        ]
-        produces: [
-          "application/json"
-          "application/xml"
-          "text/xml"
-          "application/javascript"
-          "text/javascript"
-        ]
-        definitions: definitions
+        data =
+          expire: Date.now() + 30 * 1000
+          value: api.toSwagger
+            swagger: "2.0"
+            info:
+              version: "0.0.0"
+              title: "api"
+            basePath: "/api"
+            paths: {}
+            tags: tags
+            consumes: [
+              "application/json"
+              "application/x-www-form-urlencoded"
+              "application/xml"
+              "text/xml"
+            ]
+            produces: [
+              "application/json"
+              "application/xml"
+              "text/xml"
+              "application/javascript"
+              "text/javascript"
+            ]
+            definitions: definitions
 
-      next() 
+      res.json data.value
 
     buildFromSchemaType: buildFromSchemaType
