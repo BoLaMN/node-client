@@ -26,6 +26,7 @@ class Host
     host[registry]
       .core()
       .glob()
+      .modules()
       .require()
       .resolve()
       .prioritize()

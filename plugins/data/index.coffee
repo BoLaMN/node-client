@@ -34,7 +34,6 @@ module.exports = (app) ->
     @include './utils/build-options'
     @include './utils/wrap'
     @include './utils/merge-query'
-    @include './utils/glob-to-re'
 
     @assembler 'model', ->
       (name, definition, config = {}, fn) =>

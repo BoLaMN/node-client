@@ -8,6 +8,8 @@ glob = require 'glob'
 Plugin = require './Plugin'
 PluginCollection = require './PluginCollection'
 
+{ glob2re } = require './Utils' 
+
 plugins = Symbol()
 dir = path.join __dirname, '..'
 
@@ -16,6 +18,7 @@ class Registry
   constructor: (options) ->
     @[plugins] = {}
 
+    @files = []
     @directories = []
 
     for key, value of options
@@ -43,11 +46,55 @@ class Registry
     delete @[plugins][name]
 
   glob: ->
-    @files = @directories.reduce (results, directory) ->
+    files = @directories.reduce (results, directory) ->
       pattern = path.join directory, 'plugins', '**/index.{coffee,js}'
       files = glob.sync path.resolve pattern
       results.concat files
     , []
+
+    Array::push.apply @files, files
+
+    @
+
+  modules: ->
+
+    find = (d) ->
+      if not d
+        d = path.dirname module.filename or module.id
+
+      if d is '/'
+        throw new Error 'Could not find package.json up from ' + (module.filename or module.id)
+      else if not d or d is '.'
+        throw new Error 'Cannot find package.json from unspecified directory'
+
+      try
+        contents = require d + '/package.json'
+      catch error
+
+      if contents
+        return contents
+
+      find path.dirname d
+
+    config = find dir
+
+    scope = [
+      'dependencies'
+      'devDependencies'
+      'peerDependencies'
+      'optionalDependencies'
+    ]
+    
+    re = glob2re 'node-*'
+   
+    modules = scope.reduce (result, prop) ->
+      deps = Object.keys config[prop] or {}
+      result.concat deps.filter (dep) ->
+        re.test dep
+    , []
+
+    Array::push.apply @files, modules
+
     @
 
   require: ->
