@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @factory 'swagger', (injector, Types, TypeOf, Models, utils) ->
+  @factory 'swagger', (injector, Types, Models, utils) ->
     { extend } = utils
 
     data = {}
@@ -16,7 +16,7 @@ module.exports = ->
       if typeof type is 'string'
         kind = type
       else
-        kind = TypeOf type
+        kind = typeof type
 
       fn = Types.get kind.toLowerCase()
       fn ?= Models.get kind

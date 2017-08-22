@@ -2,7 +2,7 @@
 
 module.exports = ->
 
-  @factory 'MongoORM', (Connector, MongoQuery, KeyArray, MongoCollection, utils, ObjectID, debug, inspect) ->
+  @factory 'MongoORM', (Connector, MongoQuery, KeyArray, MongoCollection, utils, extend, ObjectID, debug, inspect) ->
     { buildOptions } = utils
 
     class MongoORM extends Connector
@@ -338,6 +338,33 @@ module.exports = ->
           .tap (results) =>
             debug 'save.cb', inspect(
               model: @model.name
+              options: options
+              results: results
+            , false, null)
+          .asCallback cb
+
+      findAndModify: (filter = {}, data, options, cb = ->) ->
+        if typeof options is 'function'
+          cb = options
+          options = {}
+
+        debug 'findAndModify', filter, data
+
+        { filter } = new MongoQuery filter, @model
+        { where, aggregate, fields } = filter
+
+        query = extend {}, options,
+          projection: fields
+          sort: sort
+          upsert: true
+
+        @execute 'findAndModify', where, { $set: data }, query
+          .then (results) =>
+            new @model results, buildOptions(options)
+          .tap (results) =>
+            debug 'findAndModify.cb', inspect(
+              model: @model.name
+              filter: filter
               options: options
               results: results
             , false, null)

@@ -76,3 +76,9 @@ ACL:
 
 AccessToken:
   dataSource: "redis"
+
+BearerAccessToken:
+  dataSource: "redis"
+
+MacAccessToken:
+  dataSource: "redis"

@@ -1,146 +1,249 @@
 
 module.exports = ->
 
-  @factory 'Filter', (TypeOf, Eql, Ops, debug) ->
+  @factory 'FilterMatch', (debug, moment) ->
 
-    filter = (target = {}, query) ->
-      ret = {}
+    type = (val) ->
+      
+      switch Object::toString.call val
+        when '[object Function]'
+          return 'function'
+        when '[object Date]'
+          return 'date'
+        when '[object RegExp]'
+          return 'regexp'
+        when '[object Arguments]'
+          return 'arguments'
+        when '[object Array]'
+          return 'array'
+          
+      if val is null
+        return 'null'
 
-      for key of query
-        if not query.hasOwnProperty(key)
-          continue
+      if val is undefined
+        return 'undefined'
 
-        val = query[key]
-        keys = key.split('.')
+      if val is Object val
+        return 'object'
 
-        matches = []
+      typeof val
 
-        if key is '$and'
-          i = 0
-          j = val.length
+    types =
+      1: 'number'
+      2: 'string'
+      3: 'object'
+      4: 'array'
+      5: 'buffer'
+      6: 'undefined'
+      8: 'boolean'
+      9: 'date'
+      10: 'null'
+      11: 'regexp'
+      13: 'function'
+      16: 'number'
+      18: 'number'
 
-          while i < j
-            if not filter(target, val[i])
-              return false
-            i++
-          i++
-          continue
+    ops = 
 
-        if key is '$or'
-          fullfilled = false
+      $ne: (matcher, val) ->
+        not eql matcher, val
 
-          i = 0
-          j = val.length
+      $type: (matcher, val) ->
+        type(matcher) is 'number' and 
+        type(val) is types[matcher] 
 
-          while i < j
-            if filter(target, val[i])
-              fullfilled = true
-              break
-            i++
+      $between: ([ start, stop ], val) ->
+        if ~[ null, undefined ].indexOf val 
+          return false
 
-          if not fullfilled
+        isDate = (value) ->
+          isoformat = new RegExp [
+            '^\\d{4}-\\d{2}-\\d{2}'        # Match YYYY-MM-DD
+            '((T\\d{2}:\\d{2}(:\\d{2})?)'  # Match THH:mm:ss
+            '(\\.\\d{1,6})?'               # Match .sssss
+            '(Z|(\\+|-)\\d{2}:\\d{2})?)?$' # Time zone (Z or +hh:mm)
+          ].join ''
+
+          typeof value == 'string' and isoformat.test(value) and !isNaN(Date.parse(value))
+
+        isTime = (value) ->
+          timeformat = new RegExp /^(\d{2}:\d{2}(:\d{2})?)$/g # Match HH:mm:ss
+
+          typeof value == 'string' and timeformat.test(value)
+
+        if isTime(start) and isTime(stop)
+          format = 'HH:mm:ss'
+
+          if typeof val is 'string'
+            parsed = moment(val).format format
+          else
+            parsed = val.format format
+
+          a = moment parsed, format
+          e = moment stop, format
+          s = moment start, format
+
+          debug 'found times', a, start, stop, a.isBetween s, e
+
+          a.isBetween s, e
+        else if isDate(start) and isDate(stop)
+          if typeof val is 'string'
+            a = moment val 
+          else
+            a = val 
+
+          e = moment stop
+          s = moment start
+
+          debug 'found dates', a, start, stop, a.isBetween s, e
+
+          a.isBetween s, e
+        else
+          a = if typeof val == 'number' then val else parseFloat(val)
+          a >= start and val <= stop
+
+      $gt: (matcher, val) ->
+        type(matcher) is 'number' and 
+        val > matcher
+
+      $gte: (matcher, val) ->
+        type(matcher) is 'number' and 
+        val >= matcher
+
+      $lt: (matcher, val) ->
+        type(matcher) is 'number' and 
+        val < matcher
+
+      $lte: (matcher, val) ->
+        type(matcher) is 'number' and 
+        val <= matcher
+
+      $elemMatch: (matcher, val) ->
+        not filter val, matcher
+
+      $regex: (matcher, val) ->
+        if 'regexp' isnt type matcher
+          matcher = new RegExp matcher
+        matcher.test val
+
+      $exists: (matcher, val) ->
+        if matcher
+          val isnt undefined
+        else
+          val is undefined
+
+      $in: (matcher, val) ->
+        if type(matcher) is val
+          return false
+
+        matcher.some (match) ->
+          eql match, val
+
+        false
+
+      $nin: (matcher, val) ->
+        not @$in matcher, val
+
+      $size: (matcher, val) ->
+        Array.isArray(val) and 
+        matcher is val.length
+
+    eql = (matcher, val) ->
+      if not matcher?
+        return val is null 
+      
+      if type(matcher) is 'regex'
+        return matcher.test val
+
+      if matcher?._bsontype and val?._bsontype
+        if matcher.equals val
+          return true
+
+        matcher = matcher.getTimestamp().getTime()
+        val = val.getTimestamp().getTime()
+
+      if Array.isArray matcher
+        if Array.isArray(val) and matcher.length is val.length
+          matcher.every (match, i) -> eql val[i], match
+        else
+          false
+      else if typeof matcher isnt 'object'
+        matcher is val
+      else
+        keys = {}
+
+        for own key, match of matcher
+          if not eql match, val[key]
             return false
 
-          i++
-          continue
+          keys[i] = true
 
-        if key is '$nor'
-          i = 0
-          j = val.length
-
-          while i < j
-            if filter(target, val[i])
-              return false
-            i++
-          i++
-          continue
-
-        i = 0
-
-        while i < keys.length
-          target = target[keys[i]]
-
-          switch TypeOf(target)
-            when 'array'
-              prefix = keys.slice(0, i + 1).join('.')
-              search = keys.slice(i + 1).join('.')
-
-              debug 'searching array "%s"', prefix
-
-              if val.$size and not search.length
-                return compare(val, target)
-
-              subset = ret[prefix] or target
-
-              ii = 0
-
-              while ii < subset.length
-                if search.length
-                  q = {}
-                  q[search] = val
-
-                  if 'object' is TypeOf(subset[ii])
-                    debug 'attempting subdoc search with query %j', q
-
-                    if filter(subset[ii], q)
-                      if not ret[prefix] or not  ~ret[prefix].indexOf(subset[ii])
-                        matches.push subset[ii]
-                else
-                  debug 'performing simple array item search'
-
-                  if compare(val, subset[ii])
-                    if not ret[prefix] or not  ~ret[prefix].indexOf(subset[ii])
-                      matches.push subset[ii]
-
-                ii++
-
-              if matches.length
-                ret[prefix] = ret[prefix] or []
-                ret[prefix].push.apply ret[prefix], matches
-            when 'undefined'
-              return false
-            when 'object'
-              if null isnt keys[i + 1]
-                ii++
-                continue
-              else if not compare(val, target)
-                return false
-            else
-              if not compare(val, target)
-                return false
-
-          i++
-
-      ret
-
-    ###*
-    # Compares the given matcher with the document value.
-    #
-    # @param {Mixed} matcher
-    # @param {Mixed} value
-    # @api private
-    ###
-
-    compare = (matcher, val) ->
-      if 'object' isnt TypeOf(matcher)
-        return Eql(matcher, val)
-
-      keys = Object.keys(matcher)
-
-      if '$' is keys[0][0]
-        i = 0
-
-        while i < keys.length
-          if '$elemMatch' is keys[i]
-            return false isnt filter(val, matcher.$elemMatch)
-          else
-            if not Ops[keys[i]](matcher[keys[i]], val)
-              return false
-
-          i++
+        for own key of val
+          if not keys[key]
+            return false
 
         true
-      else
-        Eql matcher, val
+
+    compare = (matcher, val) ->
+      if matcher isnt Object matcher
+        return eql matcher, val
+
+      keys = Object.keys matcher 
+      first = keys[0]
+
+      if not ops[first or '$' + first]
+        return eql matcher, val
+
+      for key in keys
+        op = ops[key or '$' + key]
+        return op matcher[key], val
+
+      true
+
+    filter = (obj = {}, query) ->
+
+      check = (val) -> 
+        filter obj, val
+
+      for own key, val of query
+
+        if key in [ '$and', 'and' ]
+          return val.every check
+        else if key in [ '$or', 'or' ]
+          return val.some check
+        else if key in [ '$nor', 'nor' ]
+          return not val.some check
+        
+        target = obj
+        parts = key.split '.' 
+
+        for part, i in parts
+          target = target[part]
+
+          if target is undefined
+            return false
+          else if Array.isArray target
+            prefix = parts.slice(0, i + 1).join '.'
+            search = parts.slice(i + 1).join '.'
+
+            if val.$size and not search.length
+              return compare val, target
+     
+            matches = target.filter (subkey) ->
+              if not search.length and compare val, subkey
+                k = subkey
+              else if subkey is Object subkey
+                k = subkey if filter subkey, "#{search}": val
+              not target or not ~target.indexOf k
+            return matches.length > 0
+          else if typeof target is 'object' 
+            if parts[i + 1]
+              continue
+            else 
+              return compare val, target
+          else 
+            return compare val, target
+
+      false
 
     filter

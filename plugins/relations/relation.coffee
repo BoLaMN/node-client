@@ -48,9 +48,14 @@ module.exports = ->
           @[key] = val
 
         if not @through and @discriminator
-          from.attribute @discriminator,
+          options =
             foreignKey: true
             type: 'any'
+
+          if params.required 
+            options.required = params.required 
+            
+          from.attribute @discriminator, options
 
         assign = (type) =>
           if @multiple
@@ -59,6 +64,9 @@ module.exports = ->
           options =
             foreignKey: true
             type: type or 'any'
+
+          if params.required 
+            options.required = params.required 
 
           if @belongs
             from.attribute @foreignKey, options

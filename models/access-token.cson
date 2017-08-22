@@ -9,13 +9,9 @@ properties:
     required: true
     id: true
 
-  tokenType:
-    type: "string"
-    enum: ['Bearer', 'mac']
-    default: 'Bearer'
-
   accessTokenExpiresAt:
     type: "date"
+    required: true
 
   issuer:
     type: "string"
@@ -31,7 +27,7 @@ properties:
 
   refreshToken:
     type: 'string'
-
+    
   refreshTokenExpiresAt:
     type: 'date'
 
@@ -41,11 +37,13 @@ relations:
     type: "belongsTo"
     model: "User"
     foreignKey: "userId"
+    required: true
 
   client:
     type: "belongsTo"
     model: "Application"
     foreignKey: "clientId"
+    required: true
 
   application:
     type: "belongsTo"

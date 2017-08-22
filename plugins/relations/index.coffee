@@ -29,7 +29,6 @@ module.exports = (app) ->
       class ModelRelations
 
         @relation: (name, config, type) ->
-          args = arguments
           type = camelize config.type or type
 
           { polymorphic, model } = config
@@ -39,9 +38,7 @@ module.exports = (app) ->
           attach = (modelTo = {}) =>
             delete config.model
             ctor = injector.get type
-            
-            relation = ctor.define @, modelTo, config
-            relation.property '$args', value: args
+            ctor.define @, modelTo, config
 
           if not model and polymorphic and type not in [ 'HasOne', 'BelongsTo' ]
             attach()

@@ -1,169 +1,80 @@
 'use strict'
 
-{ ObjectId } = require 'mongodb'
-
 module.exports = ->
 
-  @factory 'Where', ->
+  @factory 'FilterWhere', (isObject, isPlainObject) ->
 
-    class Where
-      constructor: (conditions) ->
-        @query = {}
-        @parse conditions
+    getPropertyDefinition = (current, prop) ->
+      split = prop.replace(/\.\d+/g, '').split '.'
 
-        return @query
+      for key in split
+        current = current.relations[key]?.to or current.attributes[key]
 
-      ###*
-      # Set "where" condition
-      #
-      # @param {String} key - key
-      # @param {Mixed} value - value
-      # @api public
-      ###
+      current
 
-      parse: (where) ->
+    where = (conditions, model) ->
+      query = {}
 
-        if typeof where isnt 'object'
-          return where
+      if conditions is null or not isObject conditions
+        return conditions
 
-        reparse = (cond, prop) =>
-          if typeof @[prop] is 'function'
-            @[prop] cond
-          else if cond instanceof ObjectId
-            @query[prop] = cond
-          else if typeof cond isnt 'object'
-            @query[prop] = cond
-          else @parse cond
+      for own k, cond of conditions
 
-        Object.keys(where).forEach (prop) ->
-          cond = where[prop]
-
+        if k in [ 'and', 'or', 'nor' ]
           if Array.isArray cond
-            items = cond.map (v) => @parse cond
-            if @[prop]?()
-              @[prop] items
+            cond = cond.map (c) => where c, model
+
+          query['$' + k] = cond
+
+          return
+
+        attr = getPropertyDefinition model, k
+
+        parse = (c) ->
+          return c unless attr 
+          
+          c.reduce (prev, x) ->
+            b = attr.apply x
+            prev.push b if b?
+            prev
+          , []
+
+        if attr?.id
+          k = '_id'
+
+        query[k] ?= {}
+
+        if cond is null
+          query[k].$type = 10
+        else if isPlainObject cond
+          options = cond.options
+
+          for own spec, c of cond
+            if spec is 'between'
+              query[k].$gte = c[0]
+              query[k].$lte = c[1]
+            else if spec is 'inq' and Array.isArray c
+              query[k].$in = parse c
+            else if spec is 'nin' and Array.isArray c
+              query[k].$nin = parse c
+            else if spec is 'like'
+              query[k].$regex = new RegExp c, options
+            else if spec is 'nlike'
+              query[k].$not = new RegExp c, options
+            else if spec is 'neq'
+              query[k].$ne = c
+            else if spec is 'regexp'
+              query[k].$regex = c
             else
-              @[prop] = items
-          else
-            reparse cond, prop
 
-        this
+              if spec[0] isnt '$'
+                spec = '$' + spec
 
-      ###*
-      # Match documents using $elemMatch
-      #
-      # @param {String} key
-      # @param {Object} value
-      # @api public
-      ###
-
-      matches: (key, value) ->
-        if @lastKey
-          value = key
-          key = @lastKey
-
-          @lastKey = null
-
-        @query[key] = $elemMatch: value
-
-        this
-
-      match: ->
-        @matches.apply this, arguments
-
-      ###*
-      # Between
-      #
-      # @param {String} key - key
-      # @param {Mixed} value - value
-      # @api public
-      ###
-
-      between: (key, [ gte, lte ]) ->
-        @lastKey = key
-        @gte gte
-
-        @lastKey = key
-        @lte lte
-
-        this
-
-      ###*
-      # Same as .where(), only less flexible
-      #
-      # @param {String} key - key
-      # @param {Mixed} value - value
-      # @api public
-      ###
-
-      inq: (key, value) ->
-        @in key, value
-
-      neq: (key, value) ->
-        @ne key, value
-
-      equals: (value) ->
-        key = @lastKey
-
-        @lastKey = null
-        @query[key] = value
-
-        this
-
-      ###*
-      # Set property that must or mustn't exist in resulting docs
-      #
-      # @param {String} key - key
-      # @param {Boolean} exists - exists or not
-      # @api public
-      ###
-
-      exists: (key, exists = true) ->
-        if @lastKey
-          exists = key
-          key = @lastKey
-
-          @lastKey = null
-
-        @query[key] = $exists: exists
-
-        this
-
-    [ 'lt', 'lte'
-      'gt', 'gte'
-      'in', 'nin'
-      'ne'
-    ].forEach (method) ->
-
-      Where::[method] = (key, value) ->
-        if @lastKey
-          value = key
-          key = @lastKey
-
-          @lastKey = null
-
-        operator = '$' + method
-        hasValue = value isnt undefined
-
-        if hasValue
-          @query[key] ?= {}
-          @query[key][operator] = value
+              query[k][spec] = c
         else
-          @query[operator] = key
+          if attr
+            cond = attr.apply cond
 
-        this
+          query[k] = cond
 
-      return
-
-    [ 'or', 'nor', 'and' ].forEach (method) ->
-
-      Where::[method] = (args...) ->
-        operator = '$' + method
-
-        @query[operator] = @parse args
-
-        this
-
-      return
-
-    Where
+    where

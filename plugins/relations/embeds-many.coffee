@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @relation 'EmbedMany', (RelationArray, Where, Filter) ->
+  @relation 'EmbedMany', (RelationArray, FilterWhere, FilterMatch) ->
 
     class EmbedMany extends RelationArray
       @embedded: true
@@ -79,10 +79,10 @@ module.exports = ->
           return cb()
 
         if conditions and Object.keys(conditions).length > 0
-          filter = new Where conditions
+          filter = FilterWhere conditions, @
 
           reject = (v) ->
-            not Filter v, filter
+            not FilterMatch v, filter
 
           list = list.filter reject
 

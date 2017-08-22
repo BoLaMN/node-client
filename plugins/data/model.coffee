@@ -1,13 +1,13 @@
 module.exports = ->
 
-  @factory 'Model', (Base, ObjectProxy, Attributes, ModelAttribute, Events, Hooks, Models, ModelACL, ModelInclusion, AccessContext, Storage, ModelRelations, utils, ValidationError, ModelMixin, debug) ->
-    { extend, wrap } = utils
+  @factory 'Model', (Base, ObjectProxy, Attributes, ModelAttribute, Events, ModelHooks, Models, ModelACL, ModelInclusion, AccessContext, Storage, ModelRelations, utils, ValidationError, ModelMixin, debug, merge) ->
+    { wrap } = utils
 
     class Model extends Base
       @mixes ModelRelations
 
       @extend Events::
-      @extend Hooks::
+      @extend ModelHooks::
 
       @extend ModelACL
       @extend ModelAttribute
@@ -19,7 +19,18 @@ module.exports = ->
           value: new connector @
         @
 
-      @configure: ({ connector, strict, mixins = {}, properties = {}, relations = {}, acls = [] }) ->
+      @configure: (config) ->
+        { 
+          acls = [] 
+          mixins = {}
+          properties = {}
+          relations = {}
+          strict
+        } = config
+
+        @property 'config',
+          value: config 
+
         @primaryKey = 'id'
 
         @property 'strict',
@@ -63,20 +74,16 @@ module.exports = ->
 
         @
 
-      @define: (name, config) ->
+      @define: (name, config = {}) ->
+
+        if @config?
+          config = merge config, @config
+
         ctor = @extends name, @
         ctor.configure config
 
         if @primaryKey
           ctor.primaryKey = @primaryKey
-
-        if @attributes
-          extend ctor.attributes, @attributes
-
-        if @relations
-          Object.keys(@relations).forEach (relation) =>
-            args = @relations[relation].$args
-            ctor.relation.apply ctor, args
 
         ctor
 
@@ -107,8 +114,8 @@ module.exports = ->
       @parse: (data = {}, options) ->
         new @ data, options
       
-      @inspect: ->
-        @name 
+      #@inspect: ->
+      #  @name 
         
       fire: (event, options, fn = ->) ->
         options.instance = @

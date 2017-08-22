@@ -1,7 +1,7 @@
 module.exports = ->
 
-  @factory 'Hook', (utils) ->
-    { wrap } = utils
+  @factory 'ModelHooks', (debug, utils) ->
+    { glob2re, wrap } = utils
 
     class Hook
       constructor: (fn) ->
@@ -47,10 +47,7 @@ module.exports = ->
 
         @
 
-  @factory 'Hooks', (Hook, debug, utils) ->
-    { glob2re } = utils
-
-    class Hooks
+    class ModelHooks
       constructor: (event, fn) ->
         if event and fn
           @observe event, fn

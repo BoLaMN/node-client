@@ -1,0 +1,43 @@
+name: "MacAccessToken"
+
+collection: "AccessToken"
+base: "AccessToken"
+
+properties: 
+
+  tokenType:
+    type: "string"
+    default: 'mac'
+    required: true
+
+  macKey:
+    type: "string"
+
+properties: {}
+relations: {}
+
+acls: [
+  {
+    principalType: "Role"
+    principalId: "$everyone"
+    permission: "DENY"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:read"
+    permission: "ALLOW"
+    accessType: "READ"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:write"
+    permission: "ALLOW"
+    accessType: "WRITE"
+  }
+  {
+    principalType: "Role"
+    principalId: "auth:delete"
+    permission: "ALLOW"
+    accessType: "DELETE"
+  }
+]
