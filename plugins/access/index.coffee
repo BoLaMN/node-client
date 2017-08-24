@@ -29,12 +29,12 @@ module.exports = (app) ->
       class AccessHandler
         constructor: (@request, @response) ->
           { params, query, body, route } = @request
-          { method, name, modelName } = route
+          { method, name, model } = route
 
           modelId = params.id or body.id or query.id
 
           @context = new AccessContext
-            modelName: modelName
+            modelName: model.name
             modelId: modelId
             methodName: name
             accessType: @getAccessType route
@@ -67,7 +67,7 @@ module.exports = (app) ->
               @authenticateHandler.handle @request, @response
                 .then (token) ->
                   if not token.userId and not token.roles
-                    return Promise.reject new ServerError 'USEROBJECT'
+                    return throw new ServerError 'USEROBJECT'
 
                   token
             .then @afterAuth.bind @
@@ -77,11 +77,11 @@ module.exports = (app) ->
             return Promise.resolve @allowed
 
           if not token
-            return Promise.reject new AccessDeniedError 'NOACCESS'
+            return throw new AccessDeniedError 'NOACCESS'
 
           @context.setToken token
 
           @context.checkAccess()
             .then (allowed) ->
               if not allowed
-                return Promise.reject new AccessDeniedError 'NOACCESS'
+                return throw new AccessDeniedError 'NOACCESS'

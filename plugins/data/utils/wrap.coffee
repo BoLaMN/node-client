@@ -31,13 +31,7 @@ module.exports = ->
     utils.wrap = (fn, done = ->) ->
       done = once done
 
-      ->
-        i = arguments.length
-        args = new Array(i)
-
-        while i--
-          args[i] = arguments[i]
-
+      (args...) ->
         ctx = this
 
         if !fn

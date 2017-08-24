@@ -2,7 +2,7 @@
 
 module.exports = ->
 
-  @factory 'Request', (utils) ->
+  @factory 'Request', (utils, debug) ->
     { defer, values, flatten, wrap } = utils
 
     class Request
@@ -14,7 +14,9 @@ module.exports = ->
         (fn) ->
           deferred = defer()
 
-          done = (err, values...) ->
+          done = (err, values) ->
+            #@debug 'done', err, values
+
             if err
               return deferred.reject err
 
@@ -35,4 +37,3 @@ module.exports = ->
         fns = @errorHandlers
 
         Promise.each fns, @run(err, @req, @res)
-          .then next
