@@ -70,14 +70,14 @@ module.exports = ->
         for name, param of @params
           @params[name] = new RouteParam name, param
 
-      _before: (req, res, next) ->
-        @model.fire 'before remote', { req, res }, next
+      _before: (req, res) ->
+        @model.fire 'before remote', { req, res }
 
-      _after: (req, res, next) ->
-        @model.fire 'after remote', { req, res }, next
+      _after: (req, res) ->
+        @model.fire 'after remote', { req, res }
 
-      _afterError: (err, req, res, next) ->
-        @model.fire 'error remote', { err, req, res }, next
+      _afterError: (err, req, res) ->
+        @model.fire 'error remote', { err, req, res }
 
       match: (req, path) ->
         if req.method.toLowerCase() isnt @method

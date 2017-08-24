@@ -9,15 +9,32 @@ module.exports = ->
       configs = definition
       configs
 
-  @run (middlewares, debug, config, api) ->
+  @run (middlewares, debug, config, api, injector) ->
     phases = Object.keys middlewares 
 
     phases.forEach (phase) ->
       middleware = config.from middlewares[phase]
-      
+      modules = Object.keys middleware
+
       debug 'middlewares:' + phase, middleware 
 
-      api.use phase, middleware.fn 
+      modules.forEach (name) ->
+        mod = middleware[name]
+        
+        return unless mod.fn 
+
+        args = injector.inject injector.parse(mod.fn), name, false
+        args = args.filter (arg) -> arg?
+        args.push mod.config
+
+        debug 'middlewares:inject', mod, args
+
+        fn = mod.fn.apply null, args
+
+        if phase is 'error'
+          api.error fn
+        else
+          api.use phase, fn
 
     return 
 

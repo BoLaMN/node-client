@@ -47,6 +47,9 @@ class Injector
 
   get: (name, context) ->
     factory = @require name
+
+    return unless factory
+
     provider = @[dependencies][name + 'Provider']
     context ?= provider() if provider
     args = @inject @parse(factory), name
@@ -58,7 +61,7 @@ class Injector
       service = decorate service
     service
 
-  require: (name, owner) ->
+  require: (name, owner, strict = true) ->
     factory = @[dependencies][name]
 
     if not factory
@@ -70,7 +73,7 @@ class Injector
         module = require dasheize name 
       catch e 
         
-      if not module
+      if not module and strict
         throw new ReferenceError "Dependency '#{name}' not defined"
 
       if module
@@ -91,10 +94,11 @@ class Injector
       .filter (item) ->
         item.length > 0
 
-  inject: (deps, owner) ->
+  inject: (deps, owner, strict) ->
     deps.map (name) =>
-      factory = @require name, owner
-      args = @inject @parse(factory), owner
+      factory = @require name, owner, strict
+      return unless factory
+      args = @inject @parse(factory), owner, strict
       service = @decorate name, factory args...
       if name is 'debug'
         dbg = owner or name or ''
@@ -104,6 +108,8 @@ class Injector
       service
 
   exec: (name, factory, context) ->
+    return unless factory
+
     provider = @[dependencies][name + 'Provider']
     context ?= provider() if provider
     args = @inject @parse(factory), name

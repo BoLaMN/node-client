@@ -9,7 +9,6 @@ module.exports = (app) ->
   .initializer ->
 
     @require
-      bodyParser: 'body-parser'
       url: 'url'
       HttpError: 'http-error'
       connect: 'connect'

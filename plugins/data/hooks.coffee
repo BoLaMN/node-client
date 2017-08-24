@@ -54,9 +54,12 @@ module.exports = ->
 
       fire: (event, ctx = {}, self = @, fn = ->) ->
         debug event, ctx 
+
+        if typeof self is 'function'
+          return @fire event, {}, ctx, null, self
         
         if typeof ctx is 'function'
-          return @fire event, {}, ctx, self
+          return @fire event, {}, null, ctx
 
         { instance } = ctx.options?
 
@@ -82,7 +85,7 @@ module.exports = ->
 
         nested = (key, cb) ->
           inst = evt[key]
-          inst.fire event, options, cb
+          inst.fire event, options, self, cb
 
         evts = Object.keys evt
 

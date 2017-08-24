@@ -12,7 +12,7 @@ module.exports = ->
         if promise(ret)
           ret.then (value) ->
             done null, value
-            rvalue
+            value
           , done
         else
           if ret instanceof Error then done(ret) else done(null, ret)

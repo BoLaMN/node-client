@@ -12,7 +12,6 @@
   "author": "Nathan Bolam",
   "license": "MIT",
   "dependencies": {
-    "body-parser": "^1.14.2",
     "callsite": "^1.0.0",
     "coffee-script": "^1.12.7",
     "connect": "^3.6.1",
@@ -21,9 +20,11 @@
     "debug": "^2.6.4",
     "glob": "^6.0.4",
     "http-error": "0.0.6",
+    "inflation": "^2.0.0",
     "moment": "^2.18.1",
     "mongodb": "^2.2.26",
     "nodemailer": "^4.0.1",
+    "raw-body": "^2.3.0",
     "standard-http-error": "^2.0.0"
   },
   "devDependencies": {

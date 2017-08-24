@@ -12,23 +12,6 @@ remoting:
     normalizeHttpPath: false
     xml: false
 
-  json:
-    strict: false
-    limit: 20971520
-
-  urlencoded:
-    extended: true
-    limit: 20971520
-
-  types: 
-    warnOnUnknownType: false
-    
-  cors: false
-
-  errorHandler:
-    debug: true
-    log: false
-    
 legacyExplorer: false
 
 AWS_REGION: 'ap-southeast-2'

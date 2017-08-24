@@ -5,11 +5,23 @@ initial:
       credentials: true
       maxAge: 86400
 
+  "./middleware/body-parser":
+    'application/json':
+      strict: false
+      limit: 20971520
+
+    'application/x-www-form-urlencoded':
+      extended: true
+      limit: 20971520    
+
 "initial:before":
     "loopback#favicon":
       params: "$!../server/fixtures/favicon.ico"
 
 session: {}
+
+auth:
+  "./middleware/acl": {}
 
 "auth:after":
   "./middleware/rewrite-user-literal":
@@ -17,11 +29,5 @@ session: {}
 
 routes: {}
 
-files:
-  "loopback#static": [
-    { params: "$!../client" }
-    { params: "$!../admin", paths: [ '/admin'] }
-  ]
-
-"final:after":
-  'strong-error-handler': {}
+error:
+  "./middleware/error": {}

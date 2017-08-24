@@ -1,6 +1,6 @@
 module.exports = (app) ->
 
-  @provider 'config', (isEmpty, inflector, injector, merge, path, glob, env) ->
+  @provider 'config', (isEmpty, inflector, injector, merge, path, glob, env, debug) ->
     { dasheize, underscore, camelize } = inflector
 
     directories = app.directories.map (directory) ->
@@ -102,11 +102,13 @@ module.exports = (app) ->
           dash = dasheize file 
 
           if dash isnt orig
+            list[dash] = list[file]
             files.push dash
 
           under = underscore file 
 
           if under isnt orig
+            list[under] = list[file]
             files.push under
 
       get dirs, files, (file, config) =>
@@ -116,7 +118,14 @@ module.exports = (app) ->
 
         result[base] ?= {}
         result[base].name = base 
-        result[base].config = list[base] or {}
+
+        orig = files.find (orig) ->
+          norm = path.normalize orig 
+          file.search(norm) > -1
+
+        #debug 'config:original', files, file, orig
+
+        result[base].config = list[orig] or {}
 
         if typeof config is 'function'
           result[base].fn = config

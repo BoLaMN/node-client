@@ -12,9 +12,6 @@
   mountPaths: [ '/', '/admin' ]
   websocket: true
 
-"loopback-component-explorer":
-  mountPath: '/explorer'
-
 "./component/inject": {}
 
 "./component/cache":
