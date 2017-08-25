@@ -32,7 +32,7 @@ module.exports = ->
               fn = (args...) ->
                 data = {}
 
-                for arg, idx in route.args
+                for arg, idx in route.keys
                   data[arg] = args[idx]
 
                 args.shift()
@@ -44,7 +44,7 @@ module.exports = ->
                 instance.setId primaryKey
 
                 relation = instance[config.as]
-                relation[name].apply relation, args
+                relation[name] args...
 
                 return
 
@@ -74,9 +74,7 @@ module.exports = ->
           console.error "method #{name} not found on #{ @name }"
           return
 
-        config.args ?= utils.getArgs fn
         config.path = '/' + @name + config.path
-
         config.model = @
 
         route[config.method] name, config, fn.bind @

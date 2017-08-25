@@ -1,6 +1,6 @@
 module.exports = (Model) ->
 
-  Model::valueOf = ->
+  @::valueOf = ->
     object =
       access_token: @accessToken
       token_type: 'mac'
@@ -18,7 +18,7 @@ module.exports = (Model) ->
 
     object
 
-  Model.getTokenFromRequest = (request) ->
+  @getTokenFromRequest = (request) ->
     headerToken = request.get 'authorization'
 
     if headerToken
@@ -32,7 +32,7 @@ module.exports = (Model) ->
   # @see http://tools.ietf.org/html/rfc6750#section-2.1
   ###
 
-  Model.getTokenFromRequestHeader = (request) ->
+  @getTokenFromRequestHeader = (request) ->
     header = request.get 'authorization'
 
     if header.substring 0, 4 isnt 'MAC '

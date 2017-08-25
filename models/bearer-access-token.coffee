@@ -1,6 +1,6 @@
 module.exports = (Model) ->
 
-  Model::valueOf = ->
+  @::valueOf = ->
     object =
       access_token: @accessToken
       token_type: 'bearer'
@@ -16,7 +16,7 @@ module.exports = (Model) ->
 
     object
 
-  Model.getTokenFromRequest = (request) ->
+  @getTokenFromRequest = (request) ->
     headerToken = request.get 'authorization'
     queryToken = request.query?.access_token
     bodyToken = request.body?.access_token
@@ -41,7 +41,7 @@ module.exports = (Model) ->
   # @see http://tools.ietf.org/html/rfc6750#section-2.1
   ###
 
-  Model.getTokenFromRequestHeader = (request) ->
+  @getTokenFromRequestHeader = (request) ->
     token = request.get 'authorization'
     matches = token.match /Bearer\s(\S+)/
 
@@ -64,7 +64,7 @@ module.exports = (Model) ->
   # @see http://tools.ietf.org/html/rfc6750#section-2.3
   ###
 
-  Model.getTokenFromRequestQuery = (request) ->
+  @getTokenFromRequestQuery = (request) ->
     request.query.access_token
 
   ###*
@@ -76,7 +76,7 @@ module.exports = (Model) ->
   # @see http://tools.ietf.org/html/rfc6750#section-2.2
   ###
 
-  Model.getTokenFromRequestBody = (request) ->
+  @getTokenFromRequestBody = (request) ->
     if request.method is 'GET'
       throw new InvalidRequestError 'GETBODY'
 

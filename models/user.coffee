@@ -6,7 +6,7 @@ module.exports = (Model) ->
   # @see https://tools.ietf.org/html/rfc6749#section-4.3.2
   ###
 
-  Model.handleGrant = (request, response) ->
+  @handleGrant = (request, response) ->
     if !request
       throw new InvalidArgumentError 'REQUEST'
 
@@ -24,7 +24,7 @@ module.exports = (Model) ->
         
         user.hasPassword password
 
-  Model.validateInputParams = (request) ->
+  @validateInputParams = (request) ->
     { email, password } = request.body
 
     if not email

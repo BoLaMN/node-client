@@ -1,4 +1,4 @@
-module.exports = (Model) ->
+module.exports = (Provider) ->
 
   ###*
   # Handle client credentials grant.
@@ -6,7 +6,7 @@ module.exports = (Model) ->
   # @see https://tools.ietf.org/html/rfc6749#section-4.4.2
   ###
 
-  Model.handleGrant = (request, response) ->
+  @handleGrant = (request, response) ->
     if !request
       throw new InvalidArgumentError 'REQUEST'
 
@@ -22,7 +22,7 @@ module.exports = (Model) ->
     new protocol provider, properties, @userModel
       .handle request, response, state
 
-  Model.findProvider = (request) ->
+  @findProvider = (providerId) ->
     client = @client.toObject()
 
     id = request.params.provider or request.body.provider
@@ -35,7 +35,7 @@ module.exports = (Model) ->
 
     foundProvider[0]
 
-  Model.initializeProtocol = (providerId) ->
+  @initializeProtocol = (providerId) ->
     protocolPath = path.join __dirname, '..', 'protocol-types', providerId
 
     try
@@ -45,7 +45,7 @@ module.exports = (Model) ->
 
     protocol
 
-  Model.createStateToken = ({ body, query }) ->
+  @createStateToken = ({ body, query }) ->
     stateParams = {}
 
     params = [

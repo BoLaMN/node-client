@@ -51,8 +51,10 @@ module.exports = (app) ->
         mixins.forEach (mixin) ->
           factory.mixin mixin, definition.mixins[mixin]
 
+        args = @injector.inject @injector.parse(fn), name, false
+
         if fn
-          fn factory
+          fn.apply factory, args
         
         service = ->
           factory

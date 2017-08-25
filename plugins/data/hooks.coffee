@@ -148,7 +148,7 @@ module.exports = ->
 
         c = ->
           @removeListener ev, c
-          fn.apply @, arguments
+          fn arguments...
 
         c.fn = fn
 
@@ -167,7 +167,7 @@ module.exports = ->
         @evs.forEach (hook) =>
           return unless re.test hook  
           
-          Array::push.apply fns, @hooks[hook]
+          fns.push @hooks[hook]...
 
         next = (err) =>
           if err

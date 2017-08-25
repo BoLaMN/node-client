@@ -60,7 +60,7 @@ module.exports = ->
       all: (method, route, options, handler) ->
         args = arguments
         methods.forEach (method) =>
-          @[method].apply @, args
+          @[method] args...
         @
 
       use: (phase, middleware) ->
@@ -68,11 +68,11 @@ module.exports = ->
           @middlewares[phase] = []
           @phases.push phase
 
-        @middlewares[phase].push.apply @middlewares[phase], utils.flatten(middleware)
+        @middlewares[phase].push utils.flatten(middleware)...
         @
 
       error: (middleware) ->
-        @errorHandlers.push.apply @errorHandlers, utils.flatten(middleware)
+        @errorHandlers.push utils.flatten(middleware)...
         @
 
       _route: (name, options, handler) ->
@@ -121,10 +121,13 @@ module.exports = ->
 
         while handler
           handler.phases.forEach (phase) ->
+            fn = handler.middlewares[phase] or []
+
             middleware[phase] ?= []
-            middleware[phase].unshift.apply middleware[phase], handler.middlewares[phase] or []
+            middleware[phase].unshift fn...
           
-          errorHandlers.unshift.apply errorHandlers, handler.errorHandlers or []
+          errs = handler.errorHandlers or []
+          errorHandlers.unshift errs...
           
           handler = handler.parent
 

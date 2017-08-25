@@ -34,7 +34,7 @@ module.exports = ->
             command: command
             params: args
 
-          @collection[command].apply @collection, args
+          @collection[command] args...
 
       ###*
       # Count the number of instances for the given model

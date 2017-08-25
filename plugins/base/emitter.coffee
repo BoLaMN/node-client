@@ -54,7 +54,7 @@ module.exports = ->
         itr = iterate.bind @
 
         itr '*', (e) =>
-          e.apply @, args
+          e args...
 
         @
 
@@ -62,7 +62,7 @@ module.exports = ->
         itr = iterate.bind @
 
         itr ev, (e) =>
-          e.apply @, args
+          e args...
 
         @broadcast ev, args...
 
@@ -73,7 +73,7 @@ module.exports = ->
 
         c = =>
           @$events[ev].splice idx, 1
-          cb.apply @, arguments
+          cb arguments...
 
         idx = @add ev, c
 

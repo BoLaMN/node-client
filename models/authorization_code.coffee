@@ -6,58 +6,11 @@ module.exports = (Model) ->
   # @see https://tools.ietf.org/html/rfc6749#section-4.1.3
   ###
 
-  Model.handleGrant = (request, response) ->
-    if not request
-      throw new InvalidArgumentError 'REQUEST'
+  @::validateGrant = (id, redirect_uri) ->
+    if id isnt @id
+      throw new InvalidGrantError 'Invalid grant: authorization code is invalid'
 
-    Promise.bind this
-      .then ->
-        @getAuthorizationCode request.body.code
-      .tap (code) ->
-        if code.client.id != @client.id
-          throw new InvalidGrantError 'Invalid grant: authorization code is invalid'
-
-        code.validateRedirectUri request.body.redirect_uri or request.query.redirect_uri
-      .then (code) ->
-        @revokeAuthorizationCode code.id
-
-  ###*
-  # Get the authorization code.
-  # {code} body
-  ###
-
-  Model.getAuthorizationCode = (code) ->
-    if not code
-      throw new InvalidRequestError 'Missing parameter: `code`'
-
-    if not validate.vschar code
-      throw new InvalidRequestError 'Invalid parameter: `code`'
-
-    #client = @client
-
-    debug "in getAuthorizationCode (code: #{ code })"
-
-    @findById code
-      .then (code) ->
-        if not code
-          throw new InvalidGrantError 'Invalid grant: authorization code is invalid'
-
-        if not code.client
-          throw new ServerError 'Server error: `getAuthorizationCode()` did not return a `client` object'
-
-        if not code.user
-          throw new ServerError 'Server error: `getAuthorizationCode()` did not return a `user` object'
-
-        if not (code.expiresAt instanceof Date)
-          throw new ServerError 'Server error: `expiresAt` must be a Date instance'
-
-        if code.expiresAt < new Date
-          throw new InvalidGrantError 'Invalid grant: authorization code has expired'
-
-        if code.redirectUri and not validate.uri code.redirectUri
-          throw new InvalidGrantError 'Invalid grant: `redirect_uri` is not a valid URI'
-
-        code
+    @validateRedirectUri redirect_uri
 
   ###*
   # Validate the redirect URI.
@@ -70,16 +23,16 @@ module.exports = (Model) ->
   # @see https://tools.ietf.org/html/rfc6749#section-4.1.3
   ###
 
-  Model::validateRedirectUri = (redirectUri) ->
+  @::validateRedirectUri = (redirectUri) ->
     if not @redirectUri
       return
 
     #redirectUri = request.body.redirect_uri or request.query.redirect_uri
 
-    if not validate.uri(redirectUri)
+    if not validate.uri redirectUri 
       throw new InvalidRequestError 'Invalid request: `redirect_uri` is not a valid URI'
 
-    if redirectUri != code.redirectUri
+    if redirectUri isnt @redirectUri
       throw new InvalidRequestError 'Invalid request: `redirect_uri` is invalid'
 
     return
@@ -94,7 +47,7 @@ module.exports = (Model) ->
   # @see https://tools.ietf.org/html/rfc6749#section-4.1.2
   ###
 
-  Model.revokeAuthorizationCode = (id) ->
+  @revokeAuthorizationCode = (id) ->
     debug "in revokeAuthorizationCode (code: #{ id })"
 
     query =

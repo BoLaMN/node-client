@@ -10,27 +10,22 @@ module.exports = ->
   @factory 'Route', (Types, utils, HttpError, RouteParam, AccessHandler) ->
 
     normalizePath = (path, keys, params) ->
-      for name of params
-        param = params[name]
-
-        if typeof param == 'string' or param instanceof RegExp
+      for name, param of params
+        if typeof param is 'string' or param instanceof RegExp
           params[name] = type: param
 
       path = path.concat('/?')
         .replace /\/:([\w\.\-\_]+)(\*?)/g, (match, key, wildcard) ->
           keys.push key
 
-          if !params[key]
-            params[key] = {}
+          params[key] ?= {}
 
           param = params[key]
           param.type = param.type or 'string'
           param.required = true
+          param.source ?= 'path'
 
-          if !param.source
-            param.source = 'path'
-
-          if param.source != 'path'
+          if param.source isnt 'path'
             throw new Error('Url parameters must have \'path\' as source but found \'' + param.source + '\'')
 
           if wildcard
@@ -85,7 +80,7 @@ module.exports = ->
 
         m = path.match(@regex)
 
-        if !m
+        if not m
           return false
 
         req.params = {}
@@ -113,20 +108,17 @@ module.exports = ->
         true
 
       wrapHandler: (handler) ->
-        args = @args
-        route = @
+        keys = @keys
 
         (req, res) ->
 
           new Promise (resolve, reject) ->
             arr = []
 
-            for arg, idx in args
+            for arg, idx in keys
               arr[idx] = req.params[arg]
 
-            idx = args.indexOf 'cb'
-
-            arr[idx] = (err, json, headers, code) ->
+            arr.push (err, json, headers, code) ->
               if err
                 return reject err
 
@@ -134,7 +126,7 @@ module.exports = ->
 
               resolve()
 
-            handler.apply null, arr
+            handler arr...
 
       toObject: ->
         route = @toJSON()
