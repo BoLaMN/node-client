@@ -1,4 +1,4 @@
-module.exports = (Model) ->
+module.exports = (InvalidRequestError, InvalidGrantError, ServerError, debug) ->
 
   ###*
   # Handle authorization code grant.
@@ -20,20 +20,6 @@ module.exports = (Model) ->
 
     true 
     
-  ###*
-  # Validate the redirect URI.
-  #
-  # "The authorization server MUST ensure that the redirect_uri parameter is
-  # present if the redirect_uri parameter was included in the initial
-  # authorization request as described in Section 4.1.1, and if included
-  # ensure that their values are identical."
-  #
-  # @see https://tools.ietf.org/html/rfc6749#section-4.1.3
-  ###
-
-  @::validateRedirectUri = (redirectUri) ->
-
-    return
 
   ###*
   # Revoke the authorization code.

@@ -1,4 +1,4 @@
-module.exports = (Model) ->
+module.exports = (InvalidArgumentError, InvalidRequestError, debug) ->
 
   ###*
   # Retrieve the user from the model using a email/password combination.

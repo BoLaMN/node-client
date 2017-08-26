@@ -1,4 +1,4 @@
-module.exports = (Model) ->
+module.exports = (InvalidRequestError, debug) ->
 
   @getTokenFromRequest = ({ headers, query, body, method }) ->
     headerToken = headers.authorization

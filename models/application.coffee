@@ -1,4 +1,4 @@
-module.exports = (Model) ->
+module.exports = (InvalidGrantError, debug) ->
 
   ###*
   # Handle client credentials grant.
@@ -13,4 +13,4 @@ module.exports = (Model) ->
        @client.key isnt client_key
       throw new InvalidGrantError 'Invalid grant: client credentials are invalid'
 
-    null
+    true

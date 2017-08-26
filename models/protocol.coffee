@@ -1,4 +1,4 @@
-module.exports = (Provider) ->
+module.exports = (InvalidArgumentError, Provider) ->
 
   ###*
   # Handle client credentials grant.
