@@ -11,7 +11,7 @@ module.exports = ->
           @[name] = val
 
         switch @source
-          when 'query', 'path'
+          when 'query', 'path', 'header'
             @type = @type or 'string'
           when undefined, 'body'
             @type = @type or 'json'
@@ -19,7 +19,7 @@ module.exports = ->
           when 'context'
             @type = @type or 'object'
           else
-            throw new Error "parameter source muste be 'context', path', 'query' or 'body'"
+            throw new Error "parameter source muste be 'context', path', 'query', 'header' or 'body'"
 
         @required = not not @required
 
@@ -28,7 +28,7 @@ module.exports = ->
 
           @fn = RegExpType.construct @type
 
-      missing: ({ params, body, parsedUrl }) ->
+      missing: ({ params, body, parsedUrl, headers }) ->
         { query } = parsedUrl
 
         if not @required
@@ -41,7 +41,8 @@ module.exports = ->
           @source is 'context' or
           @source is 'body' and (@name of body) or
           @source is 'query' and (@name of query) or
-          @source is 'path' and (@name of params)
+          @source is 'path' and (@name of params) or
+          @source is 'header' and (@name of headers)
 
         if exists
           return false
@@ -67,14 +68,15 @@ module.exports = ->
         value
 
       invalid: (req) ->
-        { body, parsedUrl, params, locals } = req
+        { body, headers, parsedUrl, params, locals } = req
         { query } = parsedUrl
 
         value = switch @source
           when 'context' then locals
+          when 'header'  then @check headers
           when 'body'    then @check body
           when 'query'   then @check query
-          when 'path'     then @check params
+          when 'path'    then @check params
 
         if value
           req.params[@name] = value

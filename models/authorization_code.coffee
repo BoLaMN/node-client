@@ -6,12 +6,20 @@ module.exports = (Model) ->
   # @see https://tools.ietf.org/html/rfc6749#section-4.1.3
   ###
 
-  @::validateGrant = (id, redirect_uri) ->
-    if id isnt @id
-      throw new InvalidGrantError 'Invalid grant: authorization code is invalid'
+  @::validateGrant = (redirectUri) ->
+    if not @redirectUri
+      return
 
-    @validateRedirectUri redirect_uri
+    #redirectUri = request.body.redirect_uri or request.query.redirect_uri
 
+    if not validate.uri redirectUri 
+      throw new InvalidRequestError 'Invalid request: `redirect_uri` is not a valid URI'
+
+    if redirectUri isnt @redirectUri
+      throw new InvalidRequestError 'Invalid request: `redirect_uri` is invalid'
+
+    true 
+    
   ###*
   # Validate the redirect URI.
   #
@@ -24,16 +32,6 @@ module.exports = (Model) ->
   ###
 
   @::validateRedirectUri = (redirectUri) ->
-    if not @redirectUri
-      return
-
-    #redirectUri = request.body.redirect_uri or request.query.redirect_uri
-
-    if not validate.uri redirectUri 
-      throw new InvalidRequestError 'Invalid request: `redirect_uri` is not a valid URI'
-
-    if redirectUri isnt @redirectUri
-      throw new InvalidRequestError 'Invalid request: `redirect_uri` is invalid'
 
     return
 

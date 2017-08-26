@@ -1,28 +1,10 @@
 module.exports = (Model) ->
 
-  @::valueOf = ->
-    object =
-      access_token: @accessToken
-      token_type: 'mac'
-      mac_key: @macKey
-      mac_algorithm: 'hmac-sha-256'
-
-    if @accessTokenLifetime
-      object.expires_in = @accessTokenLifetime
-
-    if @refreshToken
-      object.refresh_token = @refreshToken
-
-    if @scope
-      object.scope = @scope
-
-    object
-
   @getTokenFromRequest = (request) ->
-    headerToken = request.get 'authorization'
+    headerToken = request.headers.authorization
 
     if headerToken
-      return @getTokenFromRequestHeader request
+      return @getTokenFromRequestHeader headerToken
 
     return
 
@@ -32,9 +14,7 @@ module.exports = (Model) ->
   # @see http://tools.ietf.org/html/rfc6750#section-2.1
   ###
 
-  @getTokenFromRequestHeader = (request) ->
-    header = request.get 'authorization'
-
+  @getTokenFromRequestHeader = (header) ->
     if header.substring 0, 4 isnt 'MAC '
       return
 
@@ -60,4 +40,4 @@ module.exports = (Model) ->
     if currentTimeStamp > 300
       throw new InvalidRequestError 'EXPIRED'
 
-    keyValues
+    @findById keyValues.id

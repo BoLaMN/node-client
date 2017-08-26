@@ -104,7 +104,7 @@ module.exports = ->
     class UnauthorizedRequestError extends OAuthError
       constructor: (message, properties = {}) ->
         messages =
-          NOAUTH:  'Unauthorized request: no authentication given'
+          NOAUTH:  'Unauthorized request: no authentication found'
           NOACCESS: 'Access denied: user denied access to application'
 
         properties.code ?= 401
@@ -129,3 +129,22 @@ module.exports = ->
         properties.name ?= 'access_denied'
 
         super messages[message], properties
+
+  ###*
+  # "The access token provided is expired, revoked, malformed, or invalid for other reasons."
+  #
+  # @see https://tools.ietf.org/html/rfc6750#section-3.1
+  ###
+  
+  @error 'InvalidTokenError', (OAuthError) ->
+    class InvalidTokenError extends OAuthError
+      constructor: (message, properties) ->
+        messages =
+          INVALID: 'Invalid token: access token is invalid'
+          EXPIRED: 'Invalid token: access token has expired'
+
+        properties.code ?= 401
+        properties.name ?= 'invalid_token'
+
+        super messages[message], properties
+

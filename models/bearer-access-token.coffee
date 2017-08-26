@@ -1,37 +1,21 @@
 module.exports = (Model) ->
 
-  @::valueOf = ->
-    object =
-      access_token: @accessToken
-      token_type: 'bearer'
+  @getTokenFromRequest = ({ headers, query, body, method }) ->
+    headerToken = headers.authorization
+    queryToken = query.access_token
+    bodyToken = body.access_token
 
-    if @accessTokenLifetime
-      object.expires_in = @accessTokenLifetime
-
-    if @refreshToken
-      object.refresh_token = @refreshToken
-
-    if @scope
-      object.scope = @scope
-
-    object
-
-  @getTokenFromRequest = (request) ->
-    headerToken = request.get 'authorization'
-    queryToken = request.query?.access_token
-    bodyToken = request.body?.access_token
-
-    if ! !headerToken + ! !queryToken + ! !bodyToken > 1
+    if not not headerToken + not not queryToken + not not bodyToken > 1
       return
 
     if headerToken
-      return @getTokenFromRequestHeader request
+      return @getTokenFromRequestHeader headerToken
 
     if queryToken
-      return @getTokenFromRequestQuery request
+      return @getTokenFromRequestQuery queryToken
 
     if bodyToken
-      return @getTokenFromRequestBody request
+      return @getTokenFromRequestBody method, headers['content-type'], bodyToken
 
     return
 
@@ -41,14 +25,13 @@ module.exports = (Model) ->
   # @see http://tools.ietf.org/html/rfc6750#section-2.1
   ###
 
-  @getTokenFromRequestHeader = (request) ->
-    token = request.get 'authorization'
+  @getTokenFromRequestHeader = (token) ->
     matches = token.match /Bearer\s(\S+)/
 
     if not matches
       return
 
-    matches[1]
+    @findById matches[1]
 
   ###*
   # Get the token from the request query.
@@ -64,8 +47,8 @@ module.exports = (Model) ->
   # @see http://tools.ietf.org/html/rfc6750#section-2.3
   ###
 
-  @getTokenFromRequestQuery = (request) ->
-    request.query.access_token
+  @getTokenFromRequestQuery = (token) ->
+    @findById token
 
   ###*
   # Get the token from the request body.
@@ -76,11 +59,12 @@ module.exports = (Model) ->
   # @see http://tools.ietf.org/html/rfc6750#section-2.2
   ###
 
-  @getTokenFromRequestBody = (request) ->
-    if request.method is 'GET'
+  @getTokenFromRequestBody = (method, type, token) ->
+    if method is 'GET'
       throw new InvalidRequestError 'GETBODY'
 
-    if not request.is 'application/x-www-form-urlencoded'
+    if type is 'application/x-www-form-urlencoded'
       throw new InvalidRequestError 'FORMENCODED'
 
-    request.body.access_token
+    @findById token
+    

@@ -23,8 +23,10 @@ module.exports = ->
         
         return unless mod.fn 
 
-        args = injector.inject injector.parse(mod.fn), name, false
-        args = args.filter (arg) -> arg?
+        arr = injector.parse mod.fn
+        arr.pop()
+
+        args = injector.inject arr, name
         args.push mod.config
 
         debug 'middlewares:inject', mod, args

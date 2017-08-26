@@ -7,7 +7,7 @@ module.exports = ->
 
   @include './param'
 
-  @factory 'Route', (Types, utils, HttpError, RouteParam, AccessHandler) ->
+  @factory 'Route', (Types, utils, HttpError, RouteParam) ->
 
     normalizePath = (path, keys, params) ->
       for name, param of params
