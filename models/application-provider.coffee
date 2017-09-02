@@ -1,5 +1,4 @@
-module.exports = (InvalidArgumentError, jwt, User) ->
-  { getGroupsAndRoles, createToken } = User 
+module.exports = (InvalidArgumentError, jwt) ->
 
   ###*
   # Handle client credentials grant.
@@ -46,6 +45,33 @@ module.exports = (InvalidArgumentError, jwt, User) ->
             return throw new InvalidRequestError 'INVALIDCLIENT'
           user
 
+    getGroupsAndRoles = (instance) =>
+      @include instance, [
+        {
+          relation: 'groups'
+          scope: { include: [ 'roles' ] }
+        }
+        'roles'
+      ]
+      .then (included) ->
+        included[0] 
+
+    responseTypes =
+      code: AuthorizationCode
+      token: AccessToken
+
+    model = responseTypes[responseType]
+
+    createToken = (instance) ->
+      roles = Role.groupByName instance 
+
+      debug "in createToken (clientId: #{ clientId }, userId: #{ instance.id }, roles: #{ roles })"
+
+      model.create 
+        clientId: clientId
+        roles: roles
+        userId: instance.id
+
     @findOne(query).then ({ properties, provider, application }) =>
       protocol = @initializeProtocol provider, properties
       state = @createStateToken request
@@ -61,7 +87,7 @@ module.exports = (InvalidArgumentError, jwt, User) ->
         .then connect provider, info
         .then checkUserHasClient
         .then getGroupsAndRoles
-        .then createToken clientId, responseType
+        .then createToken
 
       protocol[type] response, state
         .then (info) ->

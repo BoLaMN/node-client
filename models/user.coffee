@@ -23,34 +23,6 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
 
         return @login clientId, email, password, responseType
 
-  @getGroupsAndRoles = (instance) =>
-    @include instance, [
-      {
-        relation: 'groups'
-        scope: { include: [ 'roles' ] }
-      }
-      'roles'
-    ]
-    .then (included) ->
-      included[0] 
-
-  @createToken = (clientId, responseType) -> 
-    responseTypes =
-      code: AuthorizationCode
-      token: AccessToken
-
-    model = responseTypes[responseType]
-
-    (instance) ->
-      roles = Role.groupByName instance 
-
-      debug "in createToken (clientId: #{ clientId }, userId: #{ instance.id }, roles: #{ roles })"
-
-      model.create 
-        clientId: clientId
-        roles: roles
-        userId: instance.id
-
   @login = (clientId, email, password, responseType) ->
     if not email
       throw new InvalidRequestError 'Missing parameter: `email`'
@@ -84,6 +56,33 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
 
           resolve user
 
+    getGroupsAndRoles = (instance) =>
+      @include instance, [
+        {
+          relation: 'groups'
+          scope: { include: [ 'roles' ] }
+        }
+        'roles'
+      ]
+      .then (included) ->
+        included[0] 
+
+    responseTypes =
+      code: AuthorizationCode
+      token: AccessToken
+
+    model = responseTypes[responseType]
+
+    createToken = (instance) ->
+      roles = Role.groupByName instance 
+
+      debug "in createToken (clientId: #{ clientId }, userId: #{ instance.id }, roles: #{ roles })"
+
+      model.create 
+        clientId: clientId
+        roles: roles
+        userId: instance.id
+  
     @findOne where: email: email
       .tap (user) ->
         if not user 
@@ -91,5 +90,5 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
       .then checkUserHasClient
       .then comparePassword
       .then getGroupsAndRoles
-      .then createToken clientId, responseType
+      .then createToken
 

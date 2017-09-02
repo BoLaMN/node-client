@@ -1,34 +1,5 @@
 module.exports = (InvalidGrantError, debug, AccessToken, AuthorizationCode, Role) ->
 
-  @getGroupsAndRoles = (instance) =>
-    @include instance, [
-      {
-        relation: 'groups'
-        scope: { include: [ 'roles' ] }
-      }
-      'roles'
-    ]
-    .then (included) ->
-      included[0] 
-
-  @createToken = (clientId, responseType) -> 
-    responseTypes =
-      code: AuthorizationCode
-      token: AccessToken
-
-    model = responseTypes[responseType]
-
-    (instance) ->
-      roles = Role.groupByName instance 
-
-      debug "in createToken (clientId: #{ instance.id }, userId: #{ instance.userId }, roles: #{ roles })"
-
-      model.create 
-        clientId: clientId
-        roles: roles
-        userId: instance.userId
-        appId: instance.id
-
   @login = (clientId, clientSecret, clientKey, responseType) ->
     
     query =
@@ -43,10 +14,38 @@ module.exports = (InvalidGrantError, debug, AccessToken, AuthorizationCode, Role
 
       client
 
+    getGroupsAndRoles = (instance) =>
+      @include instance, [
+        {
+          relation: 'groups'
+          scope: { include: [ 'roles' ] }
+        }
+        'roles'
+      ]
+      .then (included) ->
+        included[0] 
+
+    responseTypes =
+      code: AuthorizationCode
+      token: AccessToken
+
+    model = responseTypes[responseType]
+
+    createToken = (instance) ->
+      roles = Role.groupByName instance 
+
+      debug "in createToken (clientId: #{ instance.id }, userId: #{ instance.userId }, roles: #{ roles })"
+
+      model.create 
+        clientId: clientId
+        roles: roles
+        userId: instance.userId
+        appId: instance.id
+
     @findOne query
       .tap (client) ->
         if not client
           throw new InvalidClientError 'CLIENTCREDS'
       .then compareKeys
       .then getGroupsAndRoles
-      .then createToken clientId, responseType
+      .then createToken
