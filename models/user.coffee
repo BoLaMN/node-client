@@ -92,3 +92,34 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
       .then getGroupsAndRoles
       .then createToken
 
+  @remoteMethod 'authenticate',
+    description: 'authorize a user with email and password.'
+    params:
+      clientId:
+        type: 'objectid'
+        required: true
+        source: 'query'
+      grantType:
+        type: 'string'
+        required: true
+        source: 'query'
+      req:
+        type: 'object'
+        required: true
+        source: 'req'
+      res:
+        type: 'object'
+        required: true
+        source: 'res'
+      responseType:
+        type: 'string'
+        required: true
+        source: 'query'
+    returns:
+      arg: 'AccessToken'
+      type: 'object'
+      root: true
+      description: 'The response body contains properties of the AccessToken created on login.\n' + 'Depending on the value of `include` parameter, the body may contain ' + 'additional properties:\n\n' + '  - `user` - `{User}` - Data of the currently logged in user. (`include=user`)\n\n'
+    accessType: "EXECUTE"
+    path: "/authenticate"
+    method: 'post'

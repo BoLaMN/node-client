@@ -16,7 +16,7 @@ module.exports = ->
           when undefined, 'body'
             @type = @type or 'json'
             @source = 'body'
-          when 'context'
+          when 'context', 'req', 'res', 'locals'
             @type = @type or 'object'
           else
             throw new Error "parameter source muste be 'context', path', 'query', 'header' or 'body'"
@@ -36,7 +36,7 @@ module.exports = ->
           return false
 
         exists =
-          @source is 'context' or
+          @source in [ 'context', 'req', 'res', 'locals' ] or
           @source is 'body' and (@name of body) or
           @source is 'query' and (@name of query) or
           @source is 'path' and (@name of params) or
