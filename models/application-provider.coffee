@@ -1,4 +1,4 @@
-module.exports = (InvalidArgumentError, jwt, Application) ->
+module.exports = (InvalidArgumentError, jwt) ->
 
   ###*
   # Handle client credentials grant.
@@ -6,8 +6,7 @@ module.exports = (InvalidArgumentError, jwt, Application) ->
   # @see https://tools.ietf.org/html/rfc6749#section-4.4.2
   ###
 
-  @::login = (providerId, clientId) ->
-
+  @login = (providerId, clientId, request, response) ->
     query =
       where: 
         clientId: clientId
@@ -39,9 +38,7 @@ module.exports = (InvalidArgumentError, jwt, Application) ->
 
     new protocol provider, properties
 
-  @::createStateToken = ({ body, query }) ->
-    stateParams = {}
-
+  @::createStateToken = (request) ->
     params = [
       'client_id'
       'response_type'
@@ -51,8 +48,7 @@ module.exports = (InvalidArgumentError, jwt, Application) ->
       'scope'
     ]
 
-    for param in params
-      stateParams[param] = body[param] or query[param]
+    stateParams = request.param params...
 
     jwt.sign stateParams, 'xxxxx'
 

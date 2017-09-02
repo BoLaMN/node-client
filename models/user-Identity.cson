@@ -5,27 +5,31 @@ base: "SharedModel"
 properties:
   
   provider:
-    type: "String"
+    type: "string"
     comments: "facebook, google, twitter, linkedin"
 
   protocol:
-    type: "String"
+    type: "string"
     comments: "oAuth, oAuth 2.0, OpenID, OpenID Connect"
 
   externalId:
-    type: "String"
+    type: "string"
     comments: "The provider specific id"
 
   profile:
-    type: "Object"
+    type: "object"
 
   credentials:
-    type: "Object"
-
-mixins:
-  TimeStamp: true
+    type: "object"
 
 hidden: [ 'credentials' ]
+
+relations:
+
+  user:
+    type: "belongsTo"
+    model: "User"
+    foreignKey: "userId"
 
 acls: [
   {
@@ -57,10 +61,3 @@ acls: [
     accessType: "DELETE"
   }
 ]
-
-relations:
-
-  user:
-    type: "belongsTo"
-    model: "User"
-    foreignKey: "userId"

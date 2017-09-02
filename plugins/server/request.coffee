@@ -3,28 +3,22 @@
 module.exports = ->
 
   @factory 'Request', (utils, debug) ->
-    { defer, values, flatten, wrap } = utils
+    { values, flatten, wrap } = utils
 
     class Request
       constructor: (@middlewares, @errorHandlers) ->
 
       run: (args...) ->
-        length = args.length
-
         (fn) ->
-          deferred = defer()
+          new Promise (resolve, reject) ->
+            
+            done = (err, values) ->
+              if err
+                return reject err
 
-          done = (err, values) ->
-            #@debug 'done', err, values
+              resolve values
 
-            if err
-              return deferred.reject err
-
-            deferred.resolve values
-
-          wrap(fn, done) args...
-
-          deferred.promise
+            wrap(fn, done) args...
 
       handle: (@req, @res, next) ->
         fns = flatten values @middlewares

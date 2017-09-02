@@ -1,17 +1,4 @@
-module.exports = (UnauthorizedClientError, InvalidRequestError, debug) ->
-
-  @::validateUser = (client) ->
-    if not @applications
-      throw new InvalidRequestError 'INVALIDCLIENT'
-
-    debug "in validateUser validating application access (applications: #{ JSON.stringify @applications }, client: #{ JSON.stringify client })"
-
-    valid = @applications.some (application) ->
-      application.id is client.id
-
-    debug "in validateUser validation: " + valid
-
-    valid
+module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, ApplicationProvider, Application, AccessToken, AuthorizationCode) ->
 
   @::connect = (provider, auth, info) ->
     data =
@@ -61,7 +48,23 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug) ->
   # @see https://tools.ietf.org/html/rfc6749#section-4.3.2
   ###
 
-  @login = (email, password) ->
+  @login = (clientId, grantType, request, response) ->
+
+    switch grantType
+      when 'custom'
+        { providerId } = request.param 'providerId'
+
+        return ApplicationProvider.login providerId, clientId, request, response 
+      when 'client_credentials'
+        { clientSecret, clientKey } = request.param 'clientSecret', 'clientKey'
+
+        return Application.login clientId, clientSecret, clientKey
+      when 'password'
+        { email, password } = request.param 'email', 'password'
+
+        return @authenticate clientId, email, password
+
+  @authenticate = (clientId, email, password) ->
     if not email
       throw new InvalidRequestError 'Missing parameter: `email`'
 
@@ -76,42 +79,45 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug) ->
 
     debug "in getUser (email: #{ email })"
 
-    @findOne
-      where: 
-        email: email
-      include: [ 
-        { relation: 'groups', scope: { include: [ 'roles' ] } }, 
-        'roles', 'applications' 
-      ]
-    .then (user) ->
-      debug "in validatePassword (validating password for user: #{ JSON.stringify(user) })"
+    responseTypes =
+      code: AuthorizationCode
+      token: AccessToken
 
-      if not user or not bcrypt.compareSync password, user.password
-        throw new InvalidRequestError 'Invalid grant: user credentials are invalid'
+    checkUserHasClient = (user) ->
+      user.applications.exists clientId 
+        .then (exists) ->
+          if not exists
+            return throw new InvalidRequestError 'INVALIDCLIENT'
+          user
 
-      if not user or not user.validateUser client
-        return throw new UnauthorizedClientError 'NOACCESS'
-      
-      roles = []
+    comparePassword = (user) ->
+      new Promise (resolve, reject) =>
+        if not user.password or not password
+          return reject new InvalidRequestError 'Invalid grant: user credentials are invalid'
 
-      if user.roles
-        user.roles.forEach (role) ->
-          role.push role.name
+        bcrypt.compare password, user.password, (err, match) ->
+          if err or not match
+            return reject new InvalidRequestError 'Invalid grant: user credentials are invalid'
 
-      if user.groups
-        user.groups.forEach (group) ->
-          return unless group.roles
+          resolve user
 
-          group.roles.forEach (role) ->
-            roles.push role.name
+    createToken = (user) ->
+      roles = Role.groupByName user 
 
       debug "in createToken (token: #{ accessToken }, clientId: #{ client.id }, userId: #{ userId or client.userId }, expires: #{ accessTokenExpiresAt }, roles: #{ roles })"
       
       model = responseTypes[responseType]
 
       model.create 
-        clientId: client.id
+        clientId: clientId
         roles: roles
         userId: user.id
-        
+    
+    @findOne where: email: email
+      .tap (user) ->
+        if not user 
+          throw new InvalidRequestError 'Invalid grant: user credentials are invalid'
+      .then checkUserHasClient
+      .then comparePassword
+      .then createToken
 

@@ -28,9 +28,7 @@ module.exports = ->
 
           @fn = RegExpType.construct @type
 
-      missing: ({ params, body, parsedUrl, headers }) ->
-        { query } = parsedUrl
-
+      missing: ({ params, body, query, headers }) ->
         if not @required
           return false
 
@@ -68,8 +66,7 @@ module.exports = ->
         value
 
       invalid: (req) ->
-        { body, headers, parsedUrl, params, locals } = req
-        { query } = parsedUrl
+        { body, headers, query, params, locals } = req
 
         value = switch @source
           when 'context' then locals

@@ -1,4 +1,4 @@
-module.exports = (InvalidGrantError, debug, AccessToken, AuthorizationCode) ->
+module.exports = (InvalidGrantError, debug, AccessToken, AuthorizationCode, Role) ->
 
   ###*
   # Handle client credentials grant.
@@ -14,7 +14,7 @@ module.exports = (InvalidGrantError, debug, AccessToken, AuthorizationCode) ->
 
     true
 
-  @::login = (clientSecret, clientKey, responseType) ->
+  @login = (clientId, clientSecret, clientKey) ->
     
     responseTypes =
       code: AuthorizationCode
@@ -22,7 +22,7 @@ module.exports = (InvalidGrantError, debug, AccessToken, AuthorizationCode) ->
 
     query =
       where: 
-        id: @id
+        id: clientId
       include: [ 'owner', 'roles', 'groups' ]
 
     @findOne query
@@ -32,18 +32,7 @@ module.exports = (InvalidGrantError, debug, AccessToken, AuthorizationCode) ->
         if not client or not client.validateGrant clientSecret, clientKey
           throw new InvalidClientError 'CLIENTCREDS'
 
-        roles = []
-
-        if client.roles
-          client.roles.forEach (role) ->
-            role.push role.name
-
-        if client.groups
-          client.groups.forEach (group) ->
-            return unless group.roles
-
-            group.roles.forEach (role) ->
-              roles.push role.name
+        roles = Role.groupByName client 
 
         model = responseTypes[responseType]
 

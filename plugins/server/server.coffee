@@ -7,6 +7,18 @@ module.exports = ->
 
     server.use (req, res, next) ->
 
+      keys = [ 'body', 'query', 'headers', 'params', 'locals' ]
+
+      req.param = (args...) ->
+        obj = {}
+
+        args.forEach (name) ->
+          for key in keys when req[key]?[name]? 
+            obj[name] = req[key][name]
+            break 
+
+        obj 
+        
       res.header = (field, val) ->
         if arguments.length == 2
           value = if Array.isArray(val) then val.map(String) else String(val)
