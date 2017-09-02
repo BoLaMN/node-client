@@ -1,5 +1,60 @@
 module.exports = (InvalidArgumentError, InvalidRequestError, debug) ->
 
+  @::validateUser = (client) ->
+    if not @applications
+      throw new InvalidRequestError 'INVALIDCLIENT'
+
+    debug "in validateUser validating application access (applications: #{ JSON.stringify @applications }, client: #{ JSON.stringify client })"
+
+    valid = @applications.some (application) ->
+      application.id is client.id
+
+    debug "in validateUser validation: " + valid
+
+    valid
+
+  @::connect = (provider, auth, info) ->
+    data =
+      lastProvider: provider.id
+
+    identity =
+      provider: provider.id
+      protocol: provider.protocol
+      credentials: auth
+      profile: info
+
+    if provider.refresh_userinfo or 
+       not user.name or 
+       user.name.trim() is ''
+      
+      remap provider.mapping, info, data
+
+    fns = [
+     @updateAttributes data
+     @identities.create identity
+    ]
+
+    Promise.all fns
+
+  @lookup = (email, providerId) ->
+
+    @findOne       
+      where:
+        email: email
+      include: [
+        {
+          relation: 'identities'
+          scope: 
+            where: 
+              provider: providerId
+        }
+        {
+          relation: 'groups'
+          scope: { include: [ 'roles' ] }
+        }
+        'roles', 'applications'
+      ]
+
   ###*
   # Retrieve the user from the model using a email/password combination.
   #
@@ -31,23 +86,33 @@ module.exports = (InvalidArgumentError, InvalidRequestError, debug) ->
     .then (user) ->
       debug "in validatePassword (validating password for user: #{ JSON.stringify(user) })"
 
-      user.hasPassword password
+      if not user or not bcrypt.compareSync password, user.password
+        throw new InvalidRequestError 'Invalid grant: user credentials are invalid'
+
+      if not user or not user.validateUser client
+        return throw new UnauthorizedClientError 'NOACCESS'
       
-  ###*
-  # Compare the given `password` with the users hashed password.
-  #
-  # @param {String} password The plain text password
-  # @returns {Boolean}
-  ###
+      roles = []
 
-  @::hasPassword = (plain) ->
-    new Promise (resolve, reject) =>
-      if not @password or not plain
-        return reject new InvalidRequestError 'Invalid grant: user credentials are invalid'
+      if user.roles
+        user.roles.forEach (role) ->
+          role.push role.name
 
-      bcrypt.compare plain, @password, (err, match) ->
-        if err or not match
-          return reject new InvalidRequestError 'Invalid grant: user credentials are invalid'
+      if user.groups
+        user.groups.forEach (group) ->
+          return unless group.roles
 
-        resolve()
+          group.roles.forEach (role) ->
+            roles.push role.name
+
+      debug "in createToken (token: #{ accessToken }, clientId: #{ client.id }, userId: #{ userId or client.userId }, expires: #{ accessTokenExpiresAt }, roles: #{ roles })"
+      
+      model = responseTypes[responseType]
+
+      model.create 
+        clientId: client.id
+        roles: roles
+        userId: client.userId
+        appId: client.id
+        
 

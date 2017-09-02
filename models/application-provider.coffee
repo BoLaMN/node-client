@@ -16,40 +16,30 @@ module.exports = (InvalidArgumentError, jwt, Application) ->
       include: [ 'provider' ]
 
     @findOne(query).then ({ properties, provider }) =>
-      protocol = @initializeProtocol provider.protocolId
-
-      if not protocol
-        throw new Error 'No strategy defined for provider \'' + providerId + '\''
-
+      protocol = @initializeProtocol provider, properties
       state = @createStateToken request
+      type = protocol.handle request
 
-      new protocol provider, properties, @userModel
-        .handle request, response, state
+      protocol[type] response, state
+        .then (result) ->
+          if type is 'request'
+            response.redirect result
+          else result
 
-  @findProvider = (providerId) ->
-    client = @client.toObject()
-
-    id = request.params.provider or request.body.provider
-
-    foundProvider = client.providers.filter (provider) ->
-      provider.providerId is id
-
-    if not foundProvider.length
-      throw new InvalidArgumentError 'PROVIDER'
-
-    foundProvider[0]
-
-  @initializeProtocol = (providerId) ->
-    protocolPath = path.join __dirname, '..', 'protocol-types', providerId
+  @::initializeProtocol = (provider, properties) ->
+    protocolPath = path.join __dirname, '..', 'protocol-types', provider.protocolId
 
     try
       protocol = require protocolPath
     catch e
       console.error e
 
-    protocol
+    if not protocol
+      throw new Error 'No strategy defined for provider \'' + provider.id + '\''
 
-  @createStateToken = ({ body, query }) ->
+    new protocol provider, properties
+
+  @::createStateToken = ({ body, query }) ->
     stateParams = {}
 
     params = [
