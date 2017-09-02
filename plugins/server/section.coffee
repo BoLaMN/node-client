@@ -109,7 +109,7 @@ module.exports = ->
         if methods.indexOf(method) is -1
           return next()
 
-        route = @match req, path, method
+        route = @match req, res, path, method
 
         if not route
           return next()
@@ -140,10 +140,10 @@ module.exports = ->
         new Request middleware, errorHandlers
           .handle req, res, next
 
-      match: (req, path, method) ->
+      match: (req, res, path, method) ->
 
         for route in @routes[method]
-          if route.match req, path
+          if route.match req, res, path
             return route
 
         splitPath = path.split '/'
@@ -155,11 +155,11 @@ module.exports = ->
           section = @sections[splitPath[0]]
 
           if section
-            handler = section.match req, path, method
+            handler = section.match req, res, path, method
             return handler if handler
           else
             for name, subsection of @sections
-              handler = subsection.match req, path, method
+              handler = subsection.match req, res, path, method
               return handler if handler
 
         return

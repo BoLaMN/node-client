@@ -74,7 +74,7 @@ module.exports = ->
       _afterError: (err, req, res) ->
         @model.fire 'error remote', { err, req, res }
 
-      match: (req, path) ->
+      match: (req, res, path) ->
         if req.method.toLowerCase() isnt @method
           return false
 
@@ -94,7 +94,7 @@ module.exports = ->
           if missing = param.missing req
             missing.resource = @name or 'root'
             errors.push missing
-          else if invalid = param.invalid req
+          else if invalid = param.invalid req, res
             invalid.resource = @name or 'root'
             errors.push invalid
 

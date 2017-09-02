@@ -65,11 +65,14 @@ module.exports = ->
 
         value
 
-      invalid: (req) ->
+      invalid: (req, res) ->
         { body, headers, query, params, locals } = req
 
         value = switch @source
-          when 'context' then locals
+          when 'req'     then req
+          when 'res'     then res
+          when 'context' then { req, res }
+          when 'locals'  then locals
           when 'header'  then @check headers
           when 'body'    then @check body
           when 'query'   then @check query
