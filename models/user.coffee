@@ -48,7 +48,7 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
   # @see https://tools.ietf.org/html/rfc6749#section-4.3.2
   ###
 
-  @login = (clientId, grantType, request, response) ->
+  @login = (clientId, grantType, responseType, request, response) ->
 
     switch grantType
       when 'custom'
@@ -58,13 +58,41 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
       when 'client_credentials'
         { clientSecret, clientKey } = request.param 'clientSecret', 'clientKey'
 
-        return Application.login clientId, clientSecret, clientKey
+        return Application.login clientId, clientSecret, clientKey, responseType
       when 'password'
         { email, password } = request.param 'email', 'password'
 
-        return @authenticate clientId, email, password
+        return @authenticate clientId, email, password, responseType
 
-  @authenticate = (clientId, email, password) ->
+  @getGroupsAndRoles = (instance) =>
+    @include instance, [
+      {
+        relation: 'groups'
+        scope: { include: [ 'roles' ] }
+      }
+      'roles'
+    ]
+    .then (included) ->
+      included[0] 
+
+  @createToken = (clientId, responseType) -> 
+    responseTypes =
+      code: AuthorizationCode
+      token: AccessToken
+
+    model = responseTypes[responseType]
+
+    (instance) ->
+      roles = Role.groupByName instance 
+
+      debug "in createToken (clientId: #{ clientId }, userId: #{ instance.id }, roles: #{ roles })"
+
+      model.create 
+        clientId: clientId
+        roles: roles
+        userId: instance.id
+
+  @authenticate = (clientId, email, password, responseType) ->
     if not email
       throw new InvalidRequestError 'Missing parameter: `email`'
 
@@ -78,10 +106,6 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
       throw new InvalidRequestError 'Invalid parameter: `password`'
 
     debug "in getUser (email: #{ email })"
-
-    responseTypes =
-      code: AuthorizationCode
-      token: AccessToken
 
     checkUserHasClient = (user) ->
       user.applications.exists clientId 
@@ -101,23 +125,12 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
 
           resolve user
 
-    createToken = (user) ->
-      roles = Role.groupByName user 
-
-      debug "in createToken (token: #{ accessToken }, clientId: #{ client.id }, userId: #{ userId or client.userId }, expires: #{ accessTokenExpiresAt }, roles: #{ roles })"
-      
-      model = responseTypes[responseType]
-
-      model.create 
-        clientId: clientId
-        roles: roles
-        userId: user.id
-    
     @findOne where: email: email
       .tap (user) ->
         if not user 
           throw new InvalidRequestError 'Invalid grant: user credentials are invalid'
       .then checkUserHasClient
       .then comparePassword
-      .then createToken
+      .then getGroupsAndRoles
+      .then createToken clientId, responseType
 

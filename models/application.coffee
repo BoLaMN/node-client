@@ -1,45 +1,52 @@
 module.exports = (InvalidGrantError, debug, AccessToken, AuthorizationCode, Role) ->
 
-  ###*
-  # Handle client credentials grant.
-  #
-  # @see https://tools.ietf.org/html/rfc6749#section-4.4.2
-  ###
+  @getGroupsAndRoles = (instance) =>
+    @include instance, [
+      {
+        relation: 'groups'
+        scope: { include: [ 'roles' ] }
+      }
+      'roles'
+    ]
+    .then (included) ->
+      included[0] 
 
-  @::validateGrant = (clientSecret, clientKey) ->
-    debug "in validateClient (key: #{ @client.key }, secret: #{ @client.$secret }, , clientSecret: #{ client_secret }, clientKey: #{ client_key }))"
-
-    if @$secret isnt clientSecret or @key isnt clientKey
-      throw new InvalidGrantError 'Invalid grant: client credentials are invalid'
-
-    true
-
-  @login = (clientId, clientSecret, clientKey) ->
-    
+  @createToken = (clientId, responseType) -> 
     responseTypes =
       code: AuthorizationCode
       token: AccessToken
 
+    model = responseTypes[responseType]
+
+    (instance) ->
+      roles = Role.groupByName instance 
+
+      debug "in createToken (clientId: #{ instance.id }, userId: #{ instance.userId }, roles: #{ roles })"
+
+      model.create 
+        clientId: clientId
+        roles: roles
+        userId: instance.userId
+        appId: instance.id
+
+  @login = (clientId, clientSecret, clientKey, responseType) ->
+    
     query =
       where: 
         id: clientId
-      include: [ 'owner', 'roles', 'groups' ]
+
+    compareKeys = (client) ->
+      debug "in validateClient (key: #{ client.key }, secret: #{ client.secret }, , clientSecret: #{ clientSecret }, clientKey: #{ clientKey }))"
+
+      if client.secret isnt clientSecret or client.key isnt clientKey
+        throw new InvalidGrantError 'Invalid grant: client credentials are invalid'
+
+      client
 
     @findOne query
-      .then (client) ->
-        debug "in getClient (client: #{ JSON.stringify(client) })"
-
-        if not client or not client.validateGrant clientSecret, clientKey
+      .tap (client) ->
+        if not client
           throw new InvalidClientError 'CLIENTCREDS'
-
-        roles = Role.groupByName client 
-
-        model = responseTypes[responseType]
-
-        model.create 
-          clientId: client.id
-          roles: roles
-          userId: client.userId
-          appId: client.id
-        
-
+      .then compareKeys
+      .then getGroupsAndRoles
+      .then createToken clientId, responseType
