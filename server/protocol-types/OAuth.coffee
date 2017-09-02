@@ -5,11 +5,7 @@
 url = require '../utils/url'
 crypto = require 'crypto'
 
-Promise = require "bluebird"
 promisedRequest = require "request-promise"
-
-{ extend } = require 'lodash'
-{ ServerError } = require '../errors/server-error'
 
 agent = 'Identity Manager/0.1'
 
@@ -25,20 +21,6 @@ class OAuthStrategy
     @name = @provider.id
 
     return
-
-  ###*
-  # Verifier
-  ###
-
-  verify: (request, auth, info) ->
-    User = request.app.models.User
-
-    Promise.bind this
-      .then ->
-        User.lookup info
-      .then (user) ->
-        User.connect user, @provider, auth, info
-
 
   ###*
   # Authorization Header Params
@@ -222,12 +204,11 @@ class OAuthStrategy
   # https://tools.ietf.org/html/rfc5849#section-2.2
   ###
 
-  resourceOwnerAuthorization: (token) ->
+  resourceOwnerAuthorization: ({ oauth_token }) ->
     endpoint = @endpoints.authorization
-
     param = endpoint.param or 'oauth_token'
 
-    state: null, redirect_uri: endpoint.url + '?' + param + '=' + token
+    endpoint.url + '?' + param + '=' + oauth_token
 
   ###*
   # Token Credentials
@@ -302,32 +283,28 @@ class OAuthStrategy
   # handle
   ###
 
+  callback: (req, options) ->
+    if not req.session['oauth']
+      return throw new Error('Failed to find request token in session')
+
+    secret = req.session['oauth'].oauth_token_secret
+
+    @tokenCredentials req.query, secret
+      .tap (credentials) ->
+        delete req.session['oauth']
+      .then @userInfo
+
   handle: (req, options) ->
-    if req.query and req.query.oauth_token
-      if !req.session['oauth']
-        return throw new Error('Failed to find request token in session')
+    if req.query.oauth_token
+      'request' 
+    else 
+      'callback'
 
-      secret = req.session['oauth'].oauth_token_secret
-
-      Promise.bind this
-        .then ->
-          @tokenCredentials req.query, secret
-        .then (credentials) ->
-          delete req.session['oauth']
-        .tap (credentials) ->
-          @userInfo credentials
-        .then (profile) ->
-          @verify req, credentials, profile
-    else
-      Promise.bind this
-        .then ->
-          @temporaryCredentials()
-        .tap (response) ->
-          @setSessionDetails response, res
-        .then (response) ->
-          @resourceOwnerAuthorization response.oauth_token
-
-        return
+  request: (req, options) ->
+    @temporaryCredentials()
+      .tap (response) ->
+        @setSessionDetails response, res
+      .then @resourceOwnerAuthorization
 
 ###*
 # Exports

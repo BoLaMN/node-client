@@ -1,20 +1,9 @@
 ###*
-# OpenIDStrategy
-#
-# Provider is an object defining the details of the authentication API.
-# Client is an object containing provider registration info and @provider.
-# Verify is the Passport callback to invoke after authenticating
-###
-
-###*
 # Module dependencies.
 ###
 
 openid = require 'openid'
-Promise = require 'bluebird'
 url = require '../utils/url'
-
-{ promisifyAll, bind } = Promise
 
 { SimpleRegistration
   AttributeExchange
@@ -22,8 +11,6 @@ url = require '../utils/url'
   PAPE
   OAuthHybrid
   RelyingParty } = openid
-
-{ ServerError } = require '../errors/server-error'
 
 class OpenIDStrategy
   constructor: (@provider) ->
@@ -107,125 +94,39 @@ class OpenIDStrategy
 
   handle: (req) ->
     if req.query['openid.mode']
-      if req.query['openid.mode'] is 'cancel'
-        return throw new Error 'OpenID authentication canceled'
-
-      Promise.bind this
-        .then ->
-          @_relyingParty.verifyAssertionAsync req.url
-        .then (result) ->
-          @verify req, result
-
+      'request'
     else
-      identifier = req.body[@_identifierField] or req.query[@_identifierField] or @_providerURL
+      'callback'
+      
+  callback: (req) ->
+    if req.query['openid.mode'] is 'cancel'
+      return throw new Error 'OpenID authentication canceled'
 
-      if not identifier
-        return throw new ServerError('Missing OpenID identifier')
+    new Promise (resolve, reject) ->
+      @_relyingParty.verifyAssertion req.url, (err, result) ->
+        if  err 
+          return reject err 
 
-      @_relyingParty.authenticateAsync identifier, false
-        .then (providerUrl) ->
-          if !providerUrl
-            return throw new ServerError('Failed to discover OP endpoint URL', err)
+        if not result.authenticated
+          return reject new Error 'OpenID authentication failed'
 
-          state: null, redirect_uri: url.join req.issuer, providerUrl
+        resolve result
 
-  saveAssociation: (fn) ->
+  request: (req) ->
+    identifier = req.body[@_identifierField] or req.query[@_identifierField] or @_providerURL
 
-    openid.saveAssociation = (provider, type, handle, secret, expiry, callback) ->
-      fn handle, provider, type, secret, expiry, callback
-      return
+    if not identifier
+      return throw new Error 'Missing OpenID identifier'
 
-    this
+    new Promise (resolve, reject) ->
+      @_relyingParty.authenticate identifier, false, (err, providerUrl) ->
+        if err 
+          return reject err 
 
-  loadAssociation: (fn) ->
+          if not providerUrl
+            return reject new Error 'Failed to discover OP endpoint URL', err
 
-    openid.loadAssociation = (handle, callback) ->
-      fn handle, (err, provider, algorithm, secret) ->
-        if err
-          return callback(err, null)
-
-        obj =
-          provider: provider
-          type: algorithm
-          secret: secret
-
-        callback null, obj
-
-      return
-
-    this
-
-  saveDiscoveredInformation: (fn) ->
-    openid.saveDiscoveredInformation = fn
-    this
-
-  loadDiscoveredInformation: (fn) ->
-    openid.loadDiscoveredInformation = fn
-    this
-
-  _parseProfileExt: (params) ->
-    profile = {}
-
-    profile.displayName = params['fullname']
-    profile.emails = [ { value: params['email'] } ]
-
-    profile.name =
-      familyName: params['lastname']
-      givenName: params['firstname']
-
-    if !profile.displayName
-      if params['firstname'] and params['lastname']
-        profile.displayName = params['firstname'] + ' ' + params['lastname']
-
-    if !profile.emails
-      profile.emails = [ { value: params['email'] } ]
-
-    profile
-
-  _parsePAPEExt: (params) ->
-    pape = {}
-
-    if params['auth_policies']
-      pape.authPolicies = params['auth_policies'].split(' ')
-
-    if params['auth_time']
-      pape.authTime = new Date(params['auth_time'])
-
-    pape
-
-  _parseOAuthExt: (params) ->
-    oauth = {}
-
-    if params['request_token']
-      oauth.requestToken = params['request_token']
-
-    oauth
-
-  ###*
-  # Verifier
-  ###
-
-  verify: (req, result) ->
-    if !result.authenticated
-      return throw new Error('OpenID authentication failed')
-
-    profile = @_parseProfileExt(result)
-    pape = @_parsePAPEExt(result)
-    oauth = @_parseOAuthExt(result)
-
-    auth =
-      id: req.query['openid.identity']
-      req_query: req.query
-
-    userInfo.id = req.query['openid.identity']
-    userInfo.name = req.query['openid.ext2.value.fullname']
-    userInfo.givenName = req.query['openid.ext2.value.firstname']
-    userInfo.familyName = req.query['openid.ext2.value.lastname']
-    userInfo.email = req.query['openid.ext2.value.email']
-
-    { User } = req.app.models
-
-    User.connect req, auth, userInfo
+          resolve url.join req.issuer, providerUrl
 
 ###*
 # Exports

@@ -2,72 +2,38 @@
 
 assert = require 'assert'
 
-{ promisifyAll, bind } = require 'bluebird'
-{ defaults } = require 'lodash'
-
 serverTypes =
   LDAP: require 'ldapauth-fork'
   ActiveDirectory: require 'adauth'
 
 class LdapActiveDirectoryStrategy
-  constructor: (options) ->
-    assert typeof options is 'object', 'LDAP authentication strategy requires options'
+  constructor: (options = {}) ->
+    for own key, val of options 
+      @[key] = val 
 
-    defaults @options, options, LdapActiveDirectoryStrategy.defaults
-
-    module = serverTypes[@name]
-
-    @auth = promisifyAll new module @options.server
-
-  @defaults:
-    usernameField: 'username'
-    passwordField: 'password'
-
-  verify: (request, info) ->
-    User = request.app.models.User
-
-    if not info
-      return throw new Error 'Invalid username/password'
-
-    Promise.bind this
-      .then ->
-        User.lookup info
-      .then (user) ->
-        User.connect user, @provider, auth, info
-
-  handleError: (err) ->
-    if err.name is 'InvalidCredentialsError' or err.name is 'NoSuchObjectError' or typeof err is 'string' and err.match(/no such user/i)
-      throw new Error 'Invalid username/password'
-
-    if err.name is 'ConstraintViolationError'
-      throw new Error 'Exceeded password retry limit, account locked'
-
-    throw new Error err
-
-  getCredentials: ({ body, query }) ->
-    { usernameField, passwordField } = @options
-
-    username: body[usernameField] or query[usernameField]
-    password: body[passwordField] or query[passwordField]
+    @auth = new serverTypes[@name] @options.server
 
   ###*
   # handle the request coming from a form or such.
   ###
 
-  handle: (request) ->
-    { username, password } = @getCredentials request
-
+  handle: (req) ->
+    'request'
+    
+  request: (username, password) ->
     if not username or not password
-      throw new Error 'Missing credentials'
+      return throw new Error 'Missing credentials'
 
-    bind this
-      .then ->
-        @auth.handleAsync username, password
-      .tap ->
-        @auth.closeAsync()
-      .then (info) ->
-        @verify request, info
-      .catch (error) ->
-        @handleError error
+    new Promise (resolve, reject) =>
+      @auth.handle username, password, (err, info) ->
+        if err 
+          return reject err 
+
+        @auth.close()
+
+        resolve info
+
+        return 
+      return 
 
 module.exports = LdapActiveDirectoryStrategy

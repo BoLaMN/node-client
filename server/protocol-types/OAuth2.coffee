@@ -3,13 +3,7 @@
 ###
 
 url = require '../utils/url'
-
-Promise = require "bluebird"
 promisedRequest = require "request-promise"
-
-{ extend } = require 'lodash'
-{ ServerError } = require '../errors/server-error'
-{ NotFoundError } = require '../errors/not-found-error'
 
 agent = 'Identity Manager/0.1'
 
@@ -22,49 +16,11 @@ agent = 'Identity Manager/0.1'
 ###
 
 class OAuth2Strategy
-  constructor: (@provider, @client, @userModel) ->
+  constructor: (@provider, @client, @issuer) ->
     for own key,value of @provider
       @[key] = value
 
     return
-
-  ###*
-  # Verifier
-  ###
-
-  verify: (request, auth, info) ->
-    Promise.bind this
-      .then ->
-        @userModel.lookup info
-      .then (user) ->
-        if not user
-          return throw new NotFoundError 'User for ' + info.email
-
-        @userModel.connect user, @provider, auth, info
-
-  ###*
-  # handle
-  ###
-
-  handle: (request, response, state) ->
-    { code, error } = request.query
-
-    if error
-      throw new ServerError error
-
-    auth = undefined
-
-    if code
-      Promise.bind this
-        .then ->
-          @authorizationCodeGrant request, code
-        .then (authResp) ->
-          auth = authResp
-          @userInfo request, authResp
-        .then (info) ->
-          @verify request, auth, info
-    else
-      @authorizationRequest request, state
 
   ###*
   # Base64 Credentials
@@ -76,20 +32,37 @@ class OAuth2Strategy
 
   base64credentials: ->
     { client_id, client_secret } = @client
+    
     credentials = client_id + ':' + client_secret
+    
     new Buffer(credentials).toString 'base64'
 
+  ###*
+  # handle
+  ###
+
+  handle: (request) ->
+    { code, error } = request.query
+
+    if error
+      throw new ServerError error
+
+    if code
+      'callback'
+    else
+      'request'
+      
   ###*
   # Authorization Request
   ###
 
-  authorizationRequest: (request, state) ->
+  request: (state) ->
     options = url.parse @endpoints.authorize.url
 
     options.query =
       response_type: 'code'
       client_id: @client.client_id
-      redirect_uri: url.join request.issuer, '/users/callback'
+      redirect_uri: url.join @issuer, '/users/callback'
 
     if @provider.scope or @client.scope
       s1 = @provider.scope or []
@@ -100,13 +73,13 @@ class OAuth2Strategy
     if state
       options.query.state = state
 
-    state: null, redirect_uri: url.format options
+    url.format options
 
   ###*
   # Authorization Code Grant Request
   ###
 
-  authorizationCodeGrant: (request, code) ->
+  callback: (code) ->
     endpoint = @endpoints.token
 
     options =
@@ -116,27 +89,26 @@ class OAuth2Strategy
       form:
         grant_type: 'authorization_code'
         code: code
-        redirect_uri: url.join request.issuer, '/users/callback'
+        redirect_uri: url.join @issuer, '/users/callback'
       headers:
         'User-Agent': agent
         'Accept': endpoint.accept or 'application/json'
 
     if endpoint.auth is 'client_secret_basic'
-      extend options.headers,
-        Authorization: 'Basic ' + @base64credentials()
+      options.headers.Authorization = 'Basic ' + @base64credentials()
 
     if endpoint.auth is 'client_secret_post'
-      extend options.form,
-        client_id: @client.client_id
-        client_secret: @client.client_secret
+      options.form.client_id = @client.client_id
+      options.form.client_secret = @client.client_secret
 
     promisedRequest options
+      .then @userInfo
 
   ###*
   # User Info
   ###
 
-  userInfo: (request, auth) ->
+  userInfo: (auth) ->
     endpoint = @endpoints.user
 
     options =

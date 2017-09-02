@@ -5,9 +5,6 @@
 { SAML } = require 'passport-saml'
 
 fs = require 'fs'
-Promise = require 'bluebird'
-
-{ promisfy, promisfyAll } = Promise
 
 ###*
 # Exports
@@ -20,7 +17,7 @@ class SAMLStrategy
     for own key,value of @provider
       @[key] = value
 
-    if typeof @configuration.cert == 'string'
+    if typeof @configuration.cert is 'string'
       try
         @configuration.cert = fs.readFileSync(@configuration.cert, 'utf-8')
       catch err
@@ -28,57 +25,45 @@ class SAMLStrategy
     @passReqToCallback = true
     @name = 'saml'
 
-    return
+  handle: (req) ->
+    if req.body?.SAMLResponse or req.body?.SAMLRequest
+      'callback'
+    else 
+      'request'
 
-  validateCallback: (req, profile, loggedOut) ->
-    if loggedOut
-      req.logout()
+  request: (req, options) ->
+    samlFallback = options.samlFallback or 'login-request'
+ 
+    new Promise (resolve, reject) =>
 
-      if profile
-        req.samlLogoutRequest = profile
-        @saml.getLogoutResponseUrlAsync(req).then @redirectIfSuccess
-        return
+      finish = (err, res) ->
+        if err 
+          return reject err 
 
-      return Promise.resolve()
+        resolve res 
 
-    @verify req, profile
-      .then (user) ->
-        if not user
-          return throw new Error profile
+      switch samlFallback 
+        when 'login-request'
+          if @_authnRequestBinding == 'HTTP-POST'
+            return @saml.getAuthorizeForm req, finish
+          else
+            return @saml.getAuthorizeUrl req, finish
+        when 'logout-request'
+          return @saml.getLogoutUrl req, finish
 
-        user
+  callback: (req) ->  
+    
+    new Promise (resolve, reject) =>
 
-  redirectIfSuccess: (url) ->
-    state: null, redirect_uri: url
+      finish = (err, profile, loggedOut) ->
+        if err 
+          return reject err 
 
-  handle: (req, options) ->
-    options.samlFallback = options.samlFallback or 'login-request'
+        if loggedOut
+          req.logout()
 
-    if req.body and (req.body.SAMLResponse or req.body.SAMLRequest)
-      return @saml.validatePostResponseAsync(req.body)
-        .spread (profile, loggedOut) ->
-          @validateCallback req, profile, loggedOut
+        resolve profile
 
-    if options.samlFallback is 'login-request'
-      if @_authnRequestBinding == 'HTTP-POST'
-        return @saml.getAuthorizeFormAsync req
-      else
-        return @saml.getAuthorizeUrlAsync(req).then @redirectIfSuccess
-
-    if options.samlFallback is 'logout-request'
-      return @saml.getLogoutUrlAsync(req).then @redirectIfSuccess
-
-  ###*
-  # Verifier
-  ###
-
-  verify: (request, auth, info) ->
-    User = request.app.models.User
-
-    Promise.bind this
-      .then ->
-        User.lookup info
-      .then (user) ->
-        User.connect user, @provider, auth, info
+      @saml.validatePostResponse req.body, finish
 
 module.exports = SAMLStrategy
