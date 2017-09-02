@@ -1,4 +1,5 @@
-module.exports = (InvalidArgumentError, jwt) ->
+module.exports = (InvalidArgumentError, jwt, User) ->
+  { getGroupsAndRoles, createToken } = User 
 
   ###*
   # Handle client credentials grant.
@@ -6,24 +7,68 @@ module.exports = (InvalidArgumentError, jwt) ->
   # @see https://tools.ietf.org/html/rfc6749#section-4.4.2
   ###
 
-  @login = (providerId, clientId, request, response) ->
+  @login = (clientId, providerId, request, response, responseType) ->
+    
     query =
       where: 
         clientId: clientId
         providerId: providerId 
         enabled: true
-      include: [ 'provider' ]
+      include: [ 'provider', 'application' ]
 
-    @findOne(query).then ({ properties, provider }) =>
+    connect = (provider, info) ->
+      (user) ->
+        data =
+          lastProvider: provider.id
+
+        identity =
+          provider: provider.id
+          protocol: provider.protocol
+          profile: info
+
+        if provider.refresh_userinfo or 
+           not user.name or 
+           user.name.trim() is ''
+          
+          remap provider.mapping, info, data
+
+        fns = [
+         user.updateAttributes data
+         user.identities.create identity
+        ]
+
+        Promise.all(fns).then -> user
+
+    checkUserHasClient = (user) ->
+      user.applications.exists clientId 
+        .then (exists) ->
+          if not exists
+            return throw new InvalidRequestError 'INVALIDCLIENT'
+          user
+
+    @findOne(query).then ({ properties, provider, application }) =>
       protocol = @initializeProtocol provider, properties
       state = @createStateToken request
       type = protocol.handle request
 
+      lookup = (info) ->
+        application.users.find   
+          where:
+            email: info.email
+        .tap (user) ->
+          if not user 
+            throw new InvalidRequestError 'Invalid grant: user credentials are invalid'
+        .then connect provider, info
+        .then checkUserHasClient
+        .then getGroupsAndRoles
+        .then createToken clientId, responseType
+
       protocol[type] response, state
-        .then (result) ->
+        .then (info) ->
           if type is 'request'
-            response.redirect result
-          else result
+            response.redirect info
+          else 
+            lookup info
 
   @::initializeProtocol = (provider, properties) ->
     protocolPath = path.join __dirname, '..', 'protocol-types', provider.protocolId

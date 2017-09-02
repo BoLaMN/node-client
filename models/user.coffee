@@ -1,46 +1,5 @@
 module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, ApplicationProvider, Application, AccessToken, AuthorizationCode) ->
 
-  @::connect = (provider, auth, info) ->
-    data =
-      lastProvider: provider.id
-
-    identity =
-      provider: provider.id
-      protocol: provider.protocol
-      credentials: auth
-      profile: info
-
-    if provider.refresh_userinfo or 
-       not user.name or 
-       user.name.trim() is ''
-      
-      remap provider.mapping, info, data
-
-    fns = [
-     @updateAttributes data
-     @identities.create identity
-    ]
-
-    Promise.all fns
-
-  @lookup = (email, providerId) ->
-
-    @findOne       
-      where:
-        email: email
-      include: [
-        {
-          relation: 'identities'
-          scope: 
-            where: 
-              provider: providerId
-        }
-        {
-          relation: 'groups'
-          scope: { include: [ 'roles' ] }
-        }
-        'roles', 'applications'
-      ]
 
   ###*
   # Retrieve the user from the model using a email/password combination.
@@ -48,13 +7,13 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
   # @see https://tools.ietf.org/html/rfc6749#section-4.3.2
   ###
 
-  @login = (clientId, grantType, responseType, request, response) ->
+  @authenticate = (clientId, grantType, responseType, request, response) ->
 
     switch grantType
       when 'custom'
         { providerId } = request.param 'providerId'
 
-        return ApplicationProvider.login providerId, clientId, request, response 
+        return ApplicationProvider.login clientId, providerId, request, response, responseType
       when 'client_credentials'
         { clientSecret, clientKey } = request.param 'clientSecret', 'clientKey'
 
@@ -62,7 +21,7 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
       when 'password'
         { email, password } = request.param 'email', 'password'
 
-        return @authenticate clientId, email, password, responseType
+        return @login clientId, email, password, responseType
 
   @getGroupsAndRoles = (instance) =>
     @include instance, [
@@ -92,7 +51,7 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
         roles: roles
         userId: instance.id
 
-  @authenticate = (clientId, email, password, responseType) ->
+  @login = (clientId, email, password, responseType) ->
     if not email
       throw new InvalidRequestError 'Missing parameter: `email`'
 
