@@ -19,7 +19,6 @@ module.exports = (InvalidRequestError, InvalidGrantError, ServerError, debug) ->
       throw new InvalidRequestError 'Invalid request: `redirect_uri` is invalid'
 
     true 
-    
 
   ###*
   # Revoke the authorization code.
@@ -31,24 +30,25 @@ module.exports = (InvalidRequestError, InvalidGrantError, ServerError, debug) ->
   # @see https://tools.ietf.org/html/rfc6749#section-4.1.2
   ###
 
-  @revokeAuthorizationCode = (id) ->
-    debug "in revokeAuthorizationCode (code: #{ id })"
+  @::revoke = (clientId) ->
+    debug "in revokeAuthorizationCode (code: #{ @id })"
 
+    expireAt = new Date
+    expireAt.setSeconds expireAt.getSeconds() - 5 * 60
+    
     query =
-      where: { id }
+      where: 
+        id: @id
+        used: false 
+        clientId: clientId
+        createdAt: 
+          gte: expiredAt
+      include: [ 'client', 'user' ]
+
+    $set =
+      used: true 
 
     options =
-      remove: true
+      new: false 
 
-    @findAndModify query, null, options
-      .then (code) ->
-        if not code
-          throw new InvalidGrantError 'Invalid grant: authorization code is invalid'
-
-        if not (code.expiresAt instanceof Date)
-          throw new ServerError 'Server error: `expiresAt` must be a Date instance'
-
-        if code.expiresAt >= new Date
-          throw new ServerError 'Server error: authorization code should be expired'
-
-        code
+    @findAndModify query, { $set }, options

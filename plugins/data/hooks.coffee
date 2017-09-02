@@ -53,7 +53,7 @@ module.exports = ->
           @observe event, fn
 
       fire: (event, ctx = {}, self = @, fn = ->) ->
-        debug event
+        debug event, ctx
 
         if typeof self is 'function'
           return @fire event, {}, ctx, null, self

@@ -28,7 +28,7 @@ module.exports = (ServerError, AccessDeniedError, AccessContext, BearerAccessTok
       if not bearerToken and not macToken
         throw new UnauthorizedRequestError 'NOAUTH'
 
-      bearerToken or macToken or false
+      bearerToken or macToken
 
   ###*
   # Get the access token from the model.
@@ -64,12 +64,14 @@ module.exports = (ServerError, AccessDeniedError, AccessContext, BearerAccessTok
       if not token.userId and not token.roles
         return throw new ServerError 'USEROBJECT'
 
-      { accessTokenExpiresAt } = token
+      { createdAt } = token
 
-      if accessTokenExpiresAt and not accessTokenExpiresAt instanceof Date
+      if createdAt and not createdAt instanceof Date
         throw new ServerError 'DATEINSTANCE'
+      
+      expiredAt = createdAt.setSeconds createdAt.getSeconds() - 14 * 24 * 3600
 
-      if accessTokenExpiresAt and accessTokenExpiresAt < new Date
+      if expiredAt and expiredAt < new Date     
         throw new InvalidTokenError 'EXPIRED'
 
       context.setToken token

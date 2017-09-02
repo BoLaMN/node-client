@@ -6,7 +6,8 @@ module.exports = ->
     class Context
       constructor: (@model, @cmd, args...) ->
         @hookState = {}
-        
+        @context = []
+
         { @dao } = @model 
 
         @args = getArgs @dao[@cmd]
@@ -15,7 +16,10 @@ module.exports = ->
 
         return @execute()
 
-      clone: (data) ->
+      clone: (data, idx) ->
+        if @context[idx]
+          return @context[idx]
+
         if data instanceof injector.get 'Model'
           instance = data 
         else
@@ -27,7 +31,17 @@ module.exports = ->
           if not data[idName]
             instance.setId @id 
 
-        Object.assign { data, instance }, @
+        hookState = {}
+        isNewInstance = @cmd is 'create'
+
+        @context[idx] = { data, instance, hookState, isNewInstance }
+
+        names = [ 'context', 'filter', 'options', 'model' ]
+        
+        for name in names when @[name]?
+          @context[idx][name] = @[name]
+
+        @context[idx]
 
       setup: (args) ->
 
@@ -93,10 +107,10 @@ module.exports = ->
 
       notify: (event) ->
         if Array.isArray @data
-          Promise.each @data, (data) =>
-            @model.fire event, @clone data 
+          Promise.each @data, (data, idx) =>
+            @model.fire event, @clone(data, idx)
         else 
-          @model.fire event, @clone @data
+          @model.fire event, @clone(@data, 0)
 
       validate: ->
         @notify 'validate'

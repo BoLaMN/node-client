@@ -1,8 +1,6 @@
 module.exports = ->
 
-  @factory 'Model', (Base, ObjectProxy, Attributes, ModelAttribute, Events, ModelHooks, Models, ModelACL, ModelInclusion, AccessContext, Storage, ModelRelations, utils, ValidationError, ModelMixin, debug, merge) ->
-    { wrap } = utils
-
+  @factory 'Model', (Base, ObjectProxy, Attributes, ModelAttribute, Events, ModelHooks, Models, ModelACL, ModelInclusion, AccessContext, Storage, ModelRelations, ValidationError, ModelMixin, debug, merge, crypto, isFunction) ->
     class Model extends Base
       @mixes ModelRelations
 
@@ -25,7 +23,7 @@ module.exports = ->
           mixins = {}
           properties = {}
           relations = {}
-          strict
+          strict = false
         } = config
 
         @property 'config',
@@ -34,7 +32,7 @@ module.exports = ->
         @primaryKey = 'id'
 
         @property 'strict',
-          value: strict or false
+          value: strict
 
         @property 'acls',
           value: []
@@ -89,6 +87,16 @@ module.exports = ->
 
       @check: ->
         true
+      
+      @defaultFns:
+
+        randomBytes: ->
+          crypto.createHash 'sha1' 
+            .update crypto.randomBytes(256)
+            .digest 'hex'
+
+        now: ->
+          new Date
 
       @checkAccess: (id, method, options) ->
         context = new AccessContext
@@ -160,6 +168,16 @@ module.exports = ->
       constructor: (data = {}, options = {}) ->      
         super
 
+        for name, attr of @constructor.attributes
+          if attr.default
+            @[name] = attr.default
+            
+          if attr.defaultFn 
+            fn = @constructor.defaultFns?[attr.defaultFn]
+
+            if isFunction fn
+              @[name] = fn()
+
         proxy = new ObjectProxy @, @constructor, @$path, @
 
         @setAttributes data, proxy
@@ -169,13 +187,11 @@ module.exports = ->
       setAttributes: (data = {}, proxy = @) ->
         if data.id and @constructor.primaryKey isnt 'id'
           @setId data.id
-          delete data.id
 
         if data._id
           @setId data._id
-          delete data._id
 
-        for own key, value of data when key?
+        for own key, value of data when key? and key not in [ 'id', '_id' ]
           if typeof proxy[key] is 'function'
             continue if typeof value is 'function'
             proxy[key](value)

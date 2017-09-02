@@ -6,12 +6,9 @@ properties:
 
   accessToken:
     type: "string"
+    defaultFn: 'randomBytes'
     required: true
     id: true
-
-  accessTokenExpiresAt:
-    type: "date"
-    required: true
 
   issuer:
     type: "string"
@@ -27,9 +24,12 @@ properties:
 
   refreshToken:
     type: 'string'
-    
-  refreshTokenExpiresAt:
-    type: 'date'
+    defaultFn: 'randomBytes'
+
+  createdAt:
+    type: "date"
+    defaultFn: 'now'
+    required: true
 
 relations:
 

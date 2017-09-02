@@ -6,17 +6,12 @@ properties:
 
   id:
     type: "string"
+    defaultFn: 'randomBytes'
     id: true
-    length: 300
-    generated: false
 
-  issuedAt:
+  createdAt:
     type: "date"
-    index: true
     defaultFn: 'now'
-
-  expiresAt:
-    type: "date"
     index: true
 
   scopes: [
@@ -30,9 +25,14 @@ properties:
     }
   ]
 
-  used: "boolean"
-  redirectURI: "string"
-  hash: "string"
+  used: 
+    type: "boolean"
+
+  redirectURI: 
+    type: "string"
+
+  hash: 
+    type: "string"
 
 relations:
   

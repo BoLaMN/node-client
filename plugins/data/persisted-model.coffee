@@ -147,9 +147,10 @@ module.exports = ->
         fn.apply model, newArgs
 
       create: (options = {}, cb = ->) ->
-        @$isNew = false
 
         @execute 'create', options
+          .tap => 
+            @$isNew = false
           .asCallback cb
 
       destroy: (options = {}, cb = ->) ->
