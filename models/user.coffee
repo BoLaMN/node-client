@@ -1,4 +1,4 @@
-module.exports = (InvalidArgumentError, InvalidRequestError, debug) ->
+module.exports = (UnauthorizedClientError, InvalidRequestError, debug) ->
 
   @::validateUser = (client) ->
     if not @applications
@@ -112,7 +112,6 @@ module.exports = (InvalidArgumentError, InvalidRequestError, debug) ->
       model.create 
         clientId: client.id
         roles: roles
-        userId: client.userId
-        appId: client.id
+        userId: user.id
         
 

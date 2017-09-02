@@ -14,7 +14,7 @@ relations:
   application:
     type: "belongsTo"
     model: "Application"
-    foreignKey: "applicationId"
+    foreignKey: "clientId"
 
 acls: [
   {

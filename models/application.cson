@@ -98,7 +98,7 @@ relations:
     type: 'hasMany'
     model: 'User'
     through: 'UserApplication'
-    foreignKey: 'applicationId'
+    foreignKey: 'clientId'
 
   providers:
     type: 'hasMany'
