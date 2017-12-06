@@ -48,7 +48,7 @@ module.exports = ->
         assert id, 'The id argument is required'
 
         filter = where:
-          id: id
+          "#{ @primaryKey }": id
 
         @execute 'count', filter, options
           .then (data) -> not not data
@@ -84,7 +84,7 @@ module.exports = ->
         assert id, 'The id argument is required'
 
         filter = where:
-          id: id
+          "#{ @primaryKey }": id
 
         @execute 'findOne', filter, options
           .asCallback cb
@@ -96,7 +96,7 @@ module.exports = ->
         assert ids.length, 'The ids argument is requires ids'
 
         filter = where:
-          id: inq: ids
+          "#{ @primaryKey }": inq: ids
 
         @find filter, options
           .asCallback cb
@@ -115,7 +115,7 @@ module.exports = ->
         assert id, 'The id argument is required'
 
         filter = where:
-          id: id
+          "#{ @primaryKey }": id
 
         @update filter, data, options
           .asCallback cb
@@ -141,7 +141,7 @@ module.exports = ->
         if data > -1
           newArgs[data - 1] = @
 
-        if argNames[0] is 'id'
+        if argNames[0] is @constructor.primaryKey
           newArgs.unshift @getId()
 
         fn.apply model, newArgs
@@ -149,7 +149,7 @@ module.exports = ->
       create: (options = {}, cb = ->) ->
 
         @execute 'create', options
-          .tap => 
+          .tap =>
             @$isNew = false
           .asCallback cb
 

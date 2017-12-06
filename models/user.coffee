@@ -1,29 +1,61 @@
 module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, ApplicationProvider, Application, AccessToken, AuthorizationCode) ->
 
-
   ###*
   # Retrieve the user from the model using a email/password combination.
   #
   # @see https://tools.ietf.org/html/rfc6749#section-4.3.2
   ###
 
-  @authenticate = (clientId, grantType, responseType, request, response) ->
+  @login = (clientId, providerId, grantType, responseType, credentials, request, response) ->
 
-    switch grantType
-      when 'custom'
-        { providerId } = request.param 'providerId'
+    getGroupsAndRoles = (instance) =>
+      model = instance.constructor
 
-        return ApplicationProvider.login clientId, providerId, request, response, responseType
-      when 'client_credentials'
-        { clientSecret, clientKey } = request.param 'clientSecret', 'clientKey'
+      @include [ instance ], [
+        {
+          relation: 'groups'
+          scope: { include: [ 'roles' ] }
+        }
+        'roles'
+      ]
+      .then (included) ->
+        included[0]
 
-        return Application.login clientId, clientSecret, clientKey, responseType
-      when 'password'
-        { email, password } = request.param 'email', 'password'
+    createToken = (instance) ->
+      roles = Role.groupByName instance
 
-        return @login clientId, email, password, responseType
+      debug "in createToken (clientId: #{ clientId }, userId: #{ instance.userId or instance.id }, roles: #{ roles })"
 
-  @login = (clientId, email, password, responseType) ->
+      token =
+        clientId: clientId
+        roles: roles
+        userId: instance.userId or instance.id
+
+      if instance.userId
+        token.appId = instance.id
+
+      @create token
+
+    grantTypes =
+      custom: ->
+        ApplicationProvider.authenticate clientId, providerId, request, response
+      client_credentials: ->
+        Application.authenticate clientId, credentials
+      password: =>
+        @authenticate clientId, credentials
+
+    responseTypes =
+      code: AuthorizationCode
+      token: AccessToken
+
+    model = responseTypes[responseType]
+    grant = grantTypes[grantType]
+
+    grant()
+      .then getGroupsAndRoles
+      .then createToken
+
+  @authenticate = (clientId, { email, password }, responseType) ->
     if not email
       throw new InvalidRequestError 'Missing parameter: `email`'
 
@@ -39,7 +71,7 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
     debug "in getUser (email: #{ email })"
 
     checkUserHasClient = (user) ->
-      user.applications.exists clientId 
+      user.applications.exists clientId
         .then (exists) ->
           if not exists
             return throw new InvalidRequestError 'INVALIDCLIENT'
@@ -56,65 +88,46 @@ module.exports = (UnauthorizedClientError, InvalidRequestError, debug, Role, App
 
           resolve user
 
-    getGroupsAndRoles = (instance) =>
-      @include instance, [
-        {
-          relation: 'groups'
-          scope: { include: [ 'roles' ] }
-        }
-        'roles'
-      ]
-      .then (included) ->
-        included[0] 
-
-    responseTypes =
-      code: AuthorizationCode
-      token: AccessToken
-
-    model = responseTypes[responseType]
-
-    createToken = (instance) ->
-      roles = Role.groupByName instance 
-
-      debug "in createToken (clientId: #{ clientId }, userId: #{ instance.id }, roles: #{ roles })"
-
-      model.create 
-        clientId: clientId
-        roles: roles
-        userId: instance.id
-  
-    @findOne where: email: email
+    @findOne where: { email }
       .tap (user) ->
-        if not user 
+        if not user
           throw new InvalidRequestError 'Invalid grant: user credentials are invalid'
       .then checkUserHasClient
       .then comparePassword
-      .then getGroupsAndRoles
-      .then createToken
 
-  @remoteMethod 'authenticate',
+  @remoteMethod 'login',
     description: 'authorize a user with email and password.'
     params:
       clientId:
         type: 'objectid'
         required: true
         source: 'query'
+      providerId:
+        type: 'objectid'
+        required: false
+        default: null
+        source: 'query'
       grantType:
         type: 'string'
         required: true
         source: 'query'
-      req:
-        type: 'object'
-        required: true
-        source: 'req'
-      res:
-        type: 'object'
-        required: true
-        source: 'res'
       responseType:
         type: 'string'
         required: true
         source: 'query'
+      credentials:
+        type: 'object'
+        required: false
+        default: {}
+        source: 'body'
+      request:
+        type: 'object'
+        required: true
+        source: 'req'
+      response:
+        type: 'object'
+        required: true
+        source: 'res'
     returns:
       arg: 'AccessToken'
       type: 'object'

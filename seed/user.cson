@@ -1,0 +1,9 @@
+[
+  {
+    givenName: 'Nathan'
+    familyName: 'Bolam'
+    email: 'bolamnathan@gmail.com'
+    password: '12345678'
+    emailVerified: true
+  }
+]

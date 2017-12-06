@@ -12,7 +12,7 @@ module.exports = ->
       constructor: (obj) ->
         @name = 'ValidationError'
         @message = 'Validation error'
-        
+
         @statusCode = 400
 
         @codes = obj.errors?.__codes
@@ -135,10 +135,10 @@ module.exports = ->
   #
   # @see https://tools.ietf.org/html/rfc6750#section-3.1
   ###
-  
+
   @error 'InvalidTokenError', (OAuthError) ->
     class InvalidTokenError extends OAuthError
-      constructor: (message, properties) ->
+      constructor: (message, properties = {}) ->
         messages =
           INVALID: 'Invalid token: access token is invalid'
           EXPIRED: 'Invalid token: access token has expired'
@@ -158,7 +158,7 @@ module.exports = ->
 
   @error 'InvalidGrantError', (OAuthError) ->
     class InvalidGrantError extends OAuthError
-      constructor: (message, properties) ->
+      constructor: (message, properties = {}) ->
         properties.code ?= 400
         properties.name ?= 'invalid_grant'
 

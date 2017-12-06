@@ -1,6 +1,5 @@
-
 module.exports = (ServerError, AccessDeniedError, AccessContext, BearerAccessToken, MacAccessToken, UnauthorizedRequestError, OAuthError, InvalidTokenError, debug, opts = {}) ->
-        
+
   getAccessType = (route) ->
     if route.accessType
       return route.accessType
@@ -18,24 +17,21 @@ module.exports = (ServerError, AccessDeniedError, AccessContext, BearerAccessTok
 
   getTokenFromRequest = (request) ->
 
-    Promise.all [
-      BearerAccessToken.getTokenFromRequest(request)
-      MacAccessToken.getTokenFromRequest(request)
-    ]
-    .then ([ bearerToken, macToken ]) ->
-      debug "in getTokenFromRequest (bearerToken: #{ bearerToken }, macToken: #{ macToken })"
+    bearerToken = BearerAccessToken.getTokenFromRequest(request)
+    macToken = MacAccessToken.getTokenFromRequest(request)
 
-      if not bearerToken and not macToken
-        throw new UnauthorizedRequestError 'NOAUTH'
+    debug "in getTokenFromRequest (bearerToken: #{ bearerToken }, macToken: #{ macToken })"
 
-      bearerToken or macToken
+    if not bearerToken and not macToken
+      throw new UnauthorizedRequestError 'NOAUTH'
+
+    bearerToken or macToken
 
   ###*
   # Get the access token from the model.
   ###
 
   getAccessToken = (instance) ->
-    debug "in getAccessToken (token: #{ token }), unauthenticated, no access token."
 
     instance.then (accessToken) ->
       debug "in getAccessToken (accessToken: #{ JSON.stringify(accessToken) })"
@@ -58,7 +54,7 @@ module.exports = (ServerError, AccessDeniedError, AccessContext, BearerAccessTok
       accessType: getAccessType route
 
     success = (token) ->
-      if not token
+      if not token?
         return throw new AccessDeniedError 'NOACCESS'
 
       if not token.userId and not token.roles
@@ -68,10 +64,10 @@ module.exports = (ServerError, AccessDeniedError, AccessContext, BearerAccessTok
 
       if createdAt and not createdAt instanceof Date
         throw new ServerError 'DATEINSTANCE'
-      
+
       expiredAt = createdAt.setSeconds createdAt.getSeconds() - 14 * 24 * 3600
 
-      if expiredAt and expiredAt < new Date     
+      if expiredAt and expiredAt < new Date
         throw new InvalidTokenError 'EXPIRED'
 
       context.setToken token
@@ -91,14 +87,14 @@ module.exports = (ServerError, AccessDeniedError, AccessContext, BearerAccessTok
         throw new ServerError e
 
       throw e
-    
+
     context.checkAccess()
       .then (allowed) ->
         if allowed
           return Promise.resolve allowed
 
-        getTokenFromRequest req
-          .then getAccessToken
+        token = getTokenFromRequest req
+
+        getAccessToken token
           .then success
           .catch error
-

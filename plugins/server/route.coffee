@@ -52,7 +52,7 @@ module.exports = ->
           @[key] = val
 
         @handler = @wrapHandler(handler).bind(@)
-        
+
         @before = @_before.bind @
         @after = @_after.bind @
         @afterError = @_afterError.bind @
@@ -145,7 +145,7 @@ module.exports = ->
         route
 
       inspect: Route::toObject
-      
+
       toJSON: ->
         route =
           path: @path
@@ -184,6 +184,7 @@ module.exports = ->
 
         name = base.join '.'
 
+        security: [ { "Bearer": [] } ]
         tags: [ base[0] ]
         summary: @description
         operationId: name + '.' + @name

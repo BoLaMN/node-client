@@ -1,6 +1,6 @@
 module.exports = ->
 
-  @decorator 'ACL', (ACL, debug) ->
+  @decorator 'ACL', (ACL) ->
 
     ACL.OWNER = '$owner'
 
@@ -34,10 +34,6 @@ module.exports = ->
       id1 == id2 or id1.toString() == id2.toString()
 
     isOwner = (modelClass, modelId, userId, callback = ->) ->
-      assert modelClass, 'Model class is required'
-
-      debug 'isOwner(): %s %s userId: %s', modelClass and modelClass.name, modelId, userId
-
       if not userId
         return callback false
 
@@ -48,7 +44,6 @@ module.exports = ->
 
         processRelatedUser = (err, user) ->
           if !err and user
-            debug 'User found: %j', user.id
             callback matches(user.id, userId)
           else
             callback false
@@ -56,10 +51,7 @@ module.exports = ->
           return
 
         if err or not inst
-          debug 'Model not found for id %j', modelId
           return callback false
-
-        debug 'Model found: %j', inst
 
         ownerId = inst.userId or inst.owner
 
@@ -70,12 +62,10 @@ module.exports = ->
           rel = modelClass.relations[r]
 
           if rel.type == 'belongsTo' and isUserClass(rel.modelTo)
-            debug 'Checking relation %s to %s: %j', r, rel.modelTo.name, rel
             inst[r] processRelatedUser
 
             return
 
-          debug 'No matching belongsTo relation found for model %j and user: %j', modelId, userId
           callback false
 
         return

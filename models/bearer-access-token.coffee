@@ -67,4 +67,4 @@ module.exports = (InvalidRequestError, debug) ->
       throw new InvalidRequestError 'FORMENCODED'
 
     @findById token
-    
+

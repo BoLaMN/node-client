@@ -31,8 +31,8 @@ module.exports = ->
         attr = getPropertyDefinition model, k
 
         parse = (c) ->
-          return c unless attr 
-          
+          return c unless attr
+
           c.reduce (prev, x) ->
             b = attr.apply x
             prev.push b if b?
@@ -76,5 +76,7 @@ module.exports = ->
             cond = attr.apply cond
 
           query[k] = cond
+
+      query
 
     where

@@ -136,7 +136,7 @@ acls: [
     principalType: "Role"
     principalId: "$everyone"
     permission: "ALLOW"
-    methodName: "login"
+    methodName: "authenticate"
   }
   {
     principalType: "Role"

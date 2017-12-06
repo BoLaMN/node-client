@@ -1,0 +1,35 @@
+[
+  {
+    id: 'client'
+    name: "Client"
+    redirectURIs: [
+      "http://localhost:3010/callback"
+    ]
+    grantTypes: [
+      "authorization_code"
+      "password"
+      "custom"
+    ]
+    responseTypes: [
+      'code'
+      'id_token token'
+      'code id_token token'
+      'token'
+    ]
+  }
+  {
+    id: 'server'
+    name: "Server"
+    redirectURIs: []
+    grantTypes: [
+      "client_credentials"
+    ]
+    applicationType: 'service'
+    responseTypes: [
+      'code'
+      'id_token token'
+      'code id_token token'
+      'token'
+    ]
+  }
+]

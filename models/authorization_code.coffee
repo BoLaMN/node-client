@@ -12,13 +12,13 @@ module.exports = (InvalidRequestError, InvalidGrantError, ServerError, debug) ->
 
     #redirectUri = request.body.redirect_uri or request.query.redirect_uri
 
-    if not validate.uri redirectUri 
+    if not validate.uri redirectUri
       throw new InvalidRequestError 'Invalid request: `redirect_uri` is not a valid URI'
 
     if redirectUri isnt @redirectUri
       throw new InvalidRequestError 'Invalid request: `redirect_uri` is invalid'
 
-    true 
+    true
 
   ###*
   # Revoke the authorization code.
@@ -35,20 +35,20 @@ module.exports = (InvalidRequestError, InvalidGrantError, ServerError, debug) ->
 
     expireAt = new Date
     expireAt.setSeconds expireAt.getSeconds() - 5 * 60
-    
+
     query =
-      where: 
+      where:
         id: @id
-        used: false 
+        used: false
         clientId: clientId
-        createdAt: 
+        createdAt:
           gte: expiredAt
       include: [ 'client', 'user' ]
 
     $set =
-      used: true 
+      used: true
 
     options =
-      new: false 
+      new: false
 
     @findAndModify query, { $set }, options

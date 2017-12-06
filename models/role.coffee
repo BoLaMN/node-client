@@ -14,4 +14,4 @@ module.exports = ->
         instance.roles.forEach (role) ->
           roles.push role.name
 
-    roles 
+    roles

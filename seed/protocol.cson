@@ -1,0 +1,195 @@
+[
+  {
+    id: 'LDAP'
+    protocol: 'LDAP'
+
+    mapping:
+      id: 'response.dn'
+      email: 'response.mail'
+      name: 'response.cn'
+      givenName: 'response.givenName'
+      familyName: 'response.sn'
+      phoneNumber: 'response.telephoneNumber'
+      address:
+        formatted: 'response.postalAddress'
+        street_address: 'response.info.street'
+        locality: 'response.info.l'
+        region: 'response.info.st'
+        postal_code: 'response.info.postalCode'
+        country: 'response.info.co'
+
+    fields: [
+      {
+        name: 'username'
+        placeholder: 'username'
+      }
+      {
+        name: 'password'
+        type: 'password'
+      }
+    ]
+    properties: [
+      {
+        name: 'url'
+        type: 'string'
+      }
+      {
+        name: 'bindDn'
+        type: 'string'
+      }
+      {
+        name: 'bindCredentials'
+        type: 'string'
+      }
+      {
+        name: 'searchBase'
+        type: 'string'
+      }
+      {
+        name: 'searchFilter'
+        type: 'string'
+      }
+    ]
+  }
+  {
+    id: 'ActiveDirectory'
+    serverType: 'AD'
+    protocol: 'LDAP'
+
+    mapping:
+      id: 'response.objectGUID'
+      email: 'response.userPrincipalName'
+      name: 'response.name'
+      givenName: 'response.givenName'
+      familyName: 'response.sn'
+      phoneNumber: [
+        'response.info.telephoneNumber'
+        'response.info.mobile'
+        'response.info.homePhone'
+        'response.info.otherHomePhone'
+        'response.info.otherTelephone'
+        'response.info.ipPhone'
+        'response.info.otherIpPhone'
+      ]
+
+    fields: [
+      {
+        name: 'username'
+        placeholder: 'User@domain'
+      }
+      {
+        name: 'password'
+        type: 'password'
+      }
+    ]
+
+    properties: [
+      {
+        name: 'url'
+        type: 'string'
+      }
+      {
+        name: 'domainDn'
+        type: 'string'
+      }
+      {
+        name: 'tlsOptions'
+        type: 'object'
+      }
+    ]
+  }
+  {
+    id: 'OAuth'
+    properties: [
+      {
+        name: 'consumer_key'
+        type: 'string'
+      }
+      {
+        name: 'consumer_secret'
+        type: 'string'
+      }
+    ]
+  }
+  {
+    id: 'OAuth2'
+    properties: [
+      {
+        name: 'client_id'
+        type: 'string'
+      }
+      {
+        name: 'client_secret'
+        type: 'string'
+      }
+      {
+        name: 'scope'
+        type: [ 'string' ]
+      }
+    ]
+  }
+  {
+    id: 'Password'
+    fields: [
+      {
+        name: 'email'
+        type: 'email'
+      }
+      {
+        name: 'password'
+        type: 'password'
+      }
+    ]
+    properties: [ {
+      name: 'daysToCrack'
+      type: 'string'
+    } ]
+  }
+  {
+    id: 'SAML2'
+    protocol: 'SAML2'
+    callbackUrl: './connect/SAML2/callback'
+
+    mapping:
+      id: 'response.uid'
+      email: 'response.email'
+      name: 'response.cn'
+      givenName: 'response.givenName'
+      familyName: 'response.sn'
+      phoneNumber: 'response.telephoneNumber'
+      address:
+        formatted: 'response.info.postalAddress'
+        street_address: 'response.info.street'
+        locality: 'response.info.l'
+        region: 'response.info.st'
+        postal_code: 'response.info.postalCode'
+        country: 'response.info.co'
+
+    properties: [
+      {
+        name: 'entryPoint'
+        type: 'string'
+      }
+      {
+        name: 'issuer'
+        type: 'string'
+      }
+      {
+        name: 'callbackUrl'
+        type: 'string'
+      }
+      {
+        name: 'cert'
+        type: 'string'
+      }
+      {
+        name: 'authnContext'
+        type: 'string'
+      }
+      {
+        name: 'identifierFormat'
+        type: 'string'
+      }
+    ]
+  }
+]

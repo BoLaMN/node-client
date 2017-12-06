@@ -3,5 +3,8 @@
 module.exports = ->
 
   @run (api, cors) ->
+    crs = cors()
 
-    api.use 'initial', cors()
+    api.options 'cors', { path: '*' }, crs
+
+    api.use 'initial', crs

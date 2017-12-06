@@ -1,0 +1,7 @@
+[
+  { name: 'delete' }
+  { name: 'info' }
+  { name: 'lookup' }
+  { name: 'read' }
+  { name: 'write' }
+] 

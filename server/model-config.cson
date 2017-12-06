@@ -46,6 +46,9 @@ RoleMapping:
   dataSource: "mongo"
   public: false
 
+Migration:
+  dataSource: 'mongo'
+  
 User:
   dataSource: "mongo"
 

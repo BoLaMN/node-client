@@ -1,0 +1,475 @@
+[
+  {
+    id: 'github'
+    name: 'GitHub'
+    protocolId: 'OAuth2'
+    url: 'https://github.com'
+
+    endpoints:
+      authorize:
+        url: 'https://github.com/login/oauth/authorize'
+        method: 'POST'
+      token:
+        url: 'https://github.com/login/oauth/access_token'
+        method: 'POST'
+        auth: 'client_secret_post'
+      user:
+        url: 'https://api.github.com/user'
+        method: 'GET'
+        auth:
+          header: 'Authorization'
+          scheme: 'Bearer'
+
+    separator: ','
+
+    mapping:
+      id: 'id'
+      email: 'email'
+      name: 'name'
+      website: 'blog'
+      preferredUsername: 'login'
+      profile: 'html_url'
+      picture: 'avatar_url'
+  }
+  {
+    id: 'foursquare'
+    name: 'foursquare'
+    protocolId: 'OAuth2'
+    url: ''
+
+    endpoints:
+      authorize:
+        url: 'https://foursquare.com/oauth2/authenticate'
+        method: 'POST'
+      token:
+        url: 'https://foursquare.com/oauth2/access_token'
+        method: 'POST'
+        auth: 'client_secret_basic'
+      user:
+        url: 'https://api.foursquare.com/v2/users/self'
+        method: 'GET'
+        auth: query: 'oauth_token'
+        params: v: '20140308'
+
+    mapping:
+      id: 'response.user.id'
+      givenName: 'response.user.firstName'
+      familyName: 'response.user.lastName'
+      gender: 'response.user.gender'
+      email: 'response.user.contact.email'
+  }
+  {
+    id: 'google'
+    name: 'Google'
+    protocolId: 'OAuth2'
+    url: 'https://google.com'
+
+    endpoints:
+      authorize:
+        url: 'https://accounts.google.com/o/oauth2/auth'
+        method: 'POST'
+        params:
+          hd: 'gmail.com'
+      token:
+        url: 'https://accounts.google.com/o/oauth2/token'
+        method: 'POST'
+        auth: 'client_secret_post'
+        params:
+          hd: 'gmail.com'
+      user:
+        url: 'https://www.googleapis.com/oauth2/v1/userinfo'
+        method: 'GET'
+        auth:
+          header: 'Authorization'
+          scheme: 'Bearer'
+        params:
+          hd: 'gmail.com'
+      revoke:
+        url: 'https://accounts.google.com/o/oauth2/revoke'
+        method: 'GET'
+        auth: param: 'token'
+        params:
+          hd: 'gmail.com'
+
+    mapping:
+      email: 'email'
+      emailVerified: 'verified_email'
+      name: 'name'
+      givenName: 'given_name'
+      familyName: 'family_name'
+      profile: 'link'
+      picture: 'picture'
+      gender: 'gender'
+      locale: 'locale'
+  }
+  {
+    id: 'instagram'
+    name: 'instagram'
+    protocolId: 'OAuth2'
+    url: ''
+
+    endpoints:
+      authorize:
+        url: 'https://api.instagram.com/oauth/authorize/'
+        method: 'POST'
+      token:
+        url: 'https://api.instagram.com/oauth/access_token'
+        method: 'POST'
+        auth: 'client_secret_post'
+      user:
+        url: 'https://api.instagram.com/v1/users/self'
+        method: 'GET'
+        auth: query: 'access_token'
+
+    mapping:
+      id: 'data.id'
+      name: 'data.fullname'
+      preferredUsername: 'data.username'
+      picture: 'data.profile_picture'
+      website: 'data.website'
+  }
+  {
+    id: 'linkedin'
+    name: 'linkedin'
+    protocolId: 'OAuth2'
+    url: ''
+
+    endpoints:
+      authorize:
+        url: 'https://www.linkedin.com/uas/oauth2/authorization'
+        method: 'POST'
+      token:
+        url: 'https://www.linkedin.com/uas/oauth2/accessToken'
+        method: 'POST'
+        auth: 'client_secret_post'
+      user:
+        url: 'https://api.linkedin.com/v1/people/~:(id,first-name,last-name,picture-url,public-profile-url,email-address)'
+        method: 'GET'
+        auth:
+          header: 'Authorization'
+          scheme: 'Bearer'
+        params: format: 'json'
+
+    mapping:
+      id: 'id'
+      givenName: 'firstName'
+      familyName: 'lastName'
+      email: 'emailAddress'
+      picture: 'pictureUrl'
+      profile: 'publicProfileUrl'
+  }
+  {
+    id: 'local'
+    name: 'Enter Email & Password'
+    protocolId: 'Password'
+
+    mapping:
+      id: 'id'
+      name: 'name'
+  }
+  {
+    id: 'mailchimp'
+    name: 'mailchimp'
+    protocolId: 'OAuth2'
+    url: ''
+
+    endpoints:
+      authorize:
+        url: 'https://login.mailchimp.com/oauth2/authorize'
+        method: 'POST'
+      token:
+        url: 'https://login.mailchimp.com/oauth2/token'
+        method: 'POST'
+        auth: 'client_secret_post'
+      user:
+        url: 'https://login.mailchimp.com/oauth2/metadata'
+        method: 'GET'
+        auth:
+          header: 'Authorization'
+          scheme: 'Bearer'
+
+    mapping: {}
+  }
+  {
+    id: 'reddit'
+    name: 'reddit'
+    protocolId: 'OAuth2'
+    url: ''
+
+    endpoints:
+      authorize:
+        url: 'https://ssl.reddit.com/api/v1/authorize'
+        method: 'POST'
+      token:
+        url: 'https://ssl.reddit.com/api/v1/access_token'
+        method: 'POST'
+        auth: 'client_secret_basic'
+      user:
+        url: 'https://oauth.reddit.com/api/v1/me'
+        method: 'GET'
+        auth:
+          header: 'Authorization'
+          scheme: 'Bearer'
+    scope: [ 'identity' ]
+
+    mapping:
+      id: 'id'
+      emailVerified: 'has_verified_email'
+      preferredUsername: 'name'
+  }
+  {
+    id: 'soundcloud'
+    name: 'soundcloud'
+    protocolId: 'OAuth2'
+    url: ''
+
+    endpoints:
+      authorize:
+        url: 'https://soundcloud.com/connect'
+        method: 'POST'
+      token:
+        url: 'https://api.soundcloud.com/oauth2/token'
+        method: 'POST'
+        auth: 'client_secret_post'
+      user:
+        url: 'https://api.soundcloud.com/me.json'
+        method: 'GET'
+        auth: query: 'oauth_token'
+
+    mapping:
+      id: 'id'
+      emailVerified: 'primary_email_confirmed'
+      name: 'full_name'
+      givenName: 'first_name'
+      familyName: 'last_name'
+      preferredUsername: 'username'
+      profile: 'permalink_url'
+      picture: 'avatar_url'
+  }
+  {
+    id: 'twitch'
+    name: 'Twitch'
+    protocolId: 'OAuth2'
+    url: ''
+
+    endpoints:
+      authorize:
+        url: 'https://api.twitch.tv/kraken/oauth2/authorize'
+        method: 'POST'
+      token:
+        url: 'https://api.twitch.tv/kraken/oauth2/token'
+        method: 'POST'
+        auth: 'client_secret_post'
+      user:
+        url: 'https://api.twitch.tv/kraken/user'
+        method: 'GET'
+        auth:
+          header: 'Authorization'
+          scheme: 'OAuth'
+
+    mapping:
+      id: '_id'
+      name: 'name'
+      profile: '_links.self'
+  }
+  {
+    id: 'twitter'
+    name: 'Twitter'
+    protocolId: 'OAuth'
+    url: 'https://twitter.com'
+
+    oauth_callback: '/connect/twitter/callback'
+    oauth_signature_method: 'HMAC-SHA1'
+
+    endpoints:
+      credentials:
+        url: 'https://api.twitter.com/oauth/request_token'
+        method: 'POST'
+        header: 'Authorization'
+        scheme: 'OAuth'
+        accept: '*/*'
+      authorization:
+        url: 'https://api.twitter.com/oauth/authenticate'
+      token:
+        url: 'https://api.twitter.com/oauth/access_token'
+        method: 'POST'
+      user:
+        url: 'https://api.twitter.com/1.1/users/show.json'
+        method: 'GET'
+        header: 'Authorization'
+        scheme: 'OAuth'
+
+    mapping:
+      id: 'id'
+      name: 'name'
+      preferredUsername: 'screen_name'
+      profile: 'url'
+      picture: 'profile_image_url'
+      twitterId: 'id'
+  }
+  {
+    id: 'wordpress'
+    name: 'WordPress'
+    protocolId: 'OAuth2'
+    url: ''
+
+    endpoints:
+      authorize:
+        url: 'https://public-api.wordpress.com/oauth2/authorize'
+        method: 'POST'
+      token:
+        url: 'https://public-api.wordpress.com/oauth2/token'
+        method: 'POST'
+        auth: 'client_secret_post'
+      user:
+        url: 'https://public-api.wordpress.com/rest/v1/me'
+        method: 'GET'
+        auth:
+          header: 'Authorization'
+          scheme: 'Bearer'
+
+    mapping:
+      id: 'ID'
+      email: 'email'
+      emailVerified: 'email_verified'
+      name: 'display_name'
+      preferredUsername: 'username'
+      picture: 'avatar_URL'
+      profile: 'profile_URL'
+  }
+  {
+    id: 'facebook'
+    name: 'Facebook'
+    protocolId: 'OAuth2'
+    url: 'https://www.facebook.com'
+
+    endpoints:
+      authorize:
+        url: 'https://www.facebook.com/dialog/oauth'
+        method: 'POST'
+      token:
+        url: 'https://graph.facebook.com/oauth/access_token'
+        method: 'POST'
+        auth: 'client_secret_post'
+        parser: 'x-www-form-urlencoded'
+      user:
+        url: 'https://graph.facebook.com/me'
+        method: 'GET'
+        auth:
+          header: 'Authorization'
+          scheme: 'Bearer'
+
+    separator: ','
+
+    mapping:
+      id: 'id'
+      emailVerified: 'verified'
+      name: 'name'
+      givenName: 'first_name'
+      familyName: 'last_name'
+      profile: 'link'
+      gender: 'gender'
+      locale: 'locale'
+  }
+  {
+    id: 'dropbox'
+    name: 'Dropbox'
+    protocolId: 'OAuth2'
+    url: 'https://www.dropbox.com'
+
+    endpoints:
+      authorize:
+        url: 'https://www.dropbox.com/1/oauth2/authorize'
+        method: 'POST'
+      token:
+        url: 'https://api.dropbox.com/1/oauth2/token'
+        method: 'POST'
+        auth: 'client_secret_basic'
+      user:
+        url: 'https://api.dropbox.com/1/account/info'
+        method: 'GET'
+        auth:
+          header: 'Authorization'
+          scheme: 'Bearer'
+
+    mapping:
+      id: 'uid'
+      name: 'display_name'
+      email: 'email'
+      emailVerified: 'email_verified'
+      locale: 'country'
+  }
+  {
+    id: 'buffer'
+    name: 'buffer'
+    protocolId: 'OAuth2'
+    url: ''
+
+    endpoints:
+      authorize:
+        url: 'https://bufferapp.com/oauth2/authorize'
+        method: 'POST'
+      token:
+        url: 'https://api.bufferapp.com/1/oauth2/token.json'
+        method: 'POST'
+        auth: 'client_secret_basic'
+      user:
+        url: 'https://api.bufferapp.com/1/user.json'
+        method: 'GET'
+        auth: query: 'access_token'
+
+    mapping:
+      id: 'id'
+      name: 'name'
+  }
+  {
+    id: '37signals'
+    name: '37signals'
+    protocolId: 'OAuth2'
+    url: ''
+
+    endpoints:
+      authorize:
+        url: 'https://launchpad.37signals.com/authorization/new'
+        method: 'POST'
+      token:
+        url: 'https://launchpad.37signals.com/authorization/token'
+        method: 'POST'
+        auth: 'client_secret_basic'
+      user:
+        url: 'https://launchpad.37signals.com/authorization.json'
+        method: 'GET'
+        auth:
+          header: 'Authorization'
+          scheme: 'Bearer'
+
+    mapping: {}
+  }
+  {
+    id: 'angellist'
+    name: 'angellist'
+    protocolId: 'OAuth2'
+    url: ''
+
+    endpoints:
+      authorize:
+        url: 'https://angel.co/api/oauth/authorize'
+        method: 'POST'
+      token:
+        url: 'https://angel.co/api/oauth/token'
+        method: 'POST'
+        auth: 'client_secret_basic'
+      user:
+        url: 'https://api.angel.co/1/me'
+        method: 'GET'
+        auth: query: 'access_token'
+
+    mapping:
+      id: 'id'
+      name: 'name'
+      picture: 'image'
+      profile: 'angellist_url'
+      email: 'email'
+      website: 'online_bio_url'
+  }
+]

@@ -53,13 +53,13 @@ module.exports = ->
           @observe event, fn
 
       fire: (event, ctx = {}, self = @, fn = ->) ->
-        debug event
-
         if typeof self is 'function'
           return @fire event, {}, ctx, null, self
-        
+
         if typeof ctx is 'function'
           return @fire event, {}, null, ctx
+
+        debug event
 
         { instance } = ctx.options?
 
@@ -99,15 +99,15 @@ module.exports = ->
         if Array.isArray ev
           ev.forEach (e) =>
             @observe e, fn
-          
+
           return @
 
         @hooks = {}
         @evs = []
-          
+
         if not @hooks[ev]
           @hooks[ev] = new Hook
-          @evs.push ev 
+          @evs.push ev
 
         @hooks[ev].observe fn
 
@@ -119,7 +119,7 @@ module.exports = ->
           @evs = []
         else
           @hooks[ev] ?= []
-          idx = @evs.indexOf ev 
+          idx = @evs.indexOf ev
           @evs.splice idx, 1
 
         @
@@ -127,17 +127,17 @@ module.exports = ->
       removeListener: (ev, fn) ->
         return @ unless @hooks[ev]
 
-        evts = @hooks[ev].fns or [] 
-        
+        evts = @hooks[ev].fns or []
+
         evts.forEach (e, i) =>
           if e is fn or e.fn is fn
             evts.splice i, 1
 
-        return @ if evts.length 
-        
-        idx = @evs.indexOf ev 
+        return @ if evts.length
 
-        return @ if idx is -1 
+        idx = @evs.indexOf ev
+
+        return @ if idx is -1
 
         @evs.splice idx, 1
 
@@ -160,13 +160,13 @@ module.exports = ->
         return unless @evs?.length
 
         re = glob2re ev
-        
+
         i = 0
-        fns = [] 
+        fns = []
 
         @evs.forEach (hook) =>
-          return unless re.test hook  
-          
+          return unless re.test hook
+
           fns.push @hooks[hook]...
 
         next = (err) =>

@@ -168,21 +168,21 @@ module.exports = ->
         debug 'find', filter
 
         { filter } = new MongoQuery filter, @model
-        { where, include, aggregate, fields } = filter
+        { where, include, aggregate, fields, opts } = filter
 
         if aggregate.length
           aggregate.unshift '$match': where
 
-          Object.keys(options).forEach (option) ->
+          Object.keys(opts).forEach (option) ->
             object = {}
-            object[option] = options['$' + option]
+            object[option] = opts['$' + option]
             aggregate.push object
 
           debug 'find.aggregate', inspect aggregate, false, null
 
           promise = @execute 'aggregate', aggregate
         else
-          promise = @execute 'find', where, fields, options
+          promise = @execute 'find', where, fields, opts
 
         promise
           .then (cursor) =>
@@ -193,7 +193,7 @@ module.exports = ->
             debug 'find.cb', inspect(
               model: @model.name
               filter: filter
-              options: options
+              opts: opts
               results: results
             , false, null)
           .asCallback cb
@@ -212,6 +212,7 @@ module.exports = ->
 
         @execute 'findOne', where, fields
           .then (results) =>
+            return unless results
             new @model results, buildOptions(options)
           .tap (results) =>
             debug 'findOne.cb', inspect(

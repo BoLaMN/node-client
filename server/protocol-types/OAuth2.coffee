@@ -32,9 +32,9 @@ class OAuth2Strategy
 
   base64credentials: ->
     { client_id, client_secret } = @client
-    
+
     credentials = client_id + ':' + client_secret
-    
+
     new Buffer(credentials).toString 'base64'
 
   ###*
@@ -51,18 +51,23 @@ class OAuth2Strategy
       'callback'
     else
       'request'
-      
+
   ###*
   # Authorization Request
   ###
 
-  request: (state) ->
+  request: (request, response) ->
     options = url.parse @endpoints.authorize.url
+
+    { clientId, grantType,
+      providerId, responseType } = request.params
+
+    redirectUri = [ clientId, grantType, providerId, responseType ].join '/'
 
     options.query =
       response_type: 'code'
       client_id: @client.client_id
-      redirect_uri: url.join @issuer, '/users/callback'
+      redirect_uri: url.join @issuer, '/users/callback/' + redirectUri
 
     if @provider.scope or @client.scope
       s1 = @provider.scope or []
@@ -70,17 +75,21 @@ class OAuth2Strategy
       sp = @provider.separator or ' '
       options.query.scope = s1.concat(s2).join(sp)
 
-    if state
-      options.query.state = state
+    response.redirect url.format options
 
-    url.format options
+    null
 
   ###*
   # Authorization Code Grant Request
   ###
 
-  callback: (code) ->
+  callback: (request, response) ->
     endpoint = @endpoints.token
+
+    { clientId, grantType,
+      providerId, responseType } = request.params
+
+    redirectUri = [ clientId, grantType, providerId, responseType ].join '/'
 
     options =
       url: endpoint.url
@@ -89,7 +98,7 @@ class OAuth2Strategy
       form:
         grant_type: 'authorization_code'
         code: code
-        redirect_uri: url.join @issuer, '/users/callback'
+        redirect_uri: url.join @issuer, '/users/callback/' + redirectUri
       headers:
         'User-Agent': agent
         'Accept': endpoint.accept or 'application/json'

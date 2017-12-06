@@ -37,7 +37,7 @@ module.exports = ->
         tags = []
 
         definitions = {}
-        
+
         for own name, type of Types
           if typeof type.swagger.definition is 'function'
             definitions[name] = type.swagger.definition()
@@ -76,6 +76,11 @@ module.exports = ->
               title: "api"
             basePath: "/api"
             paths: {}
+            securityDefinitions:
+              Bearer:
+                type: 'apiKey'
+                name: 'Authorization'
+                in: 'header'
             tags: tags
             consumes: [
               "application/json"

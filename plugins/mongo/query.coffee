@@ -10,6 +10,7 @@ module.exports = ->
           include: null
           aggregate: []
           fields: {}
+          opts: {}
           options: options
           where: {}
 
@@ -117,24 +118,24 @@ module.exports = ->
       # @api public
       ###
 
-      sort: (sorts, value) ->
+      order: (sorts, value) ->
         if Array.isArray sorts
           for sort in sorts
-            @sort.apply this, sort.split ' '
+            @order.apply this, sort.split ' '
 
         if typeof value is 'string'
           matches = sorts.match /([\w\d]+) (A|DE)SC/gi
 
           if matches
-            return @sort matches
+            return @order matches
 
           if sorts is @model.primaryKey
             sorts = '_id'
 
-          @filter.options.sort ?= {}
-          @filter.options.sort[sorts] = if value is 'DE' then -1 else 1
+          @filter.opts.sort ?= {}
+          @filter.opts.sort[sorts] = if value is 'DE' then -1 else 1
         else
-          @filter.options.sort = _id: 1
+          @filter.opts.sort = _id: 1
 
         this
 

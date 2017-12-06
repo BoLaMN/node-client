@@ -1,10 +1,9 @@
-module.exports = (InvalidGrantError, debug, AccessToken, AuthorizationCode, Role) ->
+module.exports = (InvalidGrantError, debug) ->
 
-  @login = (clientId, clientSecret, clientKey, responseType) ->
-    
-    query =
-      where: 
-        id: clientId
+  @authenticate = (clientId, { clientSecret, clientKey }, responseType) ->
+
+    where =
+      id: clientId
 
     compareKeys = (client) ->
       debug "in validateClient (key: #{ client.key }, secret: #{ client.secret }, , clientSecret: #{ clientSecret }, clientKey: #{ clientKey }))"
@@ -14,38 +13,21 @@ module.exports = (InvalidGrantError, debug, AccessToken, AuthorizationCode, Role
 
       client
 
-    getGroupsAndRoles = (instance) =>
-      @include instance, [
-        {
-          relation: 'groups'
-          scope: { include: [ 'roles' ] }
-        }
-        'roles'
-      ]
-      .then (included) ->
-        included[0] 
-
-    responseTypes =
-      code: AuthorizationCode
-      token: AccessToken
-
-    model = responseTypes[responseType]
-
-    createToken = (instance) ->
-      roles = Role.groupByName instance 
-
-      debug "in createToken (clientId: #{ instance.id }, userId: #{ instance.userId }, roles: #{ roles })"
-
-      model.create 
-        clientId: clientId
-        roles: roles
-        userId: instance.userId
-        appId: instance.id
-
-    @findOne query
+    @findOne { where }
       .tap (client) ->
         if not client
           throw new InvalidClientError 'CLIENTCREDS'
       .then compareKeys
-      .then getGroupsAndRoles
-      .then createToken
+
+  @::initializeProtocol = (properties) ->
+    protocolPath = path.join __dirname, '..', 'protocol-types', provider.protocolId
+
+    try
+      protocol = require protocolPath
+    catch e
+      console.error e
+
+    if not protocol
+      throw new Error 'No strategy defined for provider \'' + provider.id + '\''
+
+    new protocol @, properties

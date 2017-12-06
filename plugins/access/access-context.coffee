@@ -29,14 +29,14 @@ module.exports = ->
 
         if @modelName
           @model = injector.get @modelName
-          
-          @acls = @model.acls.filter (acl) =>
-            wildcard = true 
 
-            if acl.methodName and acl.methodName isnt AccessContext.ALL 
+          @acls = @model.acls.filter (acl) =>
+            wildcard = true
+
+            if acl.methodName and acl.methodName isnt AccessContext.ALL
               wildcard = acl.methodName is @methodName
 
-            acl.accessType in [ @accessType, 'ALL' ] and wildcard 
+            acl.accessType in [ @accessType, 'ALL' ] and wildcard
 
       @ALL: 'ALL'
       @READ: 'READ'
@@ -102,8 +102,8 @@ module.exports = ->
           resolve false
 
       getMatchingScore: (rule) ->
-        if rule.score 
-          return rule.score 
+        if rule.score
+          return rule.score
 
         props = [
           'model'
@@ -189,8 +189,8 @@ module.exports = ->
 
         score = score * 4
         score += AccessContext.permissionOrder[rule.permission or AccessContext.ALLOW] - 1
-        
-        rule.score = score 
+
+        rule.score = score
 
         score
 

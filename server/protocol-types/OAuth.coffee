@@ -167,50 +167,6 @@ class OAuthStrategy
     result
 
   ###*
-  # Temporary Credentials
-  # https://tools.ietf.org/html/rfc5849#section-2.1
-  ###
-
-  temporaryCredentials: (done) ->
-    endpoint = @endpoints.credentials
-
-    options =
-      url: endpoint.url
-      method: endpoint.method or 'post'
-      qs:
-        oauth_consumer_key: @client.oauth_consumer_key
-        oauth_signature_method: @provider.oauth_signature_method or 'PLAINTEXT'
-        oauth_timestamp: @timestamp()
-        oauth_nonce: @nonce(32)
-        oauth_callback: @provider.oauth_callback
-        oauth_version: '1.0'
-      headers:
-        'User-Agent': agent
-        'Accept': endpoint.accept or 'application/x-www-form-urlencoded'
-
-    input = @signatureBaseString(options, @normalizeParameters(options.qs))
-
-    options.qs.oauth_signature = @sign(signer, input, @client.oauth_consumer_secret)
-
-    if realm
-      options.qs.realm = @provider.realm
-
-    options.qs.header[endpoint.header or 'Authorization'] = (endpoint.scheme or 'OAuth') + ' ' + @authorizationHeaderParams(params)
-
-    promisedRequest options
-
-  ###*
-  # Resource Owner Authorization
-  # https://tools.ietf.org/html/rfc5849#section-2.2
-  ###
-
-  resourceOwnerAuthorization: ({ oauth_token }) ->
-    endpoint = @endpoints.authorization
-    param = endpoint.param or 'oauth_token'
-
-    endpoint.url + '?' + param + '=' + oauth_token
-
-  ###*
   # Token Credentials
   # https://tools.ietf.org/html/rfc5849#section-2.3
   ###
@@ -273,11 +229,9 @@ class OAuthStrategy
     if !response and response.oauth_token
       return throw new Error('Failed to obtain OAuth request token')
 
-    if !req.session['oauth']
-      req.session['oauth'] = {}
-
-    req.session['oauth'].oauth_token = response.oauth_token
-    req.session['oauth'].oauth_token_secret = response.oauth_token_secret
+    res.session['oauth'] ?= {}
+    res.session['oauth'].oauth_token = response.oauth_token
+    res.session['oauth'].oauth_token_secret = response.oauth_token_secret
 
   ###*
   # handle
@@ -296,15 +250,46 @@ class OAuthStrategy
 
   handle: (req, options) ->
     if req.query.oauth_token
-      'request' 
-    else 
+      'request'
+    else
       'callback'
 
-  request: (req, options) ->
-    @temporaryCredentials()
-      .tap (response) ->
-        @setSessionDetails response, res
-      .then @resourceOwnerAuthorization
+  request: (response, options) ->
+    endpoint = @endpoints.credentials
+
+    options =
+      url: endpoint.url
+      method: endpoint.method or 'post'
+      qs:
+        oauth_consumer_key: @client.oauth_consumer_key
+        oauth_signature_method: @provider.oauth_signature_method or 'PLAINTEXT'
+        oauth_timestamp: @timestamp()
+        oauth_nonce: @nonce(32)
+        oauth_callback: @provider.oauth_callback
+        oauth_version: '1.0'
+      headers:
+        'User-Agent': agent
+        'Accept': endpoint.accept or 'application/x-www-form-urlencoded'
+
+    input = @signatureBaseString(options, @normalizeParameters(options.qs))
+
+    options.qs.oauth_signature = @sign(signer, input, @client.oauth_consumer_secret)
+
+    if realm
+      options.qs.realm = @provider.realm
+
+    options.qs.header[endpoint.header or 'Authorization'] = (endpoint.scheme or 'OAuth') + ' ' + @authorizationHeaderParams(params)
+
+    promisedRequest options
+      .tap (res) =>
+        @setSessionDetails res, response
+      .then ({ oauth_token }) =>
+        endpoint = @endpoints.authorization
+        param = endpoint.param or 'oauth_token'
+
+        response.redirect endpoint.url + '?' + param + '=' + oauth_token
+
+        null
 
 ###*
 # Exports
